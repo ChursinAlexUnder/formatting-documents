@@ -7,24 +7,19 @@ import (
 )
 
 func homePage(w http.ResponseWriter, r *http.Request) {
-	tmp, err := template.ParseFiles("templates/index.html")
+	tmp, err := template.ParseFiles("html/index.html")
 	if err != nil {
 		fmt.Fprintf(w, "Error!")
 	}
 	tmp.Execute(w, nil)
 }
 
-func informationPage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "It's information page, oooh!")
-}
-
 func handleRequest() {
 	// подключение css
-	http.Handle("/style/", http.StripPrefix("/style/", http.FileServer(http.Dir("./style/"))))
+	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css/"))))
 
 	// Отображение страниц
 	http.HandleFunc("/", homePage)
-	http.HandleFunc("/information/", informationPage)
 	http.ListenAndServe(":8080", nil)
 }
 
