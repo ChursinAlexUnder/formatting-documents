@@ -15,8 +15,14 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRequest() {
-	// подключение css
+	// обработка css
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./css/"))))
+
+	// обработка js
+	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./js/"))))
+
+	// обработка изображений
+	http.Handle("/pictures/", http.StripPrefix("/pictures/", http.FileServer(http.Dir("./pictures/"))))
 
 	// Отображение страниц
 	http.HandleFunc("/", homePage)
