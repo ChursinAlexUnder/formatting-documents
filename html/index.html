@@ -11,16 +11,16 @@
     <div class="main-window">
         <h1 class="title">Редактирование формата документа онлайн</h1>
         <!-- сделать обработку полученного документа через golang -->
-        <form enctype="multipart/form-data" method="post" action=""> 
+        <form enctype="multipart/form-data" method="post" action="/formData"> 
             <div class="document-input-container">
-                <input type="file" id="documentInput" class="document-input" accept=".docx"/>
+                <input type="file" name="document-file" id="documentInput" class="document-input" accept=".docx"/>
                 <label for="documentInput" class="document-label">
                     <img class="document-icon" src="../pictures/icon-download.png" alt="Иконка загрузки" />
                     <span class="document-text">Выберите документ...</span>
                     <span class="document-name"></span>
                 </label>
             </div>
-            <textarea class="text-input" rows="6" placeholder="Введите описание..."></textarea>
+            <textarea name="change" class="text-input" rows="6" placeholder="Введите описание..."></textarea>
             <button type="submit" class="edit-button">Редактировать документ</button>
         </form>
     </div>
