@@ -8,8 +8,9 @@ import (
 	"github.com/ChursinAlexUnder/Golang-website/golang/filework"
 )
 
-// TODO: заглянуть в filework.go
-// TODO: подключить и поработать с пакетом для docx (в браузере в закладках)
+// TODO: позже глянуть и использовать ExecuteTemplate для нескольких шаблонов вместо Execute
+// TODO: сделать проверку, что файл расширения docx
+// TODO: подключить и поработать с пакетом для docx (в браузере в закладках) (видимо, буду использовать питон)
 
 func homePage(w http.ResponseWriter, r *http.Request) {
 	tmp, err := template.ParseFiles("html/index.html")

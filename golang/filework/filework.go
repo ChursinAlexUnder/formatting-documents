@@ -6,7 +6,11 @@ import (
 	"text/template"
 )
 
-// TODO: сделать так, чтобы данные выводились именно внутрь страницы, а не поверх кода html
+type Answer struct {
+	FileName string
+	FileSize int64
+	Change   string
+}
 
 func FormSend(w http.ResponseWriter, r *http.Request) {
 	// получение значения полей
@@ -27,9 +31,6 @@ func FormSend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// добавление данных на страницу
-	fmt.Fprintf(w, "Название файла: %s\n", filedata.Filename)
-	fmt.Fprintf(w, "Размер файла: %d\n", filedata.Size)
-	fmt.Fprintf(w, "Особые пожелания пользователя к файлу: %s\n", change)
-
-	tmp.Execute(w, nil)
+	answer := Answer{filedata.Filename, filedata.Size, change}
+	tmp.Execute(w, answer)
 }
