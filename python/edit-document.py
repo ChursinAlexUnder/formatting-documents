@@ -10,7 +10,7 @@ def extract_text(docx_file):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: editDocument.py <docx_file>")
+        print("Usage: edit-document.py <docx_file>")
         sys.exit(1)
 
     docx_file = sys.argv[1]

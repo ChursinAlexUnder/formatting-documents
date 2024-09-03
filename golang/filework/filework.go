@@ -69,7 +69,7 @@ func FormSend(w http.ResponseWriter, r *http.Request) {
 
 func textFromDocx(filename string) (string, error) {
 	// Вызов Python-скрипта
-	cmd := exec.Command("python3", "github.com/ChursinAlexUnder/Golang-website/python/editDocument.py", filename)
+	cmd := exec.Command("python3", "../../python/edit-document.py", filename)
 
 	// Получение вывода из Python-скрипта
 	output, err := cmd.Output()
