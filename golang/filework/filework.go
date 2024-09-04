@@ -3,8 +3,6 @@ package filework
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
-	"strings"
 	"text/template"
 )
 
@@ -22,12 +20,6 @@ func FormSend(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 	change = r.FormValue("change")
-
-	// Проверка расширения файла на docx
-	if ext := strings.ToLower(filepath.Ext(fileData.Filename)); ext != ".docx" {
-		http.Error(w, "Invalid file extension", http.StatusUnsupportedMediaType)
-		return
-	}
 
 	// загрузка и распарсивание HTML-шаблона из файла temp.html для дальнейшей работы
 	tmp, err := template.ParseFiles("./html/temp.html")
