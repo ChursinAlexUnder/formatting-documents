@@ -27,6 +27,7 @@ func handleRequest() {
 	// Отображение страниц
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/formData", filework.FormSend)
+	http.HandleFunc("/download", filework.DownloadFile)
 	http.ListenAndServe(":8080", nil)
 }
 

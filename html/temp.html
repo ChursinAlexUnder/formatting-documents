@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
-    <title>Данные о файле</title>
+    <title>Скачивание отредактированного файла</title>
 </head>
 <body>
     <div class="main-window">
-        <h2>Название файла</h2>
-        <p>{{ .FileName }}</p>
-        <h2>Ваш комментарий к файлу</h2>
-        <p>{{ .Change }}</p>
+        <h2>Имя файла: {{ .FileName }}</h2>
+        <p>Изменённый файл: <a href="/download?filename={{.FileName}}">скачать</a></p>
+        <p>Ваш комментарий к документу (пока не умеем его использовать): {{ .Change }}</p>
     </div>
 </body>
 </html>
