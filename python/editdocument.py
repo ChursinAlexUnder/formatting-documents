@@ -5,15 +5,23 @@ from docx import Document
 
 app = Flask(__name__)
 
-# Путь для сохранения временных файлов
-UPLOAD_FOLDER = 'uploads'
+# Получаем абсолютный путь к директории, где находится текущий файл
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Путь для сохранения временных файлов относительно текущего файла
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 
 # Редактирование файла
-def edit_docx(filepath):
+def edit_docx(filepath, comment):
     # Открываем документ
     doc = Document(filepath)
-    # Добавляем текст в конец документа
-    doc.add_paragraph('Это я добавил текст, хы хы!.')
+
+    # Добавляем текст комментария в конец документа
+    if comment:
+        doc.add_paragraph(comment)
+    else:
+        doc.add_paragraph('Комментарий отсутствует, так что просто хорошего дня)')
+
     # Сохраняем изменения
     edited_filepath = filepath.replace('.docx', '_edited.docx')
     doc.save(edited_filepath)
@@ -38,6 +46,11 @@ def cleanup_temp_files():
             os.rmdir(UPLOAD_FOLDER)
             print(f"Deleted empty directory: {UPLOAD_FOLDER}")
 
+# Добавляем обработчик GET-запросов для проверки доступности сервера
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'Server is running'}), 200
+
 @app.route('/editdocx', methods=['POST'])
 def edit_docx_route():
     # Проверяем, что файл был отправлен
@@ -47,6 +60,9 @@ def edit_docx_route():
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
+    
+    # Получаем комментарий из формы
+    comment = request.form.get('comment', '')
 
     # Создаем папку uploads, если её нет
     if not os.path.exists(UPLOAD_FOLDER):
@@ -61,7 +77,7 @@ def edit_docx_route():
         return jsonify({'error': f'Failed to save file: {str(e)}'}), 500
 
     # Редактируем документ
-    edited_filepath = edit_docx(filepath)
+    edited_filepath = edit_docx(filepath, comment)
 
     # Отправляем измененный файл обратно
     response = send_file(edited_filepath, as_attachment=True)

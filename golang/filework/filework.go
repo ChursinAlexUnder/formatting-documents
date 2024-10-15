@@ -8,15 +8,26 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/exec"
 	"text/template"
+	"time"
 )
 
 type Answer struct {
 	FileName, Change string
 }
 
+var pythonCmd *exec.Cmd
+
 func FormSend(w http.ResponseWriter, r *http.Request) {
-	// получение значения полей
+	// Стартуем Python сервер перед отправкой файла
+	err := startPythonServer()
+	if err != nil {
+		fmt.Fprintf(w, "Error not start python server: %v", err)
+		return
+	}
+
+	// Получаем файл и данные формы
 	var change string
 	file, fileData, err := r.FormFile("document-file")
 	if err != nil {
@@ -27,26 +38,28 @@ func FormSend(w http.ResponseWriter, r *http.Request) {
 	change = r.FormValue("change")
 
 	// Отправляем файл на Python микросервис для обработки
-	editedFileName, err := sendFileToPythonService(file, fileData.Filename)
+	editedFileName, err := sendFileToPythonService(file, fileData.Filename, change)
 	if err != nil {
 		fmt.Fprintf(w, "Error not send file: %v", err)
 		return
 	}
 
-	// загрузка и распарсивание HTML-шаблона из файла temp.html для дальнейшей работы
+	// Загрузка и распарсивание HTML-шаблона
 	tmp, err := template.ParseFiles("./html/temp.html")
 	if err != nil {
 		fmt.Fprintf(w, "Error not parse temp.html: %v", err)
 		return
 	}
 
-	// добавление данных на страницу
+	// Добавление данных на страницу
 	answer := Answer{editedFileName, change}
 	tmp.Execute(w, answer)
+
+	// Останавливаем Python сервер после получения файла
+	stopPythonServer()
 }
 
-// Отправка файла на Python микросервис и получение измененного файла
-func sendFileToPythonService(file multipart.File, filename string) (string, error) {
+func sendFileToPythonService(file multipart.File, filename string, comment string) (string, error) {
 	// Создаем временный файл для сохранения загруженного контента
 	tempFile, err := os.CreateTemp("", "upload-*.docx")
 	if err != nil {
@@ -70,14 +83,21 @@ func sendFileToPythonService(file multipart.File, filename string) (string, erro
 	// Создаем multipart-запрос
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
+
+	// Добавляем файл в запрос
 	part, err := writer.CreateFormFile("file", filename)
 	if err != nil {
 		return "", fmt.Errorf("error not create form file: %v", err)
 	}
-
 	_, err = io.Copy(part, tempFile)
 	if err != nil {
 		return "", fmt.Errorf("error not copy file to form: %v", err)
+	}
+
+	// Добавляем комментарий в запрос
+	err = writer.WriteField("comment", comment)
+	if err != nil {
+		return "", fmt.Errorf("error not add comment: %v", err)
 	}
 
 	writer.Close()
@@ -149,5 +169,64 @@ func DownloadFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Error downloading file", http.StatusInternalServerError)
 		return
+	}
+}
+
+func startPythonServer() error {
+	// Проверяем, что сервер ещё не запущен
+	if pythonCmd != nil && pythonCmd.Process != nil {
+		fmt.Println("Python сервер уже запущен")
+		return nil
+	}
+
+	// Запуск Python-сервера
+	pythonCmd = exec.Command("python", "python/editdocument.py")
+	pythonCmd.Stdout = os.Stdout
+	pythonCmd.Stderr = os.Stderr
+
+	err := pythonCmd.Start()
+	if err != nil {
+		return fmt.Errorf("не удалось запустить Python сервер: %v", err)
+	}
+
+	// Ожидаем запуска сервера
+	fmt.Println("Запуск Python сервера...")
+	err = waitForPythonServer("http://localhost:5000")
+	if err != nil {
+		return fmt.Errorf("не удалось дождаться запуска Python сервера: %v", err)
+	}
+
+	fmt.Println("Python сервер запущен на порту 5000")
+	return nil
+}
+
+func waitForPythonServer(url string) error {
+	maxRetries := 10
+	delay := 1000 * time.Millisecond
+
+	for i := 0; i < maxRetries; i++ {
+		resp, err := http.Get(url)
+		if err == nil && resp.StatusCode == http.StatusOK {
+			// Если сервер ответил, завершаем ожидание
+			return nil
+		}
+
+		// Ждем перед повторной проверкой
+		time.Sleep(delay)
+	}
+
+	return fmt.Errorf("сервер не ответил после %d попыток", maxRetries)
+}
+
+func stopPythonServer() {
+	// Проверяем, есть ли процесс для остановки
+	if pythonCmd != nil && pythonCmd.Process != nil {
+		err := pythonCmd.Process.Kill()
+		if err != nil {
+			fmt.Printf("Ошибка при остановке Python сервера: %v\n", err)
+		} else {
+			fmt.Println("Python сервер успешно остановлен")
+		}
+		pythonCmd = nil
 	}
 }
