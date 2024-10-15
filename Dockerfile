@@ -7,16 +7,11 @@ WORKDIR /www
 # Copy the application files into the working directory
 COPY . /www
 
-# Build the Go application
+# Build the application
 RUN go build -o main .
 
-# Install Python and required packages
-RUN apt-get update && apt-get install -y python python-pip
-RUN pip3 install flask python-docx
-
-# Expose ports for both Go and Python servers
+# Expose port 8080
 EXPOSE 8080
-EXPOSE 5000
 
-# Start both servers
-CMD ["sh", "-c", "python3 python/editdocument.py & ./main"]
+# Define the entry point for the container
+CMD ["./main"]
