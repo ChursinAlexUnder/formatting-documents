@@ -2,19 +2,16 @@
 FROM python:3.12.0-slim
 
 # Set the working directory in the container
-WORKDIR /www/python
+WORKDIR /www
 
 # Copy the requirements file (ensure you have this in your repository root)
-COPY www/python/requirements.txt .
+COPY . /www
 
 # Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application code into the container
-COPY www/python .
 
 # Expose the port that the app runs on
 EXPOSE 5000
 
 # Define the entry point for the container
-CMD ["python", "editdocument.py"]
+CMD ["python", "python/editdocument.py"]
