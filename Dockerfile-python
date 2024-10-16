@@ -2,19 +2,16 @@
 FROM python:3.12.0-slim
 
 # Set the working directory in the container
-# WORKDIR /www
+WORKDIR /www
 
 # Copy the requirements file (ensure you have this in your repository root)
-# COPY . /www
+COPY . /www
 
 # Install the Python dependencies
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-
-COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the port that the app runs on
-EXPOSE 5000
+EXPOSE 53
 
 # Define the entry point for the container
-CMD ["waitress-serve", "--listen=0.0.0.0:5000", "python.editdocument:app"]
+CMD ["python", "python/editdocument.py"]
