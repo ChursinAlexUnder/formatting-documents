@@ -2,16 +2,13 @@
 FROM python:3.12.0-slim
 
 # Set the working directory in the container
-# WORKDIR /www
-
-# Copy the requirements file (ensure you have this in your repository root)
-# COPY . /www
+WORKDIR /www
 
 # Install the Python dependencies
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY . /www
 
 # Expose the port that the app runs on
 EXPOSE 5000
