@@ -28,7 +28,6 @@ func handleRequest() {
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/formData", filework.FormSend)
 	http.HandleFunc("/download", filework.DownloadFile)
-	http.HandleFunc("/api/", filework.PythonProxy)
 	// Проксируем запросы на Python-сервис (например, для обработки файлов)
 	http.ListenAndServe(":8080", nil)
 }

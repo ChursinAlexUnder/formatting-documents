@@ -5,8 +5,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    depends_on:
-      - python
     networks:
       - app-network
 
@@ -14,8 +12,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-python
-    expose:
-      - "5000"  # Экспонируем порт только внутри сети Docker, чтобы Go-сервер мог обращаться к нему
+    ports:
+      - "5000:5000"
     networks:
       - app-network
 
