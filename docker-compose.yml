@@ -1,4 +1,19 @@
+networks:
+  editapp:
+
 services:
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - '/nginx.conf:/nginx.conf'
+    depends_on:
+      - golang
+      - python
+    networks:
+      - editapp
+
   golang:
     build:
       context: .
@@ -6,17 +21,13 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - app-network
+      - editapp
 
   python:
     build:
       context: .
       dockerfile: Dockerfile-python
     ports:
-      - "53:53"
+      - "5000:5000"
     networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+      - editapp
