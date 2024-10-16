@@ -88,4 +88,4 @@ def edit_docx_route():
     return response
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=53, host='10.100.0.2')
