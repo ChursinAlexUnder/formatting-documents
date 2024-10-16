@@ -11,7 +11,7 @@ COPY . /www
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the port that the app runs on
-EXPOSE 53
+EXPOSE 5000
 
 # Define the entry point for the container
-CMD ["waitress-serve", "--listen=10.100.0.2:53", "python.editdocument:app"]
+CMD ["waitress-serve", "--listen=0.0.0.0:5000", "python.editdocument:app"]

@@ -90,7 +90,7 @@ func sendFileToPythonService(file multipart.File, filename string, comment strin
 
 	writer.Close()
 	// Отправляем файл на Python микросервис
-	resp, err := http.Post("http://python:53/editdocx", writer.FormDataContentType(), body)
+	resp, err := http.Post("http://python:5000/editdocx", writer.FormDataContentType(), body)
 	if err != nil {
 		return "", fmt.Errorf("error not send request to Python service: %v", err)
 	}
