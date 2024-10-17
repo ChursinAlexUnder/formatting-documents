@@ -4,16 +4,16 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "8080:8080"
     networks:
       - app-network
 
   python:
     build:
       context: .
-      dockerfile: python/Dockerfile
+      dockerfile: Dockerfile-python
     ports:
-      - "8080:8080"
+      - "5000:5000"
     networks:
       - app-network
 
