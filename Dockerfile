@@ -27,6 +27,9 @@ RUN apt-get update && apt-get install -y \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
 
+# Установите библиотеку python-docx через pip
+RUN pip install python-docx
+
 # Установите рабочую директорию
 WORKDIR /www
 
