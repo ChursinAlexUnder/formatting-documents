@@ -36,5 +36,8 @@ COPY . .
 # Скомпилируйте Go приложение
 RUN go build -o main main.go
 
+# Expose port 8080 to the outside world
+EXPOSE 8080
+
 # Команда для запуска вашего Go сервера
 CMD ["./main"]
