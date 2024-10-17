@@ -1,17 +1,7 @@
-from flask import Flask, request, jsonify, send_file
+import sys
 import os
-from threading import Thread
 from docx import Document
 
-app = Flask(__name__)
-
-# Получаем абсолютный путь к директории, где находится текущий файл
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Путь для сохранения временных файлов относительно текущего файла
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
-
-# Редактирование файла
 def edit_docx(filepath, comment):
     # Открываем документ
     doc = Document(filepath)
@@ -22,70 +12,39 @@ def edit_docx(filepath, comment):
     else:
         doc.add_paragraph('Комментарий отсутствует, так что просто хорошего дня)')
 
-    # Сохраняем изменения
-    edited_filepath = filepath.replace('.docx', '_edited.docx')
+    # Извлекаем директорию и имя файла
+    dir_name, file_name = os.path.split(filepath)
+    # Добавляем "edited_" в начале имени файла
+    edited_file_name = "edited_" + file_name
+    # Новый путь для сохраненного файла
+    edited_filepath = os.path.join(dir_name, edited_file_name)
+    # Сохраняем файл с новым именем
     doc.save(edited_filepath)
+    
     return edited_filepath
 
-def cleanup_temp_files():
-    # Перебираем все файлы в папке загрузок
-    if os.path.exists(UPLOAD_FOLDER):
-        for filename in os.listdir(UPLOAD_FOLDER):
-            file_path = os.path.join(UPLOAD_FOLDER, filename)
-            try:
-                # Удаляем файл
-                os.remove(file_path)
-                print(f"Deleted unused file: {file_path}")
-            except OSError:
-                # Если файл занят, игнорируем его
-                print(f"File is in use, skipping: {file_path}")
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: python editdocument.py <filename> <comment>")
+        sys.exit(1)
 
-        # Проверяем, остались ли файлы в папке
-        if not os.listdir(UPLOAD_FOLDER):
-            # Если папка пуста, удаляем её
-            os.rmdir(UPLOAD_FOLDER)
-            print(f"Deleted empty directory: {UPLOAD_FOLDER}")
+    filename = sys.argv[1]
+    comment = sys.argv[2]
 
-# Добавляем обработчик GET-запросов для проверки доступности сервера
-@app.route('/', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'Server is running'}), 200
+    # Получаем абсолютный путь к директории скрипта
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, filename)
 
-@app.route('/editdocx', methods=['POST'])
-def edit_docx_route():
-    # Проверяем, что файл был отправлен
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
+    if not os.path.exists(file_path):
+        print(f"File not found: {file_path}")
+        sys.exit(1)
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    # Получаем комментарий из формы
-    comment = request.form.get('comment', '')
-
-    # Создаем папку uploads, если её нет
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-
-    # Сохраняем загруженный файл
-    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     try:
-        file.save(filepath)
-        print(f"File saved successfully: {filepath}")
+        edited_file = edit_docx(file_path, comment)
+        print(f"Edited file created: {edited_file}")
     except Exception as e:
-        return jsonify({'error': f'Failed to save file: {str(e)}'}), 500
-
-    # Редактируем документ
-    edited_filepath = edit_docx(filepath, comment)
-
-    # Отправляем измененный файл обратно
-    response = send_file(edited_filepath, as_attachment=True)
-
-    # Запускаем поток очистки после отправки файла
-    Thread(target=cleanup_temp_files, daemon=True).start()
-
-    return response
+        print(f"Error editing document: {e}")
+        sys.exit(1)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    main()
