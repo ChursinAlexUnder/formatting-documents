@@ -21,7 +21,7 @@
 FROM python:3.12
 
 # Set the working directory in the container
-WORKDIR /www
+WORKDIR /www/python
 
 # Copy the application files into the working directory
 COPY . /www
@@ -30,7 +30,7 @@ COPY . /www
 RUN pip install -r requirements.txt
 
 # Set the FLASK_APP environment variable
-ENV FLASK_APP=python/editdocument.py
+ENV FLASK_APP=editdocument.py
 
 # Define the entry point for the container
 CMD ["flask", "run", "--host=0.0.0.0"]

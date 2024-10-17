@@ -29,7 +29,7 @@ func handleRequest() {
 	http.HandleFunc("/formData", filework.FormSend)
 	http.HandleFunc("/download", filework.DownloadFile)
 	// Проксируем запросы на Python-сервис (например, для обработки файлов)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":5000", nil)
 }
 
 func main() {
