@@ -34,7 +34,7 @@ WORKDIR /www
 COPY . .
 
 # Скомпилируйте Go приложение
-RUN go build -o server main.go
+RUN go build -o main main.go
 
 # Команда для запуска вашего Go сервера
 CMD ["./main"]
