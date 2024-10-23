@@ -5,12 +5,13 @@ import (
 	"formatting-documents/internal/domain"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 // сохранение файла на сервере в папке buffer
 func SaveDocument(data domain.Answer) error {
 	var (
-		bufferPath string = "./../buffer/" + data.DocumentData.Filename
+		bufferPath string = filepath.Join("../buffer/", data.DocumentData.Filename)
 	)
 	downloadDocument, err := os.Create(bufferPath)
 	if err != nil {
