@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install python-docx
 
 # Установите рабочую директорию
-WORKDIR /formatting-documents
+WORKDIR /
 
 # Копируем go.mod для загрузки зависимостей
 COPY go.mod ./
@@ -25,7 +25,7 @@ RUN go mod download
 COPY . .
 
 # Скомпилируйте Go приложение
-RUN go build -o main ./cmd/main.go
+RUN go build -o main /cmd/main.go
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
