@@ -1,3 +1,3 @@
-module github.com/ChursinAlexUnder/Golang-website
+module formatting-documents
 
 go 1.23

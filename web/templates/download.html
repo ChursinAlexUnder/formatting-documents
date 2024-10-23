@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="shortcut icon" href="../static/pictures/icon.png"/>
+    <title>Скачивание отредактированного файла</title>
+</head>
+<body>
+    <div class="main-window">
+        <h2>Имя файла: {{ .DocumentData.Filename }}</h2>
+        <p>Изменённый файл: <a href="/download?documentname={{ .DocumentData.Filename }}">скачать</a></p>
+        <p>Ваш комментарий к документу (именно он добавился вам в документ): {{ .Comment }}</p>
+    </div>
+</body>
+</html>

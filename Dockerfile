@@ -1,21 +1,3 @@
-# # Use the official Go image as the base image
-# FROM golang:1.21.6
-
-# # Set the working directory in the container
-# WORKDIR /www
-
-# # Copy the application files into the working directory
-# COPY . /www
-
-# # Build the application
-# RUN go build -o main .
-
-# # Expose port 8080
-# EXPOSE 8080
-
-# # Define the entry point for the container
-# CMD ["./main"]
-
 # Используем базовый образ Debian и добавим сюда Go и Python
 FROM debian:bullseye-slim
 
@@ -31,13 +13,19 @@ RUN apt-get update && apt-get install -y \
 RUN pip install python-docx
 
 # Установите рабочую директорию
-WORKDIR /www
+WORKDIR /formatting-documents
+
+# Копируем go.mod для загрузки зависимостей
+COPY go.mod ./
+
+# Загрузите зависимости
+RUN go mod download
 
 # Скопируйте все файлы в рабочую директорию
 COPY . .
 
 # Скомпилируйте Go приложение
-RUN go build -o main main.go
+RUN go build -o main ./cmd/main.go
 
 # Expose port 8080 to the outside world
 EXPOSE 8080

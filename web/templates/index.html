@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/download.css">
-    <link rel="shortcut icon" href="../pictures/icon.png"/>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/download.css">
+    <link rel="shortcut icon" href="../static/pictures/icon.png"/>
     <title>Редактирование документа</title>
 </head>
 <body>
     <div class="main-window">
         <h1 class="title">Редактирование формата документа онлайн</h1>
-        <form enctype="multipart/form-data" method="post" action="/formData"> 
+        <form enctype="multipart/form-data" method="post" action="/downloadPage"> 
             <div class="document-input-container">
                 <input type="file" name="document-file" id="documentInput" class="document-input" accept=".docx"/>
                 <label for="documentInput" class="document-label">
-                    <img class="document-icon" src="../pictures/icon-download.png" alt="Иконка загрузки" />
+                    <img class="document-icon" src="../static/pictures/icon-download.png" alt="Иконка загрузки" />
                     <span class="document-text">Выберите документ...</span>
                     <span class="document-name"></span>
                 </label>
@@ -24,6 +24,6 @@
             <button type="submit" class="edit-button">Редактировать документ</button>
         </form>
     </div>
-    <script src="../js/download.js"></script>
+    <script src="../static/js/download.js"></script>
 </body>
 </html>
