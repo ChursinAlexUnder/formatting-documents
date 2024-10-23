@@ -25,7 +25,7 @@ RUN go mod download
 COPY . .
 
 # Скомпилируйте Go приложение
-RUN go build -o main main.go
+RUN go build -o main /cmd/main.go
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
