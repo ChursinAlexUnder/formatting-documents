@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install python-docx
 
 # Установите рабочую директорию
-WORKDIR /formatting-document/cmd/
+WORKDIR /cmd/
 
 # Копируем go.mod для загрузки зависимостей
 COPY go.mod ./
