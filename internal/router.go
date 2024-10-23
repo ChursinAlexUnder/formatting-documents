@@ -1,6 +1,7 @@
-package interfaces
+package internal
 
 import (
+	"formatting-documents/internal/interfaces"
 	"net/http"
 )
 
@@ -11,7 +12,7 @@ func ConnectionStatic() {
 
 func HandlerPages() {
 	// Отображение страниц
-	http.HandleFunc("/", MainPage)
-	http.HandleFunc("/downloadPage", SendDocumentPage)
-	http.HandleFunc("/download", SendDocument)
+	http.HandleFunc("/", interfaces.MainPage)
+	http.HandleFunc("/downloadPage", interfaces.SendDocumentPage)
+	http.HandleFunc("/download", interfaces.SendDocument)
 }
