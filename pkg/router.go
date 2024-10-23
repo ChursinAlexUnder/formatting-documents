@@ -1,4 +1,4 @@
-package internal
+package pkg
 
 import (
 	"formatting-documents/internal/interfaces"
