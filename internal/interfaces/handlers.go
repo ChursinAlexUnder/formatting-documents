@@ -5,7 +5,6 @@ import (
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
 	"io"
-	"io/fs"
 	"net/http"
 	"os"
 	"strconv"
@@ -46,7 +45,6 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 		formattedDocumentName string
 		documentName          string
 		formattedDocumentPath string
-		formattedDocumentInfo fs.FileInfo
 		formattedDocument     *os.File
 	)
 	formattedDocumentName = r.URL.Query().Get("documentname")
@@ -75,7 +73,7 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	// проверка на проблемы в файле
-	formattedDocumentInfo, err = formattedDocument.Stat()
+	formattedDocumentInfo, err := formattedDocument.Stat()
 	if err != nil {
 		fmt.Fprintf(w, "Error: problem in the document: %v", err)
 		return
