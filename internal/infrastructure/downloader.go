@@ -12,13 +12,13 @@ func SaveDocument(data domain.Answer) error {
 	var (
 		bufferPath string = "../buffer/" + data.DocumentData.Filename
 	)
-	downloadDocument, err := os.Create(bufferPath)
+	downloadDocument, _ := os.Create(bufferPath)
 	// if err != nil {
 	// 	return fmt.Errorf("error creating new empty document: %v", err)
 	// }
 	defer downloadDocument.Close()
 
-	_, err = io.Copy(downloadDocument, data.Document)
+	_, err := io.Copy(downloadDocument, data.Document)
 	if err != nil {
 		return fmt.Errorf("error writing new emptry document: %v", err)
 	}
