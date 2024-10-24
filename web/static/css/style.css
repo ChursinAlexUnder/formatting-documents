@@ -1,28 +1,21 @@
 body {
     margin: 0;
     padding: 0;
-    background: linear-gradient(to bottom, #87CEFA, #ffffff);
-    height: 100vh;
+    height: 100%;
     display: flex;
     justify-content: center;
     background-repeat: no-repeat;
+    flex-direction: column;
 }
 
 .main-window {
-    width: 80vw;
+    width: 100%;
     min-height: 340px;
     text-align: center;
-    background: rgba(255, 255, 255, 0.8);
-    margin: auto;
-    padding: 40px;
-    border-radius: 20px;
+    background: rgb(110, 190, 255);
+    margin: 0;
+    padding: 0;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.title {
-    font-family: "Arial";
-    font-size: 35px;
-    margin-bottom: 60px;
 }
 
 .text-input {

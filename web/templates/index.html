@@ -5,12 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/style.css">
     <link rel="stylesheet" href="../static/css/download.css">
+    <link rel="stylesheet" href="../static/css/header.css">
     <link rel="shortcut icon" href="../static/pictures/icon.png"/>
     <title>Редактирование документа</title>
 </head>
 <body>
+    <div class="main-header">
+        <h1 class="title">
+            <span class="word">Форматирование</span><br>
+            <span class="word">документов</span><br>
+            <span class="word special">онлайн</span>
+        </h1>
+    </div>
     <div class="main-window">
-        <h1 class="title">Редактирование формата документа онлайн</h1>
         <form enctype="multipart/form-data" method="post" action="/downloadPage"> 
             <div class="document-input-container">
                 <input type="file" name="document-file" id="documentInput" class="document-input" accept=".docx"/>

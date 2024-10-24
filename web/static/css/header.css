@@ -1,0 +1,51 @@
+.main-header {
+    display: flex;
+    width: 100%;
+    min-height: 85vh;
+    text-align: left;
+    align-items: center;
+    background: linear-gradient(to bottom, #87CEFA, #ffffff);
+    margin: 0;
+}
+
+.title {
+    font-family: "Arial";
+    font-size: 80px;
+    margin-left: 40px;
+}
+
+.word {
+    font-family: "Arial";
+    color: #000000;
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(-50px);
+    animation: slideDown 1.5s forwards;
+}
+
+.special {
+    color: #0068fa;
+}
+
+.word:nth-child(1) {
+    animation-delay: 0.5s; /* Первое слово */
+}
+
+.word:nth-child(3) {
+    animation-delay: 1s; /* Второе слово "документов" */
+}
+
+.word:nth-child(5) {
+    animation-delay: 2s; /* Третье слово "онлайн" */
+}
+
+@keyframes slideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
