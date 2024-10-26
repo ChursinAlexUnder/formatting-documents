@@ -17,6 +17,18 @@
             <span class="word special">онлайн</span>
         </h1>
     </div>
+    <h2 class="instruction-header">Инструкция для работы с сайтом</h2>
+    <div class="instruction">
+        <div class="instruction-text-container">
+            <p class="instruction-text">📤 <strong>Загрузите</strong> ваш документ формата <strong>docx</strong> на сайт</p>
+            <p class="instruction-text">⌨️ Если нужно, <strong>введите</strong> в текстовое поле свои параметры форматирования</p>
+            <p class="instruction-text">🔘 Нажмите на кнопку <strong>«форматировать документ»</strong></p>
+            <p class="instruction-text">📥 <strong>Скачайте</strong> отформатированный документ</p>
+        </div>
+        <div class="instruction-image-container">
+            <img class="instruction-image" src="../static/pictures/instruction.png" alt="Картинка в инструкции">
+        </div>
+    </div>
     <div class="main-window">
         <form enctype="multipart/form-data" method="post" action="/downloadPage">
             <div class="document-input-container-shell">
@@ -24,13 +36,17 @@
                     <input type="file" name="document-file" id="documentInput" class="document-input" accept=".docx"/>
                     <label for="documentInput" class="document-label">
                         <img class="document-icon" src="../static/pictures/icon-download.png" alt="Иконка загрузки" />
-                        <span class="document-text">Загрузите документ...</span>
+                        <span class="document-text">загрузите документ...</span>
                         <span class="document-name"></span>
                     </label>
                 </div>
             </div>
-            <textarea name="change" class="text-input" rows="6" placeholder="Введите описание..."></textarea>
-            <button type="submit" class="edit-button">Редактировать документ</button>
+            <div class="text-input-container">
+                <textarea name="change" class="text-input" rows="10" placeholder="Введите описание..."></textarea>
+            </div>
+            <div class="edit-button-container">
+                <button type="submit" class="edit-button">Форматировать документ</button>
+            </div>
         </form>
     </div>
     <script src="../static/js/download.js"></script>

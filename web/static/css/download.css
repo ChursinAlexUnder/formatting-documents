@@ -13,7 +13,7 @@
 .document-label {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 12px;
     background-color: rgb(0, 113, 187);
     color: #fff;
     border-radius: 10px;
@@ -21,7 +21,7 @@
     transition: background-color 0.3s, color 0.3s;
 }
 .document-label:hover {
-    background-color: #60c2ff;
+    background-color: rgb(36, 167, 255);
 }
 .document-icon {
     width: 21px;

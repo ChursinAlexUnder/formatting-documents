@@ -8,19 +8,68 @@ body {
     flex-direction: column;
 }
 
+.instruction-header {
+    font-family: "Arial";
+    text-align: center;
+    font-size: 40px;
+    background: rgb(184, 220, 250);
+    margin: 0;
+    padding: 70px 0;
+}
+
+.instruction {
+    display: flex;
+    align-items: center;
+    background: rgb(184, 220, 250);
+    padding-bottom: 100px;
+
+}
+
+.instruction-image-container {
+    flex: 0 1 auto;
+    text-align: center;
+    width: 25%;
+    padding-right: 8%;
+}
+
+.instruction-image {
+    max-width: 100%;
+    min-width: 250px;
+    height: auto;
+    box-shadow: -50px 0 80px rgb(0, 113, 187, 0.5);
+    border-radius: 60px;
+}
+
+.instruction-text-container {
+    flex: 1;
+    margin-left: 4%;
+}
+
+.instruction-text {
+    font-family: "Arial";
+    font-size: 25px;
+    margin-bottom: 9%;
+    
+}
+
+
+
 .main-window {
     width: 100%;
     min-height: 340px;
     text-align: center;
-    background: rgb(193, 227, 255);
+    background: rgb(184, 220, 250);
     margin: 0;
     padding: 0;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.text-input-container, .edit-button-container {
+    display: block;
 }
 
 .text-input {
     font-family: "Arial";
-    width: 85%;
+    width: 65%;
     resize: none;
     max-height: 40%;
     margin-bottom: 40px;
@@ -34,7 +83,7 @@ body {
 }
 
 .text-input:focus {
-    box-shadow: 0 0 20px rgba(0, 113, 187, 0.8);
+    box-shadow: 0 0 20px rgb(0, 112, 187);
 }
 
 .edit-button {
@@ -50,7 +99,7 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 .edit-button:hover {
-    background-color: #60c2ff;
+    background-color: rgb(36, 167, 255);
 }
 
 @media screen and (max-width: 768px) {
