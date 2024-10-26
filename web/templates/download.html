@@ -4,14 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/header.css">
+    <link rel="stylesheet" href="../static/css/form.css">
     <link rel="shortcut icon" href="../static/pictures/icon.png"/>
     <title>Скачивание отредактированного файла</title>
 </head>
 <body>
+    <div class="download-header">
+        <h1 class="title">
+            <span class="word">Готово</span>
+        </h1>
+    </div>
     <div class="main-window">
-        <h2>Имя файла: {{ .DocumentData.Filename }}</h2>
-        <p>Изменённый файл: <a href="/download?documentname={{ .DocumentData.Filename }}">скачать</a></p>
-        <p>Ваш комментарий к документу (именно он добавился вам в документ): {{ .Comment }}</p>
+        <h2 class="download-title">Ваш отформатированный документ <strong>{{ .DocumentData.Filename }}</strong> вы можете скачать по кнопке ниже</h2>
+        <form enctype="multipart/form-data" method="post" action="/download?documentname={{ .DocumentData.Filename }}">
+            <div class="edit-button-container">
+                <button type="submit" class="edit-button">Скачать документ</button>
+            </div>
+        </form>
     </div>
 </body>
 </html>

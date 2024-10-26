@@ -1,0 +1,76 @@
+.instruction-title {
+    font-family: "Arial";
+    text-align: center;
+    font-size: 40px;
+    background: rgb(207, 229, 247);
+    margin: 0;
+    padding: 70px 3%;
+}
+
+.instruction {
+    display: flex;
+    align-items: center;
+    background: rgb(207, 229, 247);
+    padding-bottom: 70px;
+    margin-bottom: 10%;
+}
+
+.instruction-image-container {
+    flex: 0 1 auto;
+    text-align: center;
+    width: 25%;
+    padding-right: 8%;
+}
+
+.instruction-image {
+    max-width: 100%;
+    min-width: 250px;
+    height: auto;
+    border-radius: 0 40px 40px 0;
+}
+
+.instruction-text-container {
+    flex: 1;
+    margin-left: 4%;
+}
+
+.instruction-text {
+    font-family: "Arial";
+    font-size: 25px;
+    margin-bottom: 9%;
+    
+}
+
+@media screen and (max-width: 768px) {
+    .instruction {
+        padding-bottom: 55px;
+    }
+    .instruction-image-container {
+        display: none;
+    }
+    .instruction-text-container {
+        padding-left: 2%;
+        padding-right: 2%;
+        margin: 0;
+    }
+    .instruction-title {
+        font-size: 30px;
+        padding: 55px 3%;
+    }
+    .instruction-text {
+        font-size: 21px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .instruction {
+        padding-bottom: 40px;
+    }
+    .instruction-title {
+        font-size: 21px;
+        padding: 40px 3%;
+    }
+    .instruction-text {
+        font-size: 17px;
+    }
+}
