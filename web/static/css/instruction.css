@@ -31,7 +31,9 @@
 
 .instruction-text-container {
     flex: 1;
-    margin-left: 4%;
+    margin-left: 3%;
+    padding-left: 2%;
+    padding-right: 2%;
 }
 
 .instruction-text {
@@ -49,8 +51,6 @@
         display: none;
     }
     .instruction-text-container {
-        padding-left: 2%;
-        padding-right: 2%;
         margin: 0;
     }
     .instruction-title {
