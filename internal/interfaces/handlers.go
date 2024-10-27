@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
+	"formatting-documents/internal/services"
 	"io"
 	"net/http"
 	"os"
@@ -24,7 +25,9 @@ func MainPage(w http.ResponseWriter, r *http.Request) {
 
 func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 	var (
-		data domain.Answer
+		fullData domain.FullAnswer
+		data     domain.Answer
+		trueName string
 	)
 	tmplt, err := template.ParseFiles("../web/templates/download.html")
 	if err != nil {
@@ -37,15 +40,18 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data.DocumentData.Filename = "formatted_" + data.DocumentData.Filename
-	tmplt.Execute(w, data)
+	trueName = strings.Replace(data.DocumentData.Filename, strconv.Itoa(domain.User)+"_", "", 1)
+	fullData = domain.FullAnswer{Data: data, TrueName: trueName}
+	tmplt.Execute(w, fullData)
 }
 
 func SendDocument(w http.ResponseWriter, r *http.Request) {
 	var (
-		formattedDocumentName string
-		documentName          string
-		formattedDocumentPath string
-		formattedDocument     *os.File
+		formattedDocumentName     string
+		documentName              string
+		formattedDocumentPath     string
+		formattedDocument         *os.File
+		trueFormattedDocumentName string
 	)
 	formattedDocumentName = r.URL.Query().Get("documentname")
 	if formattedDocumentName == "" {
@@ -70,6 +76,7 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 		infrastructure.DeleteDocument(formattedDocumentName)
 		documentName = strings.Replace(formattedDocumentName, "formatted_", "", 1)
 		infrastructure.DeleteDocument(documentName)
+		services.DeleteUser()
 	}()
 
 	// проверка на проблемы в файле
@@ -79,8 +86,10 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	trueFormattedDocumentName = strings.Replace(formattedDocumentName, strconv.Itoa(domain.User)+"_", "", 1)
+
 	// установка заголовков
-	w.Header().Set("Content-Disposition", "attachment; filename="+formattedDocumentName)
+	w.Header().Set("Content-Disposition", "attachment; filename="+trueFormattedDocumentName)
 	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 	w.Header().Set("Content-Length", strconv.Itoa(int(formattedDocumentInfo.Size())))
 

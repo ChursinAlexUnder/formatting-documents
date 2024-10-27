@@ -6,6 +6,7 @@ import (
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
 	"net/http"
+	"strconv"
 )
 
 func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, error) {
@@ -21,8 +22,14 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, erro
 	defer document.Close()
 	comment = r.FormValue("change")
 
-	// сохранение документа
+	services.AddUserNumber()
+
 	data = domain.Answer{Document: document, DocumentData: documentHeader, Comment: comment}
+
+	// добавление метки пользователя к названию документа
+	data.DocumentData.Filename = strconv.Itoa(domain.User) + "_" + data.DocumentData.Filename
+
+	// сохранение документа
 	err = infrastructure.SaveDocument(data)
 	if err != nil {
 		return data, fmt.Errorf("error saving the document on the server: %v", err)
@@ -34,8 +41,5 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, erro
 		return data, fmt.Errorf("error formatting the document on the server: %v", err)
 	}
 
-	data.Comment = comment
-	data.Document = document
-	data.DocumentData = documentHeader
 	return data, nil
 }
