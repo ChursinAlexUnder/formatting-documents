@@ -24,7 +24,8 @@ func MainPage(w http.ResponseWriter, r *http.Request) {
 
 func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 	var (
-		data domain.Answer
+		data     domain.Answer
+		fullData domain.AnswerWithInterfaceName
 	)
 	tmplt, err := template.ParseFiles("../web/templates/download.html")
 	if err != nil {
@@ -37,7 +38,9 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data.DocumentData.Filename = "formatted_" + data.DocumentData.Filename
-	tmplt.Execute(w, data)
+	domain.InterfaceName = "formatted_" + domain.InterfaceName
+	fullData = domain.AnswerWithInterfaceName{Data: data, InterfaceName: domain.InterfaceName}
+	tmplt.Execute(w, fullData)
 }
 
 func SendDocument(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +83,7 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// установка заголовков
-	w.Header().Set("Content-Disposition", "attachment; filename="+formattedDocumentName)
+	w.Header().Set("Content-Disposition", "attachment; filename="+domain.InterfaceName)
 	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 	w.Header().Set("Content-Length", strconv.Itoa(int(formattedDocumentInfo.Size())))
 

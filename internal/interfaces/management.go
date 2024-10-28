@@ -23,6 +23,8 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, erro
 
 	data = domain.Answer{Document: document, DocumentData: documentHeader, Comment: comment}
 
+	data = services.AddRandomNumber(data)
+
 	// сохранение документа
 	err = infrastructure.SaveDocument(data)
 	if err != nil {
