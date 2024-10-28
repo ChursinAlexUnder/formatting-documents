@@ -8,8 +8,8 @@ FROM golang:1.23-bullseye
 RUN apt-get update && apt-get install -y \
     golang \
     python3 \
-    apt-utils && \
     python3-pip && \
+    apt-utils && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
 
