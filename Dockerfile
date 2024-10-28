@@ -1,15 +1,14 @@
 # Используем базовый образ Debian и добавим сюда Go и Python
-# FROM debian:bullseye-slim
+FROM debian:bullseye-slim
 
 # Используем базовый образ с Go версии 1.23
-FROM golang:1.23-bullseye
+# FROM golang:1.23-bullseye
 
 # Установите необходимые пакеты
 RUN apt-get update && apt-get install -y \
     golang \
     python3 \
     python3-pip && \
-    apt-utils && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
 
