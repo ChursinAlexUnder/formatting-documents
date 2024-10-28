@@ -6,7 +6,6 @@ import (
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
 	"net/http"
-	"strconv"
 )
 
 func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, error) {
@@ -22,15 +21,7 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, erro
 	defer document.Close()
 	comment = r.FormValue("change")
 
-	err = services.AddUserNumber()
-	if err != nil {
-		return data, fmt.Errorf("error adding a new user: %v", err)
-	}
-
 	data = domain.Answer{Document: document, DocumentData: documentHeader, Comment: comment}
-
-	// добавление метки пользователя к названию документа
-	data.DocumentData.Filename = strconv.Itoa(domain.User) + "_" + data.DocumentData.Filename
 
 	// сохранение документа
 	err = infrastructure.SaveDocument(data)
