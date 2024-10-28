@@ -3,19 +3,11 @@ FROM debian:bullseye-slim
 
 # Установите необходимые пакеты
 RUN apt-get update && apt-get install -y \
-    curl \
+    golang \
     python3 \
     python3-pip && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
-
-# Установите Go версии 1.23
-RUN curl -sSL https://golang.org/dl/go1.23.linux-amd64.tar.gz -o go.tar.gz && \
-    tar -C /usr/local -xzf go.tar.gz && \
-    rm go.tar.gz
-
-# Добавьте Go в PATH
-ENV PATH="/usr/local/go/bin:${PATH}"
 
 # Установите библиотеку python-docx через pip
 RUN pip install python-docx

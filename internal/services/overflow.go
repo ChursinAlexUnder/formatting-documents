@@ -1,6 +1,6 @@
 package services
 
-import "os"
+import "io/ioutil"
 
 // считает размер папки buffer для предотвращения переполнения
 func GetFolderSize() (int, error) {
@@ -10,18 +10,14 @@ func GetFolderSize() (int, error) {
 	)
 
 	// Читаем все файлы в папке
-	documents, err := os.ReadDir(folderPath)
+	documents, err := ioutil.ReadDir(folderPath)
 	if err != nil {
 		return -1, err
 	}
 
 	for _, document := range documents {
-		// Получаем информацию о файле и добавляем его размер
-		information, err := document.Info()
-		if err != nil {
-			return -1, err
-		}
-		folderSize += information.Size() // Добавляем размер файла к общему размеру
+		// Добавляем размер файла к общему размеру
+		folderSize += document.Size()
 	}
 
 	return int(folderSize), nil
