@@ -11,7 +11,7 @@ import (
 
 func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, error) {
 	const (
-		maxFolderSize int = 100 * 1024 * 1024
+		maxFolderSize int = 200 * 1024 * 1024
 	)
 	var (
 		comment    string
@@ -30,7 +30,6 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, erro
 		if err != nil {
 			return data, fmt.Errorf("error getting folder buffer size: %v", err)
 		}
-		// здесь в это время должна крутиться загрузка!!!!!!
 	}
 
 	// получение данных из формы

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../static/css/header.css">
     <link rel="stylesheet" href="../static/css/instruction.css">
     <link rel="stylesheet" href="../static/css/form.css">
+    <link rel="stylesheet" href="../static/css/preloader.css">
     <link rel="shortcut icon" href="../static/pictures/icon.png"/>
     <title>Редактирование документа</title>
 </head>
@@ -31,7 +32,7 @@
         </div>
     </div>
     <div class="main-window">
-        <form enctype="multipart/form-data" method="post" action="/downloadPage">
+        <form enctype="multipart/form-data" id="document-download-form" method="post" action="/downloadPage">
             <div class="document-input-container-shell">
                 <div class="document-input-container">
                     <input type="file" name="document-file" id="documentInput" class="document-input" accept=".docx"/>
@@ -50,6 +51,11 @@
             </div>
         </form>
     </div>
+    <div id="preloader" class="overlay-loader">
+        <div class="loader-background color-flip"></div>
+        <img class="loader-icon spinning-cog" src="../static/pictures/cog24.svg">
+    </div>
     <script src="../static/js/download.js"></script>
+    <script src="../static/js/preloader.js"></script>
 </body>
 </html>

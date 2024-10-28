@@ -1,0 +1,41 @@
+.overlay-loader {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.overlay-loader .loader-background {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Полупрозрачный затемненный фон */
+}
+
+.overlay-loader .loader-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -48px 0 0 -48px; /* Положение шестеренки по центру */
+    font-size: 96px; /* Размер шестеренки */
+    color: #FFF;
+}
+
+/* Анимация вращения шестеренки */
+.overlay-loader .loader-icon.spinning-cog {
+    animation: spinning-cog 2.0s infinite linear; /* Постоянная скорость вращения */
+}
+
+@keyframes spinning-cog {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
