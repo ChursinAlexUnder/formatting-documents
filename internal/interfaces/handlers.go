@@ -76,7 +76,11 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 		infrastructure.DeleteDocument(formattedDocumentName)
 		documentName = strings.Replace(formattedDocumentName, "formatted_", "", 1)
 		infrastructure.DeleteDocument(documentName)
-		services.DeleteUser()
+		err := services.DeleteUserNumber()
+		if err != nil {
+			fmt.Fprintf(w, "Error deleting a user: %v", err)
+			return
+		}
 	}()
 
 	// проверка на проблемы в файле

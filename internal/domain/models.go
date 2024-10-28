@@ -6,9 +6,13 @@ import "mime/multipart"
 
 // отслеживание количества пользователей на сайте
 var (
-	Users []int = []int{}
-	User  int   = 0
+	User int = 0
 )
+
+// структура для json файла
+type Users struct {
+	Numbers []int
+}
 
 // структура для передачи данных на сервере
 type Answer struct {

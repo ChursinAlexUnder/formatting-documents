@@ -22,7 +22,10 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, erro
 	defer document.Close()
 	comment = r.FormValue("change")
 
-	services.AddUserNumber()
+	err = services.AddUserNumber()
+	if err != nil {
+		return data, fmt.Errorf("error adding a new user: %v", err)
+	}
 
 	data = domain.Answer{Document: document, DocumentData: documentHeader, Comment: comment}
 
