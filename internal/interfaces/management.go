@@ -6,14 +6,34 @@ import (
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
 	"net/http"
+	"time"
 )
 
 func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, error) {
-	// получение данных из формы
-	var (
-		comment string
-		data    domain.Answer = domain.Answer{Document: nil, DocumentData: nil, Comment: ""}
+	const (
+		maxFolderSize int = 100 * 1024 * 1024
 	)
+	var (
+		comment    string
+		folderSize int
+		data       domain.Answer = domain.Answer{Document: nil, DocumentData: nil, Comment: ""}
+	)
+
+	// проверка на переполнение
+	folderSize, err := services.GetFolderSize()
+	if err != nil {
+		return data, fmt.Errorf("error getting folder buffer size: %v", err)
+	}
+	for folderSize >= maxFolderSize {
+		time.Sleep(3 * time.Second)
+		folderSize, err = services.GetFolderSize()
+		if err != nil {
+			return data, fmt.Errorf("error getting folder buffer size: %v", err)
+		}
+		// здесь в это время должна крутиться загрузка!!!!!!
+	}
+
+	// получение данных из формы
 	document, documentHeader, err := r.FormFile("document-file")
 	if err != nil {
 		return data, fmt.Errorf("error getting document: %v", err)
