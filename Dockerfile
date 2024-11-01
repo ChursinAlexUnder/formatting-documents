@@ -3,7 +3,6 @@ FROM debian:bullseye-slim
 
 # Установите необходимые пакеты
 RUN apt-get update && apt-get install -y \
-    apt-utils \
     golang \
     python3 \
     python3-pip && \
