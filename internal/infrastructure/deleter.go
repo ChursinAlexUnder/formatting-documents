@@ -25,7 +25,7 @@ func DeleteOldDocument() error {
 		currentTime         time.Time = time.Now()
 		bufferPath          string    = "../buffer"
 		timeLastModDocument time.Time
-		maxTimeStore        time.Duration = time.Minute * 1
+		maxTimeStore        time.Duration = time.Minute * 10
 	)
 	documents, err := ioutil.ReadDir(bufferPath)
 	if err != nil {
