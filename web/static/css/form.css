@@ -60,9 +60,9 @@
     color: #fff;
     font-size: 26px;
     margin-bottom: 3%;
-    padding: 18px 24px;
+    padding: 18px 34px;
     background-color: rgb(0, 113, 187);
-    border-radius: 30px;
+    border-radius: 40px;
     border: none;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
@@ -79,6 +79,9 @@
         padding: 10px;
         border-radius: 7px;
     }
+    .document-label:hover {
+        background-color: rgb(0, 113, 187);
+    }
     .document-icon {
         width: 18px;
     }
@@ -92,11 +95,17 @@
         border-radius: 15px;
         margin-bottom: 30px;
     }
+    .text-input:focus {
+        box-shadow: none;
+    }
     .edit-button {
         font-size: 22px;
         margin-bottom: 15px;
-        padding: 15px 20px;
-        border-radius: 25px;
+        padding: 15px 27px;
+        border-radius: 30px;
+    }
+    .edit-button:hover {
+        background-color: rgb(0, 113, 187);
     }
 }
 
@@ -107,6 +116,9 @@
     .document-label {
         padding: 8px;
         border-radius: 7px;
+    }
+    .document-label:hover {
+        background-color: rgb(0, 113, 187);
     }
     .document-icon {
         width: 16px;
@@ -121,10 +133,16 @@
         margin-bottom: 30px;
         padding: 7px 10px;
     }
+    .text-input:focus {
+        box-shadow: none;
+    }
     .edit-button {
         font-size: 20px;
         margin-bottom: 10px;
-        padding: 14px;
-        border-radius: 24px;
+        padding: 14px 24px;
+        border-radius: 26px;
+    }
+    .edit-button:hover {
+        background-color: rgb(0, 113, 187);
     }
 }

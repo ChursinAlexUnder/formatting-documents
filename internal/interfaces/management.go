@@ -19,14 +19,20 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, erro
 		data       domain.Answer = domain.Answer{Document: nil, DocumentData: nil, Comment: ""}
 	)
 
+	// удаление старых документов (которым больше 10 минут)
+	err := infrastructure.DeleteOldDocument()
+	if err != nil {
+		return data, fmt.Errorf("error deleting old documents: %v", err)
+	}
+
 	// проверка на переполнение
-	folderSize, err := services.GetFolderSize()
+	folderSize, err = services.GetBufferSize()
 	if err != nil {
 		return data, fmt.Errorf("error getting folder buffer size: %v", err)
 	}
 	for folderSize >= maxFolderSize {
 		time.Sleep(3 * time.Second)
-		folderSize, err = services.GetFolderSize()
+		folderSize, err = services.GetBufferSize()
 		if err != nil {
 			return data, fmt.Errorf("error getting folder buffer size: %v", err)
 		}

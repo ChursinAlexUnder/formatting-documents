@@ -3,22 +3,22 @@ package services
 import "io/ioutil"
 
 // считает размер папки buffer для предотвращения переполнения
-func GetFolderSize() (int, error) {
+func GetBufferSize() (int, error) {
 	var (
-		folderSize int64
-		folderPath string = "../buffer"
+		bufferSize int64
+		bufferPath string = "../buffer"
 	)
 
 	// Читаем все файлы в папке
-	documents, err := ioutil.ReadDir(folderPath)
+	documents, err := ioutil.ReadDir(bufferPath)
 	if err != nil {
 		return -1, err
 	}
 
 	for _, document := range documents {
 		// Добавляем размер файла к общему размеру
-		folderSize += document.Size()
+		bufferSize += document.Size()
 	}
 
-	return int(folderSize), nil
+	return int(bufferSize), nil
 }

@@ -1,8 +1,10 @@
 package infrastructure
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
+	"time"
 )
 
 func DeleteDocument(documentName string) {
@@ -16,4 +18,24 @@ func DeleteDocument(documentName string) {
 	} else {
 		log.Printf("The document %s was successfully deleted", documentName)
 	}
+}
+
+func DeleteOldDocument() error {
+	var (
+		currentTime         time.Time = time.Now()
+		bufferPath          string    = "../buffer"
+		timeLastModDocument time.Time
+		maxTimeStore        time.Duration = time.Minute * 1
+	)
+	documents, err := ioutil.ReadDir(bufferPath)
+	if err != nil {
+		return err
+	}
+	for _, document := range documents {
+		timeLastModDocument = document.ModTime()
+		if currentTime.Sub(timeLastModDocument) > maxTimeStore && document.Name() != ".gitkeep" {
+			DeleteDocument(document.Name())
+		}
+	}
+	return nil
 }
