@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"text/template"
 )
 
@@ -24,8 +23,9 @@ func MainPage(w http.ResponseWriter, r *http.Request) {
 
 func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 	var (
-		data     domain.Answer
-		fullData domain.AnswerWithInterfaceName
+		data          domain.Answer
+		fullData      domain.AnswerWithInterfaceName
+		interfaceName string
 	)
 	tmplt, err := template.ParseFiles("../web/templates/download.html")
 	if err != nil {
@@ -38,16 +38,16 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data.DocumentData.Filename = "formatted_" + data.DocumentData.Filename
-	domain.InterfaceName = "formatted_" + domain.InterfaceName
-	fullData = domain.AnswerWithInterfaceName{Data: data, InterfaceName: domain.InterfaceName}
+	interfaceName = data.DocumentData.Filename[:10] + data.DocumentData.Filename[15:]
+	fullData = domain.AnswerWithInterfaceName{Data: data, InterfaceName: interfaceName}
 	tmplt.Execute(w, fullData)
 }
 
 func SendDocument(w http.ResponseWriter, r *http.Request) {
 	var (
 		formattedDocumentName string
-		documentName          string
 		formattedDocumentPath string
+		interfaceName         string
 		formattedDocument     *os.File
 	)
 	formattedDocumentName = r.URL.Query().Get("documentname")
@@ -59,8 +59,8 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 
 	// проверка на наличие документа
 	if _, err := os.Stat(formattedDocumentPath); err != nil {
-		fmt.Fprintf(w, "Error: problem with the new document: %v", err)
-		return
+		// перенаправление на страницу с ошибкой
+		http.Redirect(w, r, "/error", http.StatusSeeOther)
 	}
 
 	formattedDocument, err := os.Open(formattedDocumentPath)
@@ -70,9 +70,7 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() {
 		formattedDocument.Close()
-		infrastructure.DeleteDocument(formattedDocumentName)
-		documentName = strings.Replace(formattedDocumentName, "formatted_", "", 1)
-		infrastructure.DeleteDocument(documentName)
+		infrastructure.DeleteBothDocuments(formattedDocumentName)
 	}()
 
 	// проверка на проблемы в файле
@@ -82,8 +80,10 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	interfaceName = formattedDocumentName[:10] + formattedDocumentName[15:]
+
 	// установка заголовков
-	w.Header().Set("Content-Disposition", "attachment; filename="+domain.InterfaceName)
+	w.Header().Set("Content-Disposition", "attachment; filename="+interfaceName)
 	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 	w.Header().Set("Content-Length", strconv.Itoa(int(formattedDocumentInfo.Size())))
 
@@ -93,4 +93,13 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error sending new document: %v", err)
 		return
 	}
+}
+
+func ErrorPage(w http.ResponseWriter, r *http.Request) {
+	tmplt, err := template.ParseFiles("../web/templates/error.html")
+	if err != nil {
+		fmt.Fprintf(w, "Error parsing error.html: %v", err)
+		return
+	}
+	tmplt.Execute(w, nil)
 }

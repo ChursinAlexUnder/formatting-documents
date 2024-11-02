@@ -6,38 +6,23 @@ import (
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
 	"net/http"
-	"time"
 )
 
 func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, error) {
-	const (
-		maxFolderSize int = 200 * 1024 * 1024
-	)
 	var (
-		comment    string
-		folderSize int
-		data       domain.Answer = domain.Answer{Document: nil, DocumentData: nil, Comment: ""}
+		comment string
+		data    domain.Answer = domain.Answer{Document: nil, DocumentData: nil, Comment: ""}
 	)
-
 	// удаление старых документов (которым больше 10 минут)
-	err := infrastructure.DeleteOldDocument()
+	err := infrastructure.DeleteOldDocuments()
 	if err != nil {
 		return data, fmt.Errorf("error deleting old documents: %v", err)
 	}
-
-	// проверка на переполнение
-	folderSize, err = services.GetBufferSize()
+	// проверка на переполнение папки buffer
+	err = services.IsOverflow()
 	if err != nil {
-		return data, fmt.Errorf("error getting folder buffer size: %v", err)
+		return data, fmt.Errorf("error overflow: %v", err)
 	}
-	for folderSize >= maxFolderSize {
-		time.Sleep(3 * time.Second)
-		folderSize, err = services.GetBufferSize()
-		if err != nil {
-			return data, fmt.Errorf("error getting folder buffer size: %v", err)
-		}
-	}
-
 	// получение данных из формы
 	document, documentHeader, err := r.FormFile("document-file")
 	if err != nil {
@@ -61,6 +46,5 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, erro
 	if err != nil {
 		return data, fmt.Errorf("error formatting the document on the server: %v", err)
 	}
-
 	return data, nil
 }

@@ -1,3 +1,11 @@
+.form-title {
+    font-family: "Arial";
+    text-align: center;
+    font-size: 40px;
+    background: rgb(207, 229, 247);
+    margin: 0;
+    padding: 70px 3% 0 3%;
+}
 .document-input-container-shell {
     display: block;
 }
@@ -55,7 +63,8 @@
     box-shadow: 0 0 20px rgb(0, 112, 187);
 }
 
-.edit-button {
+.edit-button, .edit-button-link {
+    text-decoration: none;
     font-family: "Arial";
     color: #fff;
     font-size: 26px;
@@ -67,7 +76,11 @@
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
 }
-.edit-button:hover {
+
+.edit-button-link {
+    display: inline-block;
+}
+.edit-button:hover, .edit-button-link:hover {
     background-color: rgb(36, 167, 255);
 }
 
@@ -98,13 +111,13 @@
     .text-input:focus {
         box-shadow: none;
     }
-    .edit-button {
+    .edit-button, .edit-button-link {
         font-size: 22px;
-        margin-bottom: 15px;
+        margin-bottom: 5%;
         padding: 15px 27px;
         border-radius: 30px;
     }
-    .edit-button:hover {
+    .edit-button:hover, .edit-button-link:hover {
         background-color: rgb(0, 113, 187);
     }
 }
@@ -136,13 +149,13 @@
     .text-input:focus {
         box-shadow: none;
     }
-    .edit-button {
-        font-size: 20px;
-        margin-bottom: 10px;
-        padding: 14px 24px;
+    .edit-button, .edit-button-link {
+        font-size: 18px;
+        margin-bottom: 8%;
+        padding: 13px 22px;
         border-radius: 26px;
     }
-    .edit-button:hover {
+    .edit-button:hover, .edit-button-link:hover {
         background-color: rgb(0, 113, 187);
     }
 }

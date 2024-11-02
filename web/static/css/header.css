@@ -1,21 +1,23 @@
-.main-header {
+.main-header, .download-header, .error-header {
     display: flex;
     width: 100%;
-    min-height: 85vh;
     text-align: left;
     align-items: center;
-    background: linear-gradient(to bottom, #87CEFA, #ffffff);
     margin-bottom: 10%;
+}
+.main-header {
+    min-height: 85vh;
+    background: linear-gradient(to bottom, #87CEFA, #ffffff);
 }
 
 .download-header {
-    display: flex;
-    width: 100%;
     min-height: 50vh;
-    text-align: left;
-    align-items: center;
     background: linear-gradient(to bottom, #87CEFA, #ffffff);
-    margin-bottom: 10%;
+}
+
+.error-header {
+    min-height: 50vh;
+    background: linear-gradient(to bottom, #fa8787, #ffffff);
 }
 
 .title {
@@ -74,7 +76,7 @@
 
 @media screen and (max-width: 480px) {
     .title {
-        font-size: 32px;
+        font-size: 33px;
         margin: 0 auto;
     }
     .main-header {

@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="../static/css/header.css">
     <link rel="stylesheet" href="../static/css/form.css">
     <link rel="shortcut icon" href="../static/pictures/icon.png"/>
-    <title>Скачивание отредактированного файла</title>
+
+    <script defer src="../static/js/button.js"></script>
+    <title>Скачивание отформатированного документа</title>
 </head>
 <body>
     <div class="download-header">
@@ -19,9 +21,12 @@
         <h2 class="download-title">Ваш отформатированный документ <strong>{{ .InterfaceName }}</strong> вы можете скачать по кнопке ниже</h2>
         <form enctype="multipart/form-data" method="post" action="/download?documentname={{ .Data.DocumentData.Filename }}">
             <div class="edit-button-container">
-                <button type="submit" class="edit-button">Скачать документ</button>
+                <button type="submit" id="edit-button-download" class="edit-button" onclick="handleClick()">Скачать документ</button>
             </div>
         </form>
+        <div class="edit-button-container">
+            <a href="/" class="edit-button-link">Вернуться на гравную</a>
+        </div>
     </div>
 </body>
 </html>

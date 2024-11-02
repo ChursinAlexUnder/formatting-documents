@@ -14,7 +14,6 @@ func AddRandomNumber(data domain.Answer) domain.Answer {
 		path         string
 		flag         bool = false
 	)
-	domain.InterfaceName = data.DocumentData.Filename
 	for !flag {
 		randomNumber = rand.Intn(9000) + 1000
 		data.DocumentData.Filename = strconv.Itoa(randomNumber) + "_" + data.DocumentData.Filename

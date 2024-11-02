@@ -2,10 +2,6 @@ package domain
 
 import "mime/multipart"
 
-var (
-	InterfaceName string
-)
-
 // структура для передачи данных на сервере
 type Answer struct {
 	Document     multipart.File

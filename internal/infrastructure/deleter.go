@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -20,7 +21,7 @@ func DeleteDocument(documentName string) {
 	}
 }
 
-func DeleteOldDocument() error {
+func DeleteOldDocuments() error {
 	var (
 		currentTime         time.Time = time.Now()
 		bufferPath          string    = "../buffer"
@@ -38,4 +39,12 @@ func DeleteOldDocument() error {
 		}
 	}
 	return nil
+}
+
+// удаление документа и соответствующего отформатированного документа на сервере
+func DeleteBothDocuments(formattedDocumentName string) {
+	var documentName string
+	DeleteDocument(formattedDocumentName)
+	documentName = strings.Replace(formattedDocumentName, "formatted_", "", 1)
+	DeleteDocument(documentName)
 }

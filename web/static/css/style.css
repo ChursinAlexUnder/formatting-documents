@@ -14,9 +14,8 @@ body {
 }
 
 .download-title {
-
     font-family: "Arial";
-    text-align: center;
+    text-align: left;
     font-weight: normal;
     font-size: 30px;
     background: rgb(207, 229, 247);

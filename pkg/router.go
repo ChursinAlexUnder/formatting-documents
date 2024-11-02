@@ -15,4 +15,5 @@ func HandlerPages() {
 	http.HandleFunc("/", interfaces.MainPage)
 	http.HandleFunc("/downloadPage", interfaces.SendDocumentPage)
 	http.HandleFunc("/download", interfaces.SendDocument)
+	http.HandleFunc("/error", interfaces.ErrorPage)
 }
