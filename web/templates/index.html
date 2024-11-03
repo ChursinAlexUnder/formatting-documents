@@ -1,64 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <link rel="stylesheet" href="../static/css/header.css">
-    <link rel="stylesheet" href="../static/css/instruction.css">
-    <link rel="stylesheet" href="../static/css/form.css">
-    <link rel="stylesheet" href="../static/css/preloader.css">
-    <link rel="shortcut icon" href="../static/pictures/icon.png"/>
-
-    <script defer src="../static/js/download.js"></script>
-    <script defer src="../static/js/preloader.js"></script>
-    <script defer src="../static/js/textarea.js"></script>
-    <title>Форматирование документов онлайн</title>
-</head>
-<body>
-    <div class="main-header">
-        <h1 class="title">
-            <span class="word">Форматирование</span><br>
-            <span class="word">документов</span><br>
-            <span class="word special">онлайн</span>
-        </h1>
-    </div>
-    <h2 class="instruction-title">Инструкция для работы с сайтом</h2>
-    <div class="instruction">
-        <div class="instruction-text-container">
-            <p class="instruction-text">📤 <strong>Загрузите</strong> ваш документ формата <strong>docx</strong> на сайт</p>
-            <p class="instruction-text">⌨️ Если нужно, <strong>введите</strong> в текстовое поле свои параметры форматирования. По умолчанию, документ будет отформатирован по ГОСТу</p>
-            <p class="instruction-text">🔘 Нажмите на кнопку <strong>«форматировать документ»</strong></p>
-            <p class="instruction-text">📥 <strong>Скачайте</strong> отформатированный документ</p>
-        </div>
-        <div class="instruction-image-container">
-            <img class="instruction-image" src="../static/pictures/instruction.png" alt="Картинка в инструкции">
-        </div>
-    </div>
-    <h2 class="form-title">Отправка документа</h2>
-    <div class="main-window">
-        <form enctype="multipart/form-data" id="document-download-form" method="post" action="/downloadPage">
-            <div class="document-input-container-shell">
-                <div class="document-input-container">
-                    <input type="file" name="document-file" id="documentInput" class="document-input" accept=".docx"/>
-                    <label for="documentInput" class="document-label">
-                        <img class="document-icon" src="../static/pictures/icon-download.png" alt="Иконка загрузки" />
-                        <span class="document-text">загрузите документ...</span>
-                        <span class="document-name"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="text-input-container">
-                <textarea name="change" id="text-input-id" class="text-input" rows="10" placeholder="Введите свои параметры (необязательно)..."></textarea>
-            </div>
-            <div class="edit-button-container">
-                <button type="submit" class="edit-button">Форматировать документ</button>
-            </div>
-        </form>
-    </div>
-    <div id="preloader" class="overlay-loader">
-        <div class="loader-background color-flip"></div>
-        <img class="loader-icon spinning-cog" src="../static/pictures/cog24.svg">
-    </div>
-</body>
-</html>
+{{define "index"}}
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="../static/css/style.css">
+            <link rel="stylesheet" href="../static/css/footer.css">
+            <link rel="shortcut icon" href="../static/pictures/icon.png"/>
+            {{block "links" .}} {{end}}
+            <title>{{block "title" .}} {{end}}</title>
+        </head>
+        <body>
+            {{block "content" .}} {{end}}
+            <footer class="footer-container">
+                <p class="footer-text">🌟 Сделано с энтузиазмом и любовью 💙</p>
+            </footer>
+        </body>
+    </html>
+{{end}}

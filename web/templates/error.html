@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <link rel="stylesheet" href="../static/css/header.css">
-    <link rel="stylesheet" href="../static/css/form.css">
-    <link rel="shortcut icon" href="../static/pictures/icon.png"/>
-    <title>Ой</title>
+    {{define "links"}}
+        <link rel="stylesheet" href="../static/css/header.css">
+        <link rel="stylesheet" href="../static/css/form.css">
+    {{end}}
+    <title>{{define "title"}}Ой{{end}}</title>
 </head>
 <body>
-    <div class="error-header">
-        <h1 class="title">
-            <span class="word">Ошибка</span>
-        </h1>
-    </div>
-    <div class="main-window">
-        <h2 class="download-title">Похоже, ваш отформатированный документ уже был вам отправлен, либо случилась непредвиденная ошибка. Попробуйте ещё раз загрузить документ на сайт.</h2>
-        <div class="edit-button-container">
-            <a href="/" class="edit-button-link">Вернуться на гравную</a>
+    {{define "content"}}
+        <div class="error-header">
+            <h1 class="title">
+                <span class="word">Ошибка</span>
+            </h1>
         </div>
-    </div>
+        <div class="main-window">
+            <h2 class="download-title">Похоже, ваш отформатированный документ уже был вам отправлен, либо случилась непредвиденная ошибка. Попробуйте ещё раз загрузить документ на сайт.</h2>
+            <div class="edit-button-container">
+                <a href="/" class="edit-button-link">Вернуться на гравную</a>
+            </div>
+        </div>
+    {{end}}
 </body>
 </html>

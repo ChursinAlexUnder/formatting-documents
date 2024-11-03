@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/style.css">
-    <link rel="stylesheet" href="../static/css/header.css">
-    <link rel="stylesheet" href="../static/css/form.css">
-    <link rel="shortcut icon" href="../static/pictures/icon.png"/>
+    {{define "links"}}
+        <link rel="stylesheet" href="../static/css/header.css">
+        <link rel="stylesheet" href="../static/css/form.css">
 
-    <script defer src="../static/js/button.js"></script>
-    <title>Скачивание отформатированного документа</title>
+        <script defer src="../static/js/button.js"></script>
+    {{end}}
+    <title>{{define "title"}}Скачивание отформатированного документа{{end}}</title>
 </head>
 <body>
-    <div class="download-header">
-        <h1 class="title">
-            <span class="word">Готово</span>
-        </h1>
-    </div>
-    <div class="main-window">
-        <h2 class="download-title">Ваш отформатированный документ <strong>{{ .InterfaceName }}</strong> вы можете скачать по кнопке ниже</h2>
-        <form enctype="multipart/form-data" method="post" action="/download?documentname={{ .Data.DocumentData.Filename }}">
-            <div class="edit-button-container">
-                <button type="submit" id="edit-button-download" class="edit-button" onclick="handleClick()">Скачать документ</button>
-            </div>
-        </form>
-        <div class="edit-button-container">
-            <a href="/" class="edit-button-link">Вернуться на гравную</a>
+    {{define "content"}}
+        <div class="download-header">
+            <h1 class="title">
+                <span class="word">Готово</span>
+            </h1>
         </div>
-    </div>
+        <div class="main-window">
+            <h2 class="download-title">Ваш отформатированный документ <strong>{{ .InterfaceName }}</strong> вы можете скачать по кнопке ниже</h2>
+            <form enctype="multipart/form-data" method="post" action="/download?documentname={{ .Data.DocumentData.Filename }}">
+                <div class="edit-button-container">
+                    <button type="submit" id="edit-button-download" class="edit-button" onclick="handleClick()">Скачать документ</button>
+                </div>
+            </form>
+            <div class="edit-button-container">
+                <a href="/" class="edit-button-link">Вернуться на гравную</a>
+            </div>
+        </div>
+    {{end}}
 </body>
 </html>

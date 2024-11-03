@@ -13,12 +13,17 @@ import (
 
 func MainPage(w http.ResponseWriter, r *http.Request) {
 	// путь откуда вызываю эту функцию, а не от её расположения
-	tmplt, err := template.ParseFiles("../web/templates/index.html")
+	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/main.html")
 	if err != nil {
-		fmt.Fprintf(w, "Error parsing index.html: %v", err)
+		fmt.Fprintf(w, "Error parsing index.html and main.html: %v", err)
 		return
 	}
-	tmplt.Execute(w, nil)
+	// отображение страницы в заготовленном каркасе с footer
+	err = tmplt.ExecuteTemplate(w, "index", nil)
+	if err != nil {
+		fmt.Fprintf(w, "Error displaying  index.html and main.html: %v", err)
+		return
+	}
 }
 
 func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +32,7 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 		fullData      domain.AnswerWithInterfaceName
 		interfaceName string
 	)
-	tmplt, err := template.ParseFiles("../web/templates/download.html")
+	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/download.html")
 	if err != nil {
 		fmt.Fprintf(w, "Error parsing download.html: %v", err)
 		return
@@ -40,7 +45,11 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 	data.DocumentData.Filename = "formatted_" + data.DocumentData.Filename
 	interfaceName = data.DocumentData.Filename[:10] + data.DocumentData.Filename[15:]
 	fullData = domain.AnswerWithInterfaceName{Data: data, InterfaceName: interfaceName}
-	tmplt.Execute(w, fullData)
+	err = tmplt.ExecuteTemplate(w, "index", fullData)
+	if err != nil {
+		fmt.Fprintf(w, "Error displaying index.html and download.html: %v", err)
+		return
+	}
 }
 
 func SendDocument(w http.ResponseWriter, r *http.Request) {
@@ -96,10 +105,14 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 }
 
 func ErrorPage(w http.ResponseWriter, r *http.Request) {
-	tmplt, err := template.ParseFiles("../web/templates/error.html")
+	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/error.html")
 	if err != nil {
 		fmt.Fprintf(w, "Error parsing error.html: %v", err)
 		return
 	}
-	tmplt.Execute(w, nil)
+	err = tmplt.ExecuteTemplate(w, "index", nil)
+	if err != nil {
+		fmt.Fprintf(w, "Error displaying  index.html and error.html: %v", err)
+		return
+	}
 }
