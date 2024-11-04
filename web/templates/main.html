@@ -12,6 +12,12 @@
         <script defer src="../static/js/download.js"></script>
         <script defer src="../static/js/preloader.js"></script>
         <script defer src="../static/js/textarea.js"></script>
+        {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentTextarea "") }}
+            <script defer>
+                // Заменяем текущее состояние на URL без отправки POST
+                history.replaceState(null, "", "/#form");
+            </script>
+        {{ end }}
     {{ end }}
     <title>{{ define "title" }}Форматирование документов онлайн{{ end }}</title>
 </head>

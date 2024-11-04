@@ -148,12 +148,14 @@
     .document-text, .document-name {
         font-size: 18px;
     }
+    .text-input-container {
+        margin: 0 0 5% 0;
+    }
     .text-input {
         width: 75%;
         max-height: 30%;
         font-size: 16px;
         border-radius: 15px;
-        margin-bottom: 30px;
     }
     .text-input:focus, .text-input-error:focus{
         box-shadow: none;
@@ -196,11 +198,13 @@
     .document-text, .document-name {
         font-size: 17px;
     }
+    .text-input-container {
+        margin: 0 0 8% 0;
+    }
     .text-input {
         width: 85%;
         font-size: 16px;
         border-radius: 10px;
-        margin-bottom: 30px;
         padding: 7px 10px;
     }
     .text-input:focus, .text-input-error:focus {
