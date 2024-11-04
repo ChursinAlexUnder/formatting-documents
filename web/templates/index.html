@@ -1,4 +1,4 @@
-{{define "index"}}
+{{ define "index" }}
     <!DOCTYPE html>
     <html lang="en">
         <head>
@@ -7,14 +7,14 @@
             <link rel="stylesheet" href="../static/css/style.css">
             <link rel="stylesheet" href="../static/css/footer.css">
             <link rel="shortcut icon" href="../static/pictures/icon.png"/>
-            {{block "links" .}} {{end}}
-            <title>{{block "title" .}} {{end}}</title>
+            {{ block "links" . }} {{ end }}
+            <title>{{ block "title" . }} {{ end }}</title>
         </head>
         <body>
-            {{block "content" .}} {{end}}
+            {{ block "content" . }} {{ end }}
             <footer class="footer-container">
                 <p class="footer-text">🌟 Сделано с энтузиазмом и любовью 💙</p>
             </footer>
         </body>
     </html>
-{{end}}
+{{ end }}

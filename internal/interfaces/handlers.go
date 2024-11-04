@@ -12,6 +12,21 @@ import (
 )
 
 func MainPage(w http.ResponseWriter, r *http.Request) {
+	var (
+		wrongData domain.WrongData = domain.WrongData{}
+		data      domain.Answer
+		err       error
+	)
+	if r.Method == http.MethodPost {
+		data, wrongData, err = ManagementData(w, r)
+		if err != nil && err.Error() != "error validation" {
+			fmt.Fprintf(w, "Error managementing: %v", err)
+			return
+		} else if err == nil {
+			SendDocumentPage(w, r, data)
+			return
+		}
+	}
 	// путь откуда вызываю эту функцию, а не от её расположения
 	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/main.html")
 	if err != nil {
@@ -19,16 +34,15 @@ func MainPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// отображение страницы в заготовленном каркасе с footer
-	err = tmplt.ExecuteTemplate(w, "index", nil)
+	err = tmplt.ExecuteTemplate(w, "index", wrongData)
 	if err != nil {
-		fmt.Fprintf(w, "Error displaying  index.html and main.html: %v", err)
+		fmt.Fprintf(w, "Error displaying index.html and main.html: %v", err)
 		return
 	}
 }
 
-func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
+func SendDocumentPage(w http.ResponseWriter, r *http.Request, data domain.Answer) {
 	var (
-		data          domain.Answer
 		fullData      domain.AnswerWithInterfaceName
 		interfaceName string
 	)
@@ -37,11 +51,7 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error parsing download.html: %v", err)
 		return
 	}
-	data, err = ManagementData(w, r)
-	if err != nil {
-		fmt.Fprintf(w, "Error managementing: %v", err)
-		return
-	}
+
 	data.DocumentData.Filename = "formatted_" + data.DocumentData.Filename
 	interfaceName = data.DocumentData.Filename[:10] + data.DocumentData.Filename[15:]
 	fullData = domain.AnswerWithInterfaceName{Data: data, InterfaceName: interfaceName}
@@ -70,6 +80,7 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 	if _, err := os.Stat(formattedDocumentPath); err != nil {
 		// перенаправление на страницу с ошибкой
 		http.Redirect(w, r, "/error", http.StatusSeeOther)
+		return
 	}
 
 	formattedDocument, err := os.Open(formattedDocumentPath)
@@ -112,7 +123,7 @@ func ErrorPage(w http.ResponseWriter, r *http.Request) {
 	}
 	err = tmplt.ExecuteTemplate(w, "index", nil)
 	if err != nil {
-		fmt.Fprintf(w, "Error displaying  index.html and error.html: %v", err)
+		fmt.Fprintf(w, "Error displaying index.html and error.html: %v", err)
 		return
 	}
 }

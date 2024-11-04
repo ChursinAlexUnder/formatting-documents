@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{define "links"}}
+    {{ define "links" }}
         <link rel="stylesheet" href="../static/css/header.css">
         <link rel="stylesheet" href="../static/css/instruction.css">
         <link rel="stylesheet" href="../static/css/form.css">
@@ -12,11 +12,11 @@
         <script defer src="../static/js/download.js"></script>
         <script defer src="../static/js/preloader.js"></script>
         <script defer src="../static/js/textarea.js"></script>
-    {{end}}
-    <title>{{define "title"}}Форматирование документов онлайн{{end}}</title>
+    {{ end }}
+    <title>{{ define "title" }}Форматирование документов онлайн{{ end }}</title>
 </head>
 <body>
-    {{define "content"}}
+    {{ define "content" }}
         <div class="main-header">
             <h1 class="title">
                 <span class="word">Форматирование</span><br>
@@ -36,21 +36,27 @@
                 <img class="instruction-image" src="../static/pictures/instruction.png" alt="Картинка в инструкции">
             </div>
         </div>
-        <h2 class="form-title">Отправка документа</h2>
         <div class="main-window">
-            <form enctype="multipart/form-data" id="document-download-form" method="post" action="/downloadPage">
+            <h2 id="form" class="form-title">Отправка документа</h2>
+            <form enctype="multipart/form-data" id="document-download-form" method="post" action="/#form">
                 <div class="document-input-container-shell">
                     <div class="document-input-container">
                         <input type="file" name="document-file" id="documentInput" class="document-input" accept=".docx"/>
-                        <label for="documentInput" class="document-label">
+                        <label for="documentInput" class="document-label{{ .ErrorDecorationButton }}">
                             <img class="document-icon" src="../static/pictures/icon-download.png" alt="Иконка загрузки" />
                             <span class="document-text">загрузите документ...</span>
                             <span class="document-name"></span>
                         </label>
+                        {{ if ne .ErrorCommentButton "" }}
+                            <p class="error-text">{{ .ErrorCommentButton }}</p>
+                        {{ end }}
                     </div>
                 </div>
                 <div class="text-input-container">
-                    <textarea name="change" id="text-input-id" class="text-input" rows="10" placeholder="Введите свои параметры (необязательно)..."></textarea>
+                    <textarea name="change" id="text-input-id" class="text-input{{ .ErrorDecorationTextarea }}" rows="10" placeholder="Введите свои параметры (необязательно)..."></textarea>
+                    {{ if ne .ErrorCommentTextarea "" }}
+                            <p class="error-textarea-text">{{ .ErrorCommentTextarea }}</p>
+                    {{ end }}
                 </div>
                 <div class="edit-button-container">
                     <button type="submit" class="edit-button">Форматировать документ</button>
@@ -61,6 +67,6 @@
             <div class="loader-background color-flip"></div>
             <img class="loader-icon spinning-cog" src="../static/pictures/cog24.svg">
         </div>
-    {{end}}
+    {{ end }}
 </body>
 </html>

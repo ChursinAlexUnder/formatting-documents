@@ -30,24 +30,24 @@ func GetBufferSize() (int, error) {
 // вычисление размера папки buffer и её ограничение на 200 Мегабайт
 func IsOverflow() error {
 	const (
-		maxFolderSize int = 200 * 1024 * 1024
+		maxBufferSize int = 200 * 1024 * 1024
 	)
 	var (
-		folderSize int
+		bufferSize int
 		err        error
 	)
-	folderSize, err = GetBufferSize()
+	bufferSize, err = GetBufferSize()
 	if err != nil {
 		return err
 	}
-	for folderSize >= maxFolderSize {
+	for bufferSize >= maxBufferSize {
 		time.Sleep(3 * time.Second)
 		// удаление старых документов (которым больше 10 минут)
 		err := infrastructure.DeleteOldDocuments()
 		if err != nil {
 			return err
 		}
-		folderSize, err = GetBufferSize()
+		bufferSize, err = GetBufferSize()
 		if err != nil {
 			return err
 		}

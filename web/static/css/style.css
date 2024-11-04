@@ -20,31 +20,36 @@ body {
     font-size: 30px;
     background: rgb(207, 229, 247);
     margin: 0;
-    padding: 70px 10%;
+    padding: 0 10% 70px 10%;
 }
 
 .main-window {
     width: 100%;
-    min-height: 340px;
     text-align: center;
     background: rgb(207, 229, 247);
     margin: 0 0 8% 0;
-    padding: 0;
+    padding-top: 70px;
 }
 
 @media screen and (max-width: 768px) {
     body {
         background-image: url('../pictures/instruction.png');
     }
+    .main-window {
+        padding-top: 55px;
+    }
     .download-title {
-        font-size: 30px;
-        padding: 55px 3%;
+        font-size: 24px;
+        padding: 0 3% 55px 3%;
     }
 }
 
 @media screen and (max-width: 480px) {
+    .main-window {
+        padding-top: 40px;
+    }
     .download-title {
         font-size: 18px;
-        padding: 40px 3%;
+        padding: 0 3% 40px 3%;
     }
 }

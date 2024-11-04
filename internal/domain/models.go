@@ -14,3 +14,11 @@ type AnswerWithInterfaceName struct {
 	Data          Answer
 	InterfaceName string
 }
+
+//  структура для валидации полей
+type WrongData struct {
+	ErrorDecorationButton   string
+	ErrorCommentButton      string
+	ErrorDecorationTextarea string
+	ErrorCommentTextarea    string
+}

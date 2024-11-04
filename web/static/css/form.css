@@ -4,33 +4,56 @@
     font-size: 40px;
     background: rgb(207, 229, 247);
     margin: 0;
-    padding: 70px 3% 0 3%;
+    padding: 0 3%;
 }
 .document-input-container-shell {
     display: block;
+    padding: 0 5%;
 }
 .document-input-container {
     position: relative;
     display: inline-block;
     height: 100%;
-    margin: 5% 0;
+    margin: 4% 0;
 }
 .document-input {
     display: none;
 }
-.document-label {
+.document-label, .document-label-error {
     display: flex;
     align-items: center;
+    width: fit-content;
     padding: 12px;
-    background-color: rgb(0, 113, 187);
+    margin: 0 auto;
     color: #fff;
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
 }
+.document-label {
+    background-color: rgb(0, 113, 187);
+}
+.document-label-error {
+    background-color: rgb(187, 0, 0);
+}
+
 .document-label:hover {
     background-color: rgb(36, 167, 255);
 }
+.document-label-error:hover {
+    background-color: rgb(255, 36, 36);
+}
+
+.error-text, .error-textarea-text {
+    color: rgb(187, 0, 0);
+    font-family: "Arial";
+    font-size: 18px;
+    margin: 4% 0 0 0;
+}
+.error-textarea-text {
+    margin: 1% 0 0 0;
+}
+
 .document-icon {
     width: 21px;
     margin-right: 3px;
@@ -44,23 +67,37 @@
     display: block;
 }
 
-.text-input {
+.text-input-container {
+    margin: 0 0 4% 0;
+    padding: 0 5%;
+}
+
+.text-input, .text-input-error {
     font-family: "Arial";
     width: 65%;
     resize: none;
     max-height: 40%;
-    margin-bottom: 40px;
+    margin: 0;
     padding: 10px 15px;
     font-size: 18px;
-    border: 2px solid rgb(0, 113, 187);
     background: rgb(227, 242, 255);
     border-radius: 25px;
     outline: none;
     transition: box-shadow 0.3s ease;
 }
+.text-input {
+    border: 2px solid rgb(0, 113, 187);
+}
+.text-input-error {
+    border: 2px solid rgb(187, 0, 0);
+}
 
 .text-input:focus {
-    box-shadow: 0 0 20px rgb(0, 112, 187);
+    box-shadow: 0 0 20px rgb(0, 113, 187);
+}
+
+.text-input-error:focus {
+    box-shadow: 0 0 20px rgb(187, 0, 0);
 }
 
 .edit-button, .edit-button-link {
@@ -68,7 +105,7 @@
     font-family: "Arial";
     color: #fff;
     font-size: 26px;
-    margin-bottom: 3%;
+    margin-bottom: 4%;
     padding: 18px 34px;
     background-color: rgb(0, 113, 187);
     border-radius: 40px;
@@ -85,6 +122,10 @@
 }
 
 @media screen and (max-width: 768px) {
+    .form-title {
+        font-size: 30px;
+        padding: 0 3%;
+    }
     .document-input-container {
         margin: 6% 0;
     }
@@ -94,6 +135,12 @@
     }
     .document-label:hover {
         background-color: rgb(0, 113, 187);
+    }
+    .document-label-error:hover {
+        background-color: rgb(187, 0, 0);
+    }
+    .error-text, .error-textarea-textt {
+        font-size: 16px;
     }
     .document-icon {
         width: 18px;
@@ -108,7 +155,7 @@
         border-radius: 15px;
         margin-bottom: 30px;
     }
-    .text-input:focus {
+    .text-input:focus, .text-input-error:focus{
         box-shadow: none;
     }
     .edit-button, .edit-button-link {
@@ -123,6 +170,10 @@
 }
 
 @media screen and (max-width: 480px) {
+    .form-title {
+        font-size: 21px;
+        padding: 0 3%;
+    }
     .document-input-container {
         margin: 8% 0;
     }
@@ -132,6 +183,12 @@
     }
     .document-label:hover {
         background-color: rgb(0, 113, 187);
+    }
+    .document-label-error:hover {
+        background-color: rgb(187, 0, 0);
+    }
+    .error-text, .error-textarea-text {
+        font-size: 14px;
     }
     .document-icon {
         width: 16px;
@@ -146,13 +203,13 @@
         margin-bottom: 30px;
         padding: 7px 10px;
     }
-    .text-input:focus {
+    .text-input:focus, .text-input-error:focus {
         box-shadow: none;
     }
     .edit-button, .edit-button-link {
         font-size: 18px;
         margin-bottom: 8%;
-        padding: 13px 22px;
+        padding: 12px 21px;
         border-radius: 26px;
     }
     .edit-button:hover, .edit-button-link:hover {
