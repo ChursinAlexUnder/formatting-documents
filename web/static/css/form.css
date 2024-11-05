@@ -48,10 +48,7 @@
     color: rgb(187, 0, 0);
     font-family: "Arial";
     font-size: 18px;
-    margin: 4% 0 0 0;
-}
-.error-textarea-text {
-    margin: 1% 0 0 0;
+    margin: 1vw 0 0 0;
 }
 
 .document-icon {
@@ -129,7 +126,7 @@
     .document-input-container {
         margin: 6% 0;
     }
-    .document-label {
+    .document-label, .document-label-error {
         padding: 10px;
         border-radius: 7px;
     }
@@ -139,7 +136,7 @@
     .document-label-error:hover {
         background-color: rgb(187, 0, 0);
     }
-    .error-text, .error-textarea-textt {
+    .error-text, .error-textarea-text {
         font-size: 16px;
     }
     .document-icon {
@@ -151,7 +148,7 @@
     .text-input-container {
         margin: 0 0 5% 0;
     }
-    .text-input {
+    .text-input, .text-input-error {
         width: 75%;
         max-height: 30%;
         font-size: 16px;
@@ -179,7 +176,7 @@
     .document-input-container {
         margin: 8% 0;
     }
-    .document-label {
+    .document-label, .document-label-error {
         padding: 8px;
         border-radius: 7px;
     }
@@ -201,7 +198,7 @@
     .text-input-container {
         margin: 0 0 8% 0;
     }
-    .text-input {
+    .text-input, .text-input-error {
         width: 85%;
         font-size: 16px;
         border-radius: 10px;
