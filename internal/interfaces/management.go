@@ -66,7 +66,7 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 		wrongData.ErrorCommentButton += "Документ обязательно необходимо загрузить."
 	} else if !strings.HasSuffix(documentHeader.Filename, ".docx") {
 		wrongData.ErrorDecorationButton = "-error"
-		wrongData.ErrorCommentButton += "Для загрузки доступны документы только формата .docx."
+		wrongData.ErrorCommentButton += "Для загрузки доступны документы только формата docx."
 	} else if int(documentHeader.Size) >= maxDocumentSize {
 		wrongData.ErrorDecorationButton = "-error"
 		wrongData.ErrorCommentButton += "Размер документа должен быть меньше 20 Мегабайт."

@@ -42,11 +42,11 @@
 }
 
 .gear-container-left {
-    margin-left: 1.7vw;
+    margin-left: 1.8vw;
 }
 
 .gear-container-right {
-    margin-right: 1.7vw;
+    margin-right: 1.8vw;
 }
 
 .big-white-gear, .medium-blue-gear, .small-white-gear {
@@ -90,32 +90,14 @@
 
 @media screen and (max-width: 768px) {
     .footer-container {
-        min-height: 32vh;
+        padding-bottom: 3vw;
     }
     .footer-text-data {
+        padding-top: 3vw;
         font-size: 14px;
     }
     .footer-text {
         font-size: 17px;
-    }
-    .gear-container-left {
-        margin-left: 2vw;
-    }
-    
-    .gear-container-right {
-        margin-right: 2vw;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .footer-container {
-        min-height: 24vh;
-    }
-    .footer-text-data {
-        font-size: 11px;
-    }
-    .footer-text {
-        font-size: 14px;
     }
     .gear-container-left {
         margin-left: 3vw;
@@ -123,5 +105,24 @@
     
     .gear-container-right {
         margin-right: 3vw;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .footer-container {
+        padding-bottom: 3.5vw;
+    }
+    .footer-text-data {
+        padding-top: 3.5vw;
+        font-size: 11px;
+    }
+    .footer-text {
+        font-size: 14px;
+    }
+    .gear-container-left {
+        margin-left: 4vw;
+    }
+    .gear-container-right {
+        margin-right: 4vw;
     }
 }
