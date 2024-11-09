@@ -12,8 +12,27 @@
         </head>
         <body>
             {{ block "content" . }} {{ end }}
+            <p class="footer-text-data">Год создания сайта: 2024</p>
             <footer class="footer-container">
-                <p class="footer-text">🌟 Сделано с энтузиазмом и любовью 💙</p>
+                <div class="gear-container-left">
+                    <div class="gear-container-left-top">
+                        <img class="medium-blue-gear" src="../static/pictures/gear-blue.svg" alt="gear">
+                        <img class="small-white-gear" src="../static/pictures/gear-white.svg" alt="gear">
+                    </div>
+                    <img class="big-white-gear" src="../static/pictures/gear-white.svg" alt="gear">
+                </div>
+                <div class="footer-text-container">
+                    <p class="footer-text">Данный сайт создан для помощи в редактировании документов и экономии времени</p>
+                    <p class="footer-text">🌟 Сделано с энтузиазмом и любовью 💙</p>
+                </div>
+                
+                <div class="gear-container-right">
+                    <div class="gear-container-right-top">
+                        <img class="medium-blue-gear" src="../static/pictures/gear-blue.svg" alt="gear">
+                        <img class="small-white-gear" src="../static/pictures/gear-white.svg" alt="gear">
+                    </div>
+                    <img class="big-white-gear" src="../static/pictures/gear-white.svg" alt="gear">
+                </div>
             </footer>
         </body>
     </html>
