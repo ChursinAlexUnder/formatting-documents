@@ -6,6 +6,7 @@ import (
 	"formatting-documents/internal/infrastructure"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"text/template"
@@ -54,6 +55,8 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request, data domain.Answer
 
 	data.DocumentData.Filename = "formatted_" + data.DocumentData.Filename
 	interfaceName = data.DocumentData.Filename[:10] + data.DocumentData.Filename[15:]
+	// кодирование для URL
+	data.DocumentData.Filename = url.QueryEscape(data.DocumentData.Filename)
 	fullData = domain.AnswerWithInterfaceName{Data: data, InterfaceName: interfaceName}
 	err = tmplt.ExecuteTemplate(w, "index", fullData)
 	if err != nil {
@@ -74,6 +77,12 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Error getting the name of a new document from the page")
 		return
 	}
+	// декодируем
+	formattedDocumentName, err := url.QueryUnescape(formattedDocumentName)
+	if err != nil {
+		fmt.Fprintf(w, "Error decoding the name of a new document: %v", err)
+		return
+	}
 	formattedDocumentPath = "../buffer/" + formattedDocumentName
 
 	// проверка на наличие документа
@@ -83,7 +92,7 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formattedDocument, err := os.Open(formattedDocumentPath)
+	formattedDocument, err = os.Open(formattedDocumentPath)
 	if err != nil {
 		fmt.Fprintf(w, "Error opening the new document: %v", err)
 		return
