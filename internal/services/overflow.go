@@ -54,8 +54,8 @@ func IsOverflow() error {
 			return err
 		}
 		iterations++
-		if iterations >= 10 {
-			return fmt.Errorf("error: 10 iterations")
+		if iterations >= 6 {
+			return fmt.Errorf("error: 6 iterations")
 		}
 	}
 	return nil
