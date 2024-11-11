@@ -16,4 +16,5 @@ func HandlerPages() {
 	http.HandleFunc("/#form", interfaces.MainPage)
 	http.HandleFunc("/download", interfaces.SendDocument)
 	http.HandleFunc("/error", interfaces.ErrorPage)
+	http.HandleFunc("/errortime", interfaces.ErrorTimePage)
 }

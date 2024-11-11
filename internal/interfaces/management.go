@@ -23,6 +23,9 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, doma
 	// проверка на переполнение папки buffer
 	err = services.IsOverflow()
 	if err != nil {
+		if err.Error() == "error: 10 iterations" {
+			http.Redirect(w, r, "/errortime", http.StatusSeeOther)
+		}
 		return data, wrongData, fmt.Errorf("error overflow: %v", err)
 	}
 

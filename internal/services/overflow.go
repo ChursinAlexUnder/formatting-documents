@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"formatting-documents/internal/infrastructure"
 	"io/ioutil"
 	"time"
@@ -33,6 +34,7 @@ func IsOverflow() error {
 		maxBufferSize int = 200 * 1024 * 1024
 	)
 	var (
+		iterations int = 0
 		bufferSize int
 		err        error
 	)
@@ -50,6 +52,10 @@ func IsOverflow() error {
 		bufferSize, err = GetBufferSize()
 		if err != nil {
 			return err
+		}
+		iterations++
+		if iterations >= 10 {
+			return fmt.Errorf("error: 10 iterations")
 		}
 	}
 	return nil

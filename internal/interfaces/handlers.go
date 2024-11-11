@@ -127,3 +127,16 @@ func ErrorPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func ErrorTimePage(w http.ResponseWriter, r *http.Request) {
+	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/errortime.html")
+	if err != nil {
+		fmt.Fprintf(w, "Error parsing errortime.html: %v", err)
+		return
+	}
+	err = tmplt.ExecuteTemplate(w, "index", nil)
+	if err != nil {
+		fmt.Fprintf(w, "Error displaying index.html and errortime.html: %v", err)
+		return
+	}
+}
