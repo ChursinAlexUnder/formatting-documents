@@ -43,7 +43,7 @@
     border-radius: 10px;
     border: 1px solid white;
     cursor: pointer;
-    transition: background-color 0.3s, color 0.3s, transform 0.5s;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
 }
 
 .window-one-button:hover, .window-two-button:hover {
