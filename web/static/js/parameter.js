@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const buttons = document.querySelectorAll('.window-one .window-button'); // указываем и класс первого окна, чтобы сюда не попали кнопки из второго окна
+    const buttons = document.querySelectorAll('.window-one .window-one-button'); // указываем и класс первого окна, чтобы сюда не попали кнопки из второго окна
 
     buttons.forEach(button => {
         button.addEventListener('click', function (event) {
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.options && data.options.length > 0) {
                         data.options.forEach(option => {
                             const button = document.createElement('a');
-                            button.className = 'window-button';
+                            button.className = 'window-two-button';
                             button.href = '#'; // Для демонстрации оставляем пустым
                             button.textContent = option;
                             windowTwo.appendChild(button);

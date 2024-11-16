@@ -14,6 +14,7 @@
         <script defer src="../static/js/upload.js"></script>
         <script defer src="../static/js/preloader.js"></script>
         <script defer src="../static/js/textarea.js"></script>
+        <script defer src="../static/js/menu.js"></script>
         {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentTextarea "") }}
             <script defer>
                 // Заменяем текущее состояние на URL без отправки POST
@@ -62,16 +63,15 @@
                 </div>
                 <div class="two-windows-container">
                     <div class="window-one">
-                        <a class="window-button" href="/menu?parameter=font">Шрифт</a>
-                        <a class="window-button" href="/menu?parameter=fontsize">Размер шрифта</a>
-                        <a class="window-button" href="/menu?parameter=alignment">Выравнивание текста</a>
-                        <a class="window-button" href="/menu?parameter=spacing">Междустрочный интервал</a>
-                        <a class="window-button" href="/menu?parameter=beforespacing">Интервал перед абзацем</a>
-                        <a class="window-button" href="/menu?parameter=afterspacing">Интервал после абзаца</a>
-                        <a class="window-button" href="/menu?parameter=firstindentation">Отступ первой строки</a>
+                        <a class="window-one-button" href="/menu?parameter=font">Шрифт</a>
+                        <a class="window-one-button" href="/menu?parameter=fontsize">Размер шрифта</a>
+                        <a class="window-one-button" href="/menu?parameter=alignment">Выравнивание текста</a>
+                        <a class="window-one-button" href="/menu?parameter=spacing">Междустрочный интервал</a>
+                        <a class="window-one-button" href="/menu?parameter=beforespacing">Интервал перед абзацем</a>
+                        <a class="window-one-button" href="/menu?parameter=afterspacing">Интервал после абзаца</a>
+                        <a class="window-one-button" href="/menu?parameter=firstindentation">Отступ первой строки</a>
                     </div>
                     <div class="window-two">
-                        <p>Выберите параметр в левом окне</p>
                     </div>
                 </div>
                 <div class="text-input-container">
