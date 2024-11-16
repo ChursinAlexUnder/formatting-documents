@@ -8,8 +8,10 @@
         <link rel="stylesheet" href="../static/css/instruction.css">
         <link rel="stylesheet" href="../static/css/form.css">
         <link rel="stylesheet" href="../static/css/preloader.css">
+        <link rel="stylesheet" href="../static/css/windows.css">
 
-        <script defer src="../static/js/download.js"></script>
+        <script defer src="../static/js/parameter.js"></script>
+        <script defer src="../static/js/upload.js"></script>
         <script defer src="../static/js/preloader.js"></script>
         <script defer src="../static/js/textarea.js"></script>
         {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentTextarea "") }}
@@ -56,6 +58,20 @@
                         {{ if ne .ErrorCommentButton "" }}
                             <p class="error-text">{{ .ErrorCommentButton }}</p>
                         {{ end }}
+                    </div>
+                </div>
+                <div class="two-windows-container">
+                    <div class="window-one">
+                        <a class="window-button" href="/menu?parameter=font">Шрифт</a>
+                        <a class="window-button" href="/menu?parameter=fontsize">Размер шрифта</a>
+                        <a class="window-button" href="/menu?parameter=alignment">Выравнивание текста</a>
+                        <a class="window-button" href="/menu?parameter=spacing">Междустрочный интервал</a>
+                        <a class="window-button" href="/menu?parameter=beforespacing">Интервал перед абзацем</a>
+                        <a class="window-button" href="/menu?parameter=afterspacing">Интервал после абзаца</a>
+                        <a class="window-button" href="/menu?parameter=firstindentation">Отступ первой строки</a>
+                    </div>
+                    <div class="window-two">
+                        <p>Выберите параметр в левом окне</p>
                     </div>
                 </div>
                 <div class="text-input-container">

@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	"encoding/json"
 	"fmt"
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
@@ -38,6 +39,41 @@ func MainPage(w http.ResponseWriter, r *http.Request) {
 	err = tmplt.ExecuteTemplate(w, "index", wrongData)
 	if err != nil {
 		fmt.Fprintf(w, "Error displaying index.html and main.html: %v", err)
+		return
+	}
+}
+
+func ShowOptions(w http.ResponseWriter, r *http.Request) {
+	var (
+		options   []string
+		parameter string = r.URL.Query().Get("parameter")
+	)
+	switch parameter {
+	case "font":
+		options = []string{"Arial", "Times New Roman", "Courier New", "Verdana"}
+	case "fontsize":
+		options = []string{"8", "9", "10", "11", "12", "14", "16", "18", "20"}
+	case "alignment":
+		options = []string{"Left", "Center", "Right", "Justify"}
+	case "spacing":
+		options = []string{"Single", "1.5", "Double"}
+	case "beforespacing":
+		options = []string{"0", "6", "12", "18"}
+	case "afterspacing":
+		options = []string{"0", "6", "12", "18"}
+	case "firstindentation":
+		options = []string{"0", "1", "2", "3"}
+	default:
+		options = []string{}
+	}
+
+	// Возвращаем данные в формате JSON
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(map[string]interface{}{
+		"options": options,
+	})
+	if err != nil {
+		fmt.Fprintf(w, "Error sending json response: %v", err)
 		return
 	}
 }

@@ -1,0 +1,51 @@
+.two-windows-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.window-one, .window-two {
+    width: 38vw;
+    height: calc(38vw * 14 / 17);
+    border: 2px solid rgb(0, 113, 187);
+    margin: 0 0 4% 0;
+    padding: 10px;
+    overflow-y: auto;
+    overflow-x: hidden; 
+    display: flex;
+    flex-direction: column; 
+    gap: 5.5%;
+    background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat;
+}
+
+.window-one {
+    margin-right: 5vw;
+    border-radius: 25px 0 0 25px;
+    background-image: url('../pictures/window1.png');
+}
+.window-two {
+    border-radius: 0 25px 25px 0;
+    background-image: url('../pictures/window2.png');
+}
+
+.window-button {
+    width: 45%;
+    text-decoration: none;
+    font-family: "Arial";
+    color: #fff;
+    font-size: 18px;
+    padding: 10px 15px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgb(0, 113, 187);
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.window-button:hover {
+    background-color: rgb(36, 167, 255);
+}

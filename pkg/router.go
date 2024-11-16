@@ -13,7 +13,7 @@ func ConnectionStatic() {
 func HandlerPages() {
 	// Отображение страниц
 	http.HandleFunc("/", interfaces.MainPage)
-	http.HandleFunc("/#form", interfaces.MainPage)
+	http.HandleFunc("/menu", interfaces.ShowOptions)
 	http.HandleFunc("/download", interfaces.SendDocument)
 	http.HandleFunc("/error", interfaces.ErrorPage)
 	http.HandleFunc("/errortime", interfaces.ErrorTimePage)
