@@ -4,11 +4,43 @@
 }
 
 .parameters {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
     width: 45vw;
-    height: 80vh;
     margin: 0 auto 4% auto;
-    padding: 10px;
+    padding: 1vw;
     border: 2px solid rgb(0, 113, 187);
     background-color: rgba(173, 192, 255, 0.45);
     border-radius: 25px;
+}
+
+.parameter {
+    width: 90%;
+    margin: 1vw 0;
+    padding: 10px 15px;
+    border: 2px solid rgb(0, 113, 187);
+    border-radius: 10px;
+}
+
+.parameter-text, .parameter-input {
+    text-align: center;
+    font-family: "Arial";
+    font-size: 1.5vw;
+}
+
+.parameter-text {
+    width: 50%;
+    margin: 0;
+    display: inline-block;
+    color: black;
+}
+
+.parameter-input {
+    padding: 0;
+    width: 40%;
+    outline: none;
+    border: none;
+    background-color: rgba(255, 255, 255, 0);
+    color: black;
 }

@@ -76,28 +76,43 @@
                         <img id="window-preloader" class="window-preloader" src="../static/pictures/gear-darkblue.svg">
                     </div>
                 </div>
+                <!-- TODO: Убрать старое текстовое поле и его связь и обработку в backend!!! -->
                 <div class="text-input-container">
                     <textarea name="change" id="text-input-id" class="text-input{{ .ErrorDecorationTextarea }}" rows="10" placeholder="Введите свои параметры (необязательно)..."></textarea>
                     {{ if ne .ErrorCommentTextarea "" }}
                             <p class="error-textarea-text">{{ .ErrorCommentTextarea }}</p>
                     {{ end }}
                 </div>
+                <!--  -->
                 <div class="parameters-container">
                     <div class="parameters">
-                        <div class="parameter-1">
-                            <p>Привет</p>
+                        <div class="parameter">
+                            <p class="parameter-text">Шрифт:</p>
+                            <input class="parameter-input" type="text" value="Times New Roman" readonly>
                         </div>
-                        <div class="parameter-2">
+                        <div class="parameter">
+                            <p class="parameter-text">Размер шрифта:</p>
+                            <input class="parameter-input" type="text" value="14" readonly>
                         </div>
-                        <div class="parameter-3">
+                        <div class="parameter">
+                            <p class="parameter-text">Выравнивание текста:</p>
+                            <input class="parameter-input" type="text" value="Justify" readonly>
                         </div>
-                        <div class="parameter-4">
+                        <div class="parameter">
+                            <p class="parameter-text">Междустрочный интервал:</p>
+                            <input class="parameter-input" type="text" value="1.5" readonly>
                         </div>
-                        <div class="parameter-5">
+                        <div class="parameter">
+                            <p class="parameter-text">Интервал перед абзацем:</p>
+                            <input class="parameter-input" type="text" value="6" readonly>
                         </div>
-                        <div class="parameter-6">
+                        <div class="parameter">
+                            <p class="parameter-text">Интервал после абзаца:</p>
+                            <input class="parameter-input" type="text" value="6" readonly>
                         </div>
-                        <div class="parameter-7">
+                        <div class="parameter">
+                            <p class="parameter-text">Отступ первой строки:</p>
+                            <input class="parameter-input" type="text" value="1" readonly>
                         </div>
                     </div>
                 </div>
