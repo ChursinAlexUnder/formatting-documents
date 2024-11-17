@@ -19,16 +19,32 @@
 
 .overlay-loader .loader-icon {
     position: absolute;
+    width: 10vw;
+    height: 10vw;
     top: 50%;
     left: 50%;
-    margin: -48px 0 0 -48px; /* Положение шестеренки по центру */
-    font-size: 96px; /* Размер шестеренки */
+    margin: -5vw 0 0 -5vw; /* Положение шестеренки по центру */
     color: #FFF;
 }
 
 /* Анимация вращения шестеренки */
 .overlay-loader .loader-icon.spinning-cog {
     animation: spinning-cog 2.0s infinite linear; /* Постоянная скорость вращения */
+}
+
+/*  */
+/* Прелоадер в правом окне */
+/*  */
+
+.window-preloader {
+    display: none;
+    width: 10vw;
+    height: 10vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -5vw 0 0 -5vw; /* Положение шестеренки по центру */
+    animation: spinning-cog 2.0s infinite linear; /* Анимация вращения */
 }
 
 @keyframes spinning-cog {

@@ -18,6 +18,7 @@
     background-size: cover; 
     background-position: center; 
     background-repeat: no-repeat;
+    align-items: center;
 }
 
 .window-one {
@@ -26,6 +27,7 @@
     background-image: url('../pictures/window1.png');
 }
 .window-two {
+    position: relative;
     border-radius: 0 25px 25px 0;
     background-image: url('../pictures/window2.png');
 }
@@ -37,12 +39,14 @@
     color: #fff;
     font-size: 18px;
     padding: 10px 15px;
-    margin-left: auto;
-    margin-right: auto;
     background-color: rgb(0, 113, 187);
     border-radius: 10px;
     border: 1px solid white;
     cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.window-one-button {
     transition: background-color 0.3s, color 0.3s, transform 0.3s;
 }
 

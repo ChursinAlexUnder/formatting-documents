@@ -9,6 +9,7 @@
         <link rel="stylesheet" href="../static/css/form.css">
         <link rel="stylesheet" href="../static/css/preloader.css">
         <link rel="stylesheet" href="../static/css/windows.css">
+        <link rel="stylesheet" href="../static/css/parameters.css">
 
         <script defer src="../static/js/parameter.js"></script>
         <script defer src="../static/js/upload.js"></script>
@@ -72,6 +73,7 @@
                         <a class="window-one-button" href="/menu?parameter=firstindentation">Отступ первой строки</a>
                     </div>
                     <div class="window-two">
+                        <img id="window-preloader" class="window-preloader" src="../static/pictures/gear-darkblue.svg">
                     </div>
                 </div>
                 <div class="text-input-container">
@@ -79,6 +81,25 @@
                     {{ if ne .ErrorCommentTextarea "" }}
                             <p class="error-textarea-text">{{ .ErrorCommentTextarea }}</p>
                     {{ end }}
+                </div>
+                <div class="parameters-container">
+                    <div class="parameters">
+                        <div class="parameter-1">
+                            <p>Привет</p>
+                        </div>
+                        <div class="parameter-2">
+                        </div>
+                        <div class="parameter-3">
+                        </div>
+                        <div class="parameter-4">
+                        </div>
+                        <div class="parameter-5">
+                        </div>
+                        <div class="parameter-6">
+                        </div>
+                        <div class="parameter-7">
+                        </div>
+                    </div>
                 </div>
                 <div class="edit-button-container">
                     <button type="submit" class="edit-button">Форматировать документ</button>
