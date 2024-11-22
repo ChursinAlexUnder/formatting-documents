@@ -58,3 +58,26 @@
     transform: translateX(10%); /* Сдвиг вправо */
     background-color: rgb(36, 167, 255)
   }
+
+/*  */
+/* анимация при нажатии кнопки во втором окне */
+/*  */
+
+/* Анимация тени */
+.animate-shadow {
+    box-shadow: 0 0 0 rgb(0, 113, 187); /* Начальная тень */
+    animation: shadow-pulse 0.5s ease-in-out;
+}
+
+/* Ключевые кадры для анимации */
+@keyframes shadow-pulse {
+    0% {
+        box-shadow: 0 0 0 rgb(0, 113, 187);
+    }
+    50% {
+        box-shadow: 0 0 20px rgb(0, 113, 187);
+    }
+    100% {
+        box-shadow: 0 0 0 rgb(0, 113, 187);
+    }
+}
