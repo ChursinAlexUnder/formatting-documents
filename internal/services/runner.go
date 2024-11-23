@@ -2,11 +2,12 @@ package services
 
 import (
 	"fmt"
+	"formatting-documents/internal/domain"
 	"os"
 	"os/exec"
 )
 
-func RunPythonScript(documentName, comment string) error {
+func RunPythonScript(documentName string, params domain.Parameters) error {
 	var (
 		scriptPath            string = "../scripts/editdocument.py"
 		formattedDocumentName string = "formatted_" + documentName
@@ -16,7 +17,7 @@ func RunPythonScript(documentName, comment string) error {
 	)
 
 	// запуск скрипта
-	cmd = exec.Command("python", scriptPath, documentName, comment)
+	cmd = exec.Command("python", scriptPath, documentName, params.Font, params.Fontsize, params.Alignment, params.Spacing, params.Beforespacing, params.Afterspacing, params.Firstindentation)
 	cmd.Dir = directoryPath
 
 	// вывод ошибок от скрипта

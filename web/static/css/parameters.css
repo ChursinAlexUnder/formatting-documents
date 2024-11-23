@@ -3,16 +3,22 @@
     justify-content: center;
 }
 
-.parameters {
+.parameters, .parameters-error {
     display: flex;
     align-items: center;
     flex-direction: column;
     width: 45vw;
     margin: 0 auto 4% auto;
     padding: 1vw;
-    border: 2px solid rgb(0, 113, 187);
     background-color: rgba(173, 192, 255, 0.45);
     border-radius: 25px;
+}
+
+.parameters {
+    border: 2px solid rgb(0, 113, 187);
+}
+.parameters-error {
+    border: 2px solid rgb(187, 0, 0);
 }
 
 .parameter {

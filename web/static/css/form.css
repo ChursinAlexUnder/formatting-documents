@@ -44,7 +44,7 @@
     background-color: rgb(255, 36, 36);
 }
 
-.error-text, .error-textarea-text {
+.error-text, .error-parameters-text {
     color: rgb(187, 0, 0);
     font-family: "Arial";
     font-size: 18px;
@@ -60,42 +60,8 @@
     font-size: 22px;
 }
 
-.text-input-container, .edit-button-container {
+.edit-button-container {
     display: block;
-}
-
-.text-input-container {
-    display: none;
-    margin: 0 0 4% 0;
-    padding: 0 5%;
-}
-
-.text-input, .text-input-error {
-    font-family: "Arial";
-    width: 65%;
-    resize: none;
-    max-height: 40%;
-    margin: 0;
-    padding: 10px 15px;
-    font-size: 18px;
-    background: rgb(227, 242, 255);
-    border-radius: 25px;
-    outline: none;
-    transition: box-shadow 0.3s ease;
-}
-.text-input {
-    border: 2px solid rgb(0, 113, 187);
-}
-.text-input-error {
-    border: 2px solid rgb(187, 0, 0);
-}
-
-.text-input:focus {
-    box-shadow: 0 0 20px rgb(0, 113, 187);
-}
-
-.text-input-error:focus {
-    box-shadow: 0 0 20px rgb(187, 0, 0);
 }
 
 .edit-button, .edit-button-link {
@@ -137,7 +103,7 @@
     .document-label-error:hover {
         background-color: rgb(187, 0, 0);
     }
-    .error-text, .error-textarea-text {
+    .error-text, .error-parameters-text {
         font-size: 16px;
     }
     .document-icon {
@@ -145,18 +111,6 @@
     }
     .document-text, .document-name {
         font-size: 18px;
-    }
-    .text-input-container {
-        margin: 0 0 5% 0;
-    }
-    .text-input, .text-input-error {
-        width: 75%;
-        max-height: 30%;
-        font-size: 16px;
-        border-radius: 15px;
-    }
-    .text-input:focus, .text-input-error:focus{
-        box-shadow: none;
     }
     .edit-button, .edit-button-link {
         font-size: 22px;
@@ -187,7 +141,7 @@
     .document-label-error:hover {
         background-color: rgb(187, 0, 0);
     }
-    .error-text, .error-textarea-text {
+    .error-text, .error-parameters-text {
         font-size: 14px;
     }
     .document-icon {
@@ -195,18 +149,6 @@
     }
     .document-text, .document-name {
         font-size: 17px;
-    }
-    .text-input-container {
-        margin: 0 0 8% 0;
-    }
-    .text-input, .text-input-error {
-        width: 85%;
-        font-size: 16px;
-        border-radius: 10px;
-        padding: 7px 10px;
-    }
-    .text-input:focus, .text-input-error:focus {
-        box-shadow: none;
     }
     .edit-button, .edit-button-link {
         font-size: 18px;

@@ -6,7 +6,6 @@ import (
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
 	"net/http"
-	"regexp"
 	"strings"
 )
 
@@ -31,7 +30,7 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, doma
 
 	// валидация полей
 	data, wrongData = Validation(r)
-	if wrongData.ErrorDecorationButton != "" || wrongData.ErrorDecorationTextarea != "" {
+	if wrongData.ErrorDecorationButton != "" || wrongData.ErrorDecorationParameters != "" {
 		return data, wrongData, fmt.Errorf("error validation")
 	}
 
@@ -44,7 +43,7 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, doma
 	}
 
 	// запуск python скрипта
-	err = services.RunPythonScript(data.DocumentData.Filename, data.Comment)
+	err = services.RunPythonScript(data.DocumentData.Filename, data.Params)
 	if err != nil {
 		return data, wrongData, fmt.Errorf("error formatting the document on the server: %v", err)
 	}
@@ -57,9 +56,9 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 		maxDocumentSize int = 20 * 1024 * 1024
 	)
 	var (
-		data      domain.Answer    = domain.Answer{}
-		wrongData domain.WrongData = domain.WrongData{}
-		comment   string
+		data      domain.Answer     = domain.Answer{}
+		wrongData domain.WrongData  = domain.WrongData{}
+		params    domain.Parameters = domain.Parameters{}
 	)
 	// получение данных из формы и валидация
 	// документ
@@ -84,20 +83,41 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 		defer document.Close()
 	}
 
-	// комментарий
-	comment = r.FormValue("change")
-	flag, err := regexp.MatchString(`^\d+$`, comment)
-	if err != nil {
-		wrongData.ErrorDecorationTextarea = "-error"
-		wrongData.ErrorCommentTextarea = "С комментарием что-то не так."
-	} else if flag {
-		wrongData.ErrorDecorationTextarea = "-error"
-		wrongData.ErrorCommentTextarea = "Комментарий не может состоять только из цифр."
+	// параметры
+	params.Font = r.FormValue("font")
+	params.Fontsize = r.FormValue("fontsize")
+	params.Alignment = r.FormValue("alignment")
+	params.Spacing = r.FormValue("spacing")
+	params.Beforespacing = r.FormValue("beforespacing")
+	params.Afterspacing = r.FormValue("afterspacing")
+	params.Firstindentation = r.FormValue("firstindentation")
+
+	if !services.InSlice(params.Font, domain.Font) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С шрифтом что-то не так."
+	} else if !services.InSlice(params.Fontsize, domain.Fontsize) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С размером шрифта что-то не так."
+	} else if !services.InSlice(params.Alignment, domain.Alignment) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С выравниванием текста что-то не так."
+	} else if !services.InSlice(params.Spacing, domain.Spacing) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С междустрочным интервалом что-то не так."
+	} else if !services.InSlice(params.Beforespacing, domain.Beforespacing) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С интервалом перед абзацем что-то не так."
+	} else if !services.InSlice(params.Afterspacing, domain.Afterspacing) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С интервалом после абзаца что-то не так."
+	} else if !services.InSlice(params.Firstindentation, domain.Firstindentation) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С отступом первой строки что-то не так."
 	}
 
 	// если данные валидны, то сохраняем их в структуре
-	if wrongData.ErrorDecorationButton == "" && wrongData.ErrorDecorationTextarea == "" {
-		data = domain.Answer{Document: document, DocumentData: documentHeader, Comment: comment}
+	if wrongData.ErrorDecorationButton == "" && wrongData.ErrorDecorationParameters == "" {
+		data = domain.Answer{Document: document, DocumentData: documentHeader, Params: params}
 	}
 	return data, wrongData
 }

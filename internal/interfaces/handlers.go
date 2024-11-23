@@ -50,19 +50,19 @@ func ShowOptions(w http.ResponseWriter, r *http.Request) {
 	)
 	switch parameter {
 	case "font":
-		options = []string{"Arial", "Times New Roman", "Courier New", "Verdana"}
+		options = domain.Font
 	case "fontsize":
-		options = []string{"8", "9", "10", "11", "12", "14", "16", "18", "20"}
+		options = domain.Fontsize
 	case "alignment":
-		options = []string{"Left", "Center", "Right", "Justify"}
+		options = domain.Alignment
 	case "spacing":
-		options = []string{"Single", "1.5", "Double"}
+		options = domain.Spacing
 	case "beforespacing":
-		options = []string{"0", "6", "12", "18"}
+		options = domain.Beforespacing
 	case "afterspacing":
-		options = []string{"0", "6", "12", "18"}
+		options = domain.Afterspacing
 	case "firstindentation":
-		options = []string{"0", "1", "2", "3"}
+		options = domain.Firstindentation
 	default:
 		options = []string{}
 	}

@@ -14,9 +14,8 @@
         <script defer src="../static/js/parameter.js"></script>
         <script defer src="../static/js/upload.js"></script>
         <script defer src="../static/js/preloader.js"></script>
-        <script defer src="../static/js/textarea.js"></script>
         <script defer src="../static/js/menu.js"></script>
-        {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentTextarea "") }}
+        {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentParameters "") }}
             <script defer>
                 // Заменяем текущее состояние на URL без отправки POST
                 history.replaceState(null, "", "/#form");
@@ -76,16 +75,8 @@
                         <img id="window-preloader" class="window-preloader" src="../static/pictures/gear-darkblue.svg">
                     </div>
                 </div>
-                <!-- TODO: Убрать старое текстовое поле и его связь и обработку в backend!!! -->
-                <div class="text-input-container">
-                    <textarea name="change" id="text-input-id" class="text-input{{ .ErrorDecorationTextarea }}" rows="10" placeholder="Введите свои параметры (необязательно)..."></textarea>
-                    {{ if ne .ErrorCommentTextarea "" }}
-                            <p class="error-textarea-text">{{ .ErrorCommentTextarea }}</p>
-                    {{ end }}
-                </div>
-                <!--  -->
                 <div class="parameters-container">
-                    <div class="parameters">
+                    <div class="parameters{{ .ErrorDecorationParameters }}">
                         <div class="parameter">
                             <p class="parameter-text">Шрифт:</p>
                             <input class="parameter-input" name="font" type="text" value="Times New Roman" readonly>
@@ -96,7 +87,7 @@
                         </div>
                         <div class="parameter">
                             <p class="parameter-text">Выравнивание текста:</p>
-                            <input class="parameter-input" name="alignment" type="text" value="Justify" readonly>
+                            <input class="parameter-input" name="alignment" type="text" value="По ширине" readonly>
                         </div>
                         <div class="parameter">
                             <p class="parameter-text">Междустрочный интервал:</p>
@@ -104,18 +95,21 @@
                         </div>
                         <div class="parameter">
                             <p class="parameter-text">Интервал перед абзацем:</p>
-                            <input class="parameter-input" name="beforespacing" type="text" value="6" readonly>
+                            <input class="parameter-input" name="beforespacing" type="text" value="Нет" readonly>
                         </div>
                         <div class="parameter">
                             <p class="parameter-text">Интервал после абзаца:</p>
-                            <input class="parameter-input" name="afterspacing" type="text" value="6" readonly>
+                            <input class="parameter-input" name="afterspacing" type="text" value="Нет" readonly>
                         </div>
                         <div class="parameter">
                             <p class="parameter-text">Отступ первой строки:</p>
-                            <input class="parameter-input" name="firstindentation" type="text" value="1" readonly>
+                            <input class="parameter-input" name="firstindentation" type="text" value="1.5" readonly>
                         </div>
                     </div>
                 </div>
+                {{ if ne .ErrorCommentParameters "" }}
+                    <p class="error-parameters-text">{{ .ErrorCommentParameters }}</p>
+                {{ end }}
                 <div class="edit-button-container">
                     <button type="submit" class="edit-button">Форматировать документ</button>
                 </div>
