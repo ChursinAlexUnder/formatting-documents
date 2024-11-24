@@ -11,35 +11,44 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
 
     # обработка всего документа (по всем paragraphs и всем runs)
     for paragraph in doc.paragraphs:
+
+        # Сохраняем текст параграфа в переменную
+        paragraph_text = paragraph.text
+        # Удаляем параграф
+        paragraph._element.getparent().remove(paragraph._element)
+
+        # Вставляем новый параграф с нужным текстом
+        new_paragraph = doc.add_paragraph(paragraph_text)
+
         # Выравнивание текста
         if alignment == "По левому краю":
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+            new_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
         elif alignment == "По центру":
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            new_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         elif alignment == "По правому краю":
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
+            new_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
         elif alignment == "По ширине":
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+            new_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
 
         # Междустрочный интервал
-        paragraph.paragraph_format.line_spacing = float(spacing)
+        new_paragraph.paragraph_format.line_spacing = float(spacing)
 
         # интервал перед абзацем
         if beforespacing == "Нет":
-            paragraph.paragraph_format.space_before = Pt(0)
+            new_paragraph.paragraph_format.space_before = Pt(0)
         else:
-            paragraph.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
+            new_paragraph.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
         
         # интервал после абзаца
         if afterspacing == "Нет":
-            paragraph.paragraph_format.space_after = Pt(0)
+            new_paragraph.paragraph_format.space_after = Pt(0)
         else:
-            paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
+            new_paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
         
         # отступ первой строки
-        paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
+        new_paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
         
-        for run in paragraph.runs:
+        for run in new_paragraph.runs:
             # Шрифт
             run.font.name = font
 
