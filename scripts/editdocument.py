@@ -55,7 +55,12 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
 
     haveList = False
 
-    modify_list_numbering_style(doc, font, int(fontsize))
+    # Настройка полей для основного раздела
+    for section in doc.sections:
+        section.left_margin = Cm(3)
+        section.right_margin = Cm(1.5)
+        section.top_margin = Cm(2)
+        section.bottom_margin = Cm(2)
 
     # обработка всего документа (по всем paragraphs и всем runs)
     for paragraph in doc.paragraphs:
@@ -97,6 +102,10 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         else:
             paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
         
+        # сбрасываем отступ всего абзаца
+        paragraph.paragraph_format.left_indent = None
+        paragraph.paragraph_format.right_indent = None
+        
         # отступ первой строки
         paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
         
@@ -105,11 +114,17 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             run.font.name = font
             # Размер шрифта
             run.font.size = Pt(float(fontsize))
-
-        # Если параграф часть списка
-        # if paragraph.style.name.startswith('List'):
-            # 
         
+        # Проверяем наличие элемента <w:drawing> или <w:pict>
+        for run in paragraph.runs:
+            drawing = run._element.find(qn("w:drawing"))
+            pict = run._element.find(qn("w:pict"))
+            if drawing is not None or pict is not None:
+                # Устанавливаем выравнивание параграфа по центру
+                paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                # отступ первой строки для картинки
+                paragraph.paragraph_format.first_line_indent = Cm(0)
+                break
 
 
     # Работа с именем отформатированного документа
