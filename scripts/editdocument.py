@@ -53,10 +53,16 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
     # Открываем документ
     doc = Document(bufferPath + '/' + documentName)
 
+    haveList = False
+
     modify_list_numbering_style(doc, font, int(fontsize))
 
     # обработка всего документа (по всем paragraphs и всем runs)
     for paragraph in doc.paragraphs:
+
+        if paragraph._element.xpath(".//w:numPr") and not haveList:
+            haveList = True
+            modify_list_numbering_style(doc, font, int(fontsize))
 
         # Доступ к низкоуровневому XML-элементу параграфа
         p = paragraph._element
