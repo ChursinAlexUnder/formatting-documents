@@ -17,7 +17,7 @@
     font-family: "Arial";
     text-align: left;
     color: #fff;
-    font-size: 21px;
+    font-size: 18px;
     padding-left: 1%;
     padding-right: 1%;
 }
@@ -27,7 +27,20 @@
     padding-top: 2vw;
     background: rgb(0, 60, 100);
     text-align: center;
+}
+
+.footer-href-instruction {
+    text-decoration: none;
+    font-family: "Arial";
+    color: rgb(36, 167, 255);
     font-size: 18px;
+    cursor: pointer;
+    transition: color 0.3s;
+    
+}
+
+.footer-href-instruction:hover {
+    color: #fff;
 }
 
 .gear-container-left, .gear-container-right, .gear-container-left-top, .gear-container-right-top {
@@ -96,8 +109,11 @@
         padding-top: 3vw;
         font-size: 14px;
     }
-    .footer-text {
-        font-size: 17px;
+    .footer-text, .footer-href-instruction {
+        font-size: 14px;
+    }
+    .footer-href-instruction:hover {
+        color: rgb(36, 167, 255);
     }
     .gear-container-left {
         margin-left: 3%;
@@ -114,10 +130,13 @@
     }
     .footer-text-data {
         padding-top: 3.5vw;
-        font-size: 11px;
+        font-size: 12px;
     }
-    .footer-text {
-        font-size: 14px;
+    .footer-text, .footer-href-instruction {
+        font-size: 12px;
+    }
+    .footer-href-instruction:hover {
+        color: rgb(36, 167, 255);
     }
     .gear-container-left {
         margin-left: 5%;
