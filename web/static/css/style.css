@@ -23,7 +23,7 @@ body {
     padding: 0 10% 70px 10%;
 }
 
-.main-window {
+.main-window, .main-window-secondary {
     width: 100%;
     text-align: center;
     background: rgb(207, 229, 247);
@@ -35,7 +35,7 @@ body {
     body {
         background-image: url('../pictures/instruction.png');
     }
-    .main-window {
+    .main-window, .main-window-secondary {
         padding-top: 55px;
 
     }
@@ -46,8 +46,10 @@ body {
 }
 
 @media screen and (max-width: 480px) {
-    .main-window {
+    .main-window, .main-window-secondary {
         padding-top: 40px;
+    }
+    .main-window-secondary {
         margin-bottom: 24vh;
     }
     .download-title {
