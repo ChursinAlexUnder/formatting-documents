@@ -55,6 +55,7 @@
     .parameters, .parameters-error {
         width: 65vw;
         padding: 2vw;
+        margin-bottom: 6%;
     }
     .parameter-text, .parameter-input {
         font-size: 1.8vw;
@@ -72,6 +73,7 @@
         border-radius: 0;
         width: 100%;
         padding: 3vw;
+        margin-bottom: 8%;
     }
     .parameter-text, .parameter-input {
         font-size: 3vw;
