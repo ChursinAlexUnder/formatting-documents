@@ -90,7 +90,7 @@
 
 @media screen and (max-width: 768px) {
     .footer-container {
-        padding-bottom: 5vw;
+        padding-bottom: 6vw;
     }
     .footer-text-data {
         padding-top: 3vw;
@@ -110,7 +110,7 @@
 
 @media screen and (max-width: 480px) {
     .footer-container {
-        padding-bottom: 12vw;
+        padding-bottom: 7vw;
     }
     .footer-text-data {
         padding-top: 3.5vw;
