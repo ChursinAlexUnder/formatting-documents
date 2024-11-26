@@ -64,13 +64,13 @@
     display: block;
 }
 
-.edit-button, .edit-button-link {
+.edit-button, .edit-button-link, .edit-button-main {
     text-decoration: none;
     font-family: "Arial";
     color: #fff;
     font-size: 26px;
     margin-bottom: 4%;
-    padding: 18px 34px;
+    padding: 20px 20px;
     background-color: rgb(0, 113, 187);
     border-radius: 40px;
     border: none;
@@ -78,10 +78,19 @@
     transition: background-color 0.3s, color 0.3s;
 }
 
+.edit-button-main {
+    width: 380px;
+}
+
+.edit-button {
+    width: 340px;
+}
+
 .edit-button-link {
+    width: 300px;
     display: inline-block;
 }
-.edit-button:hover, .edit-button-link:hover {
+.edit-button:hover, .edit-button-link:hover, .edit-button-main:hover {
     background-color: rgb(36, 167, 255);
 }
 
@@ -112,13 +121,22 @@
     .document-text, .document-name {
         font-size: 18px;
     }
-    .edit-button, .edit-button-link {
+    .edit-button, .edit-button-link, .edit-button-main {
         font-size: 22px;
         margin-bottom: 5%;
         padding: 15px 27px;
         border-radius: 30px;
     }
-    .edit-button:hover, .edit-button-link:hover {
+    .edit-button-main {
+        width: 320px;
+    }
+    .edit-button {
+        width: 294px;
+    }
+    .edit-button-link {
+        width: 240px;
+    }
+    .edit-button:hover, .edit-button-link:hover, .edit-button-main:hover {
         background-color: rgb(0, 113, 187);
     }
 }
@@ -150,13 +168,22 @@
     .document-text, .document-name {
         font-size: 17px;
     }
-    .edit-button, .edit-button-link {
+    .edit-button, .edit-button-link, .edit-button-main {
         font-size: 18px;
         margin-bottom: 8%;
         padding: 12px 21px;
         border-radius: 26px;
     }
-    .edit-button:hover, .edit-button-link:hover {
+    .edit-button-main {
+        width: 260px;
+    }
+    .edit-button {
+        width: 242px;
+    }
+    .edit-button-link {
+        width: 200px;
+    }
+    .edit-button:hover, .edit-button-link:hover, .edit-button-main:hover {
         background-color: rgb(0, 113, 187);
     }
 }

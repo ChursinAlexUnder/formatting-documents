@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    width: 45vw;
+    width: 50vw;
     margin: 0 auto 4% auto;
     padding: 1vw;
     background-color: rgba(173, 192, 255, 0.45);
@@ -49,4 +49,27 @@
     border: none;
     background-color: rgba(255, 255, 255, 0);
     color: black;
+}
+
+@media screen and (max-width: 768px) {
+    .parameters, .parameters-error {
+        width: 65vw;
+        padding: 2vw;
+    }
+    .parameter-text, .parameter-input {
+        font-size: 1.8vw;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .parameters, .parameters-error {
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        width: 100%;
+        padding: 3vw;
+    }
+    .parameter-text, .parameter-input {
+        font-size: 3vw;
+    }
 }
