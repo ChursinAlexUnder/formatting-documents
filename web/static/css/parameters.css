@@ -59,6 +59,10 @@
     .parameter-text, .parameter-input {
         font-size: 1.8vw;
     }
+    .parameter {
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
 }
 
 @media screen and (max-width: 480px) {
@@ -71,5 +75,9 @@
     }
     .parameter-text, .parameter-input {
         font-size: 3vw;
+    }
+    .parameter {
+        padding: 6px 10px;
+        border-radius: 6px;
     }
 }

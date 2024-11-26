@@ -37,6 +37,7 @@ body {
     }
     .main-window {
         padding-top: 55px;
+
     }
     .download-title {
         font-size: 24px;
@@ -47,6 +48,7 @@ body {
 @media screen and (max-width: 480px) {
     .main-window {
         padding-top: 40px;
+        margin-bottom: 24vh;
     }
     .download-title {
         font-size: 18px;
