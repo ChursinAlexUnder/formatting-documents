@@ -5,7 +5,7 @@
     justify-content: space-between;
     align-items: center;
     height: auto;
-    padding-bottom: 3vw;
+    padding-bottom: 4vw;
     background: rgb(0, 60, 100);
 }
 
@@ -90,7 +90,7 @@
 
 @media screen and (max-width: 768px) {
     .footer-container {
-        padding-bottom: 4vw;
+        padding-bottom: 5vw;
     }
     .footer-text-data {
         padding-top: 3vw;
@@ -110,7 +110,7 @@
 
 @media screen and (max-width: 480px) {
     .footer-container {
-        padding-bottom: 5vw;
+        padding-bottom: 6vw;
     }
     .footer-text-data {
         padding-top: 3.5vw;
@@ -120,9 +120,9 @@
         font-size: 14px;
     }
     .gear-container-left {
-        margin-left: 4%;
+        margin-left: 5%;
     }
     .gear-container-right {
-        margin-right: 4%;
+        margin-right: 5%;
     }
 }
