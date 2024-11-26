@@ -25,6 +25,7 @@
 .footer-text-data {
     margin: 0;
     padding-top: 2vw;
+    padding-bottom: 2vw;
     background: rgb(0, 60, 100);
     text-align: center;
 }
@@ -107,6 +108,9 @@
     }
     .footer-text-data {
         padding-top: 3vw;
+        padding-bottom: 3vw;
+        padding-left: 3%;
+        padding-right: 3%;
         font-size: 14px;
     }
     .footer-text, .footer-href-instruction {
@@ -130,6 +134,9 @@
     }
     .footer-text-data {
         padding-top: 3.5vw;
+        padding-bottom: 3.5vw;
+        padding-left: 4%;
+        padding-right: 4%;
         font-size: 12px;
     }
     .footer-text, .footer-href-instruction {
