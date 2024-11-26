@@ -63,6 +63,7 @@
     .parameter {
         padding: 8px 12px;
         border-radius: 8px;
+        margin: 2vw 0;
     }
 }
 
@@ -81,5 +82,6 @@
     .parameter {
         padding: 6px 10px;
         border-radius: 6px;
+        margin: 3vw 0;
     }
 }
