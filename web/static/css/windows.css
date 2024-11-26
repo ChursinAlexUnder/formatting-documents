@@ -89,7 +89,9 @@
     }
     .window-one-button, .window-two-button {
         width: 60%;
-        font-size: 1.65vw;
+        padding: 8px 12px;
+        font-size: 1.7vw;
+        border-radius: 8px;
     }
 }
 
@@ -103,6 +105,8 @@
     }
     .window-one-button, .window-two-button {
         width: 65%;
+        padding: 6px 10px;
         font-size: 1.8vw;
+        border-radius: 6px;
     }
 }
