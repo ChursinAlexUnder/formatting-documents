@@ -104,9 +104,12 @@
         height: calc(44vw * 14 / 17);
     }
     .window-one-button, .window-two-button {
-        width: 65%;
-        padding: 6px 10px;
-        font-size: 1.8vw;
+        width: 70%;
+        padding: 6px 4px;
+        font-size: 2.2vw;
         border-radius: 6px;
     }
+    .window-one-button.active {
+        transform: translateX(8%); /* Сдвиг вправо */
+      }
 }

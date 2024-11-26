@@ -55,3 +55,19 @@
         transform: rotate(360deg);
     }
 }
+
+@media screen and (max-width: 768px) {
+    .overlay-loader .loader-icon {
+        width: 14vw;
+        height: 14vw;
+        margin: -7vw 0 0 -7vw; /* Положение шестеренки по центру */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .overlay-loader .loader-icon {
+        width: 20vw;
+        height: 20vw;
+        margin: -10vw 0 0 -10vw; /* Положение шестеренки по центру */
+    }
+}
