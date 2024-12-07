@@ -36,7 +36,7 @@ type WrongData struct {
 // неизменяемые массивы!
 var (
 	Font             []string = []string{"Arial", "Times New Roman", "Calibri", "Courier New", "Verdana", "Georgia", "Tahoma"}
-	Fontsize         []string = []string{"8", "9", "10", "11", "12", "14", "16", "18", "20"}
+	Fontsize         []string = []string{"8", "9", "10", "11", "12", "13", "14", "16", "18", "20"}
 	Alignment        []string = []string{"По левому краю", "По центру", "По правому краю", "По ширине"}
 	Spacing          []string = []string{"1.0", "1.5", "2.0", "2.5", "3.0"}
 	Beforespacing    []string = []string{"Нет", "1.0", "1.5", "2.0", "2.5", "3.0"}
