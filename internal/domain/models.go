@@ -41,5 +41,5 @@ var (
 	Spacing          []string = []string{"1.0", "1.5", "2.0", "2.5", "3.0"}
 	Beforespacing    []string = []string{"Нет", "1.0", "1.5", "2.0", "2.5", "3.0"}
 	Afterspacing     []string = []string{"Нет", "1.0", "1.5", "2.0", "2.5", "3.0"}
-	Firstindentation []string = []string{"0", "1.0", "1.5", "2.0", "2.5", "3.0"}
+	Firstindentation []string = []string{"0", "1.0", "1.25", "1.5", "1.75", "2.0", "2.5", "3.0"}
 )
