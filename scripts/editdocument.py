@@ -7,34 +7,68 @@ from docx.shared import Cm
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
+def remove_tabs_from_paragraph(paragraph):
+    """
+    Удаляет все табуляции из указанного параграфа.
+    """
+    # Получаем элемент w:pPr (настройки параграфа)
+    pPr = paragraph._element.find('.//w:pPr', namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
+    
+    if pPr is not None:
+        # Ищем элемент w:tabs
+        tabs = pPr.find('.//w:tabs', namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
+        
+        if tabs is not None:
+            # Удаляем найденный элемент w:tabs
+            pPr.remove(tabs)
+
+def add_tab_in_paragraph(paragraph, listtabulation):
+    """
+    Добавляет табуляцию в параграф, если она ещё не добавлена.
+    """
+    tab_pos = 142 * int(float(listtabulation) / 0.25) - int(float(listtabulation) / 1)
+    
+    # Получаем элемент w:pPr (параграф)
+    pPr = paragraph._element.find('.//w:pPr', namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
+    
+    if pPr is not None:
+        # Проверяем, есть ли уже tabs
+        tabs = pPr.find('.//w:tabs', namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
+        
+        if tabs is None:
+            # Если нет, создаем новый элемент w:tabs
+            tabs = OxmlElement('w:tabs')
+            pPr.append(tabs)
+        
+        # Добавляем новую табуляцию
+        tab = OxmlElement('w:tab')
+        tab.set(qn('w:val'), 'left')
+        tab.set(qn('w:pos'), str(tab_pos))
+        tabs.append(tab)
+
 def modify_list_numbering_style(doc, font, fontsize):
     """
     Изменяет стиль номеров или маркеров списка в документе.
-    Для ненумерованных списков (bullet) изменяется только размер шрифта.
+    Также изменяет табуляцию (расстояние между маркером и текстом списка).
     """
-    # Доступ к part с нумерациями
     numbering_part = doc.part.numbering_part
     numbering_xml = numbering_part.element
 
-    # Получаем все уровни списков (abstractNum -> lvl)
     for abstract_num in numbering_xml.findall(qn("w:abstractNum")):
         for lvl in abstract_num.findall(qn("w:lvl")):
-            # Проверяем тип списка
             num_fmt = lvl.find(qn("w:numFmt"))
             if num_fmt is None:
                 continue
 
             num_fmt_val = num_fmt.get(qn("w:val"))
-            
-            # Устанавливаем rPr для уровня списка
+
+            # Настройки шрифта
             rPr = lvl.find(qn("w:rPr"))
             if rPr is None:
                 rPr = OxmlElement("w:rPr")
                 lvl.append(rPr)
 
-            # Изменяем стиль в зависимости от типа списка
-            if num_fmt_val != "bullet":  # Нумерованный список
-                # Устанавливаем шрифт
+            if num_fmt_val != "bullet": #нумерованный список
                 rFonts = rPr.find(qn("w:rFonts"))
                 if rFonts is None:
                     rFonts = OxmlElement("w:rFonts")
@@ -42,14 +76,13 @@ def modify_list_numbering_style(doc, font, fontsize):
                 rFonts.set(qn("w:ascii"), font)
                 rFonts.set(qn("w:hAnsi"), font)
 
-            # Устанавливаем размер шрифта
             sz = rPr.find(qn("w:sz"))
             if sz is None:
                 sz = OxmlElement("w:sz")
                 rPr.append(sz)
             sz.set(qn("w:val"), str(fontsize * 2))
 
-def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation):
+def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation):
     # Открываем документ
     doc = Document(bufferPath + '/' + documentName)
 
@@ -65,9 +98,13 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
     # обработка всего документа (по всем paragraphs и всем runs)
     for paragraph in doc.paragraphs:
 
-        if paragraph._element.xpath(".//w:numPr") and not haveList:
-            haveList = True
-            modify_list_numbering_style(doc, font, int(fontsize))
+        if paragraph._element.xpath(".//w:numPr"):
+            remove_tabs_from_paragraph(paragraph)  # Удаляем табуляции перед добавлением новой
+            add_tab_in_paragraph(paragraph, listtabulation)
+            if not haveList:
+                haveList = True
+                # delete_tabulation(doc)
+                modify_list_numbering_style(doc, font, int(fontsize))
 
         # Доступ к низкоуровневому XML-элементу параграфа
         p = paragraph._element
@@ -103,12 +140,12 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
         
         # сбрасываем отступ всего абзаца
-        paragraph.paragraph_format.left_indent = None
-        paragraph.paragraph_format.right_indent = None
+        paragraph.paragraph_format.left_indent = 0
+        paragraph.paragraph_format.right_indent = 0
         
         # отступ первой строки
         paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
-        
+
         for run in paragraph.runs:
             # Шрифт
             run.font.name = font
@@ -134,26 +171,25 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
     
     return formattedDocumentPath
 
-def main():
-    documentName = sys.argv[1]
-    bufferPath = '../buffer'
-    documentPath = bufferPath + '/' + documentName
-    font = sys.argv[2]
-    fontsize = sys.argv[3]
-    alignment = sys.argv[4]
-    spacing = sys.argv[5]
-    beforespacing = sys.argv[6]
-    afterspacing = sys.argv[7]
-    firstindentation = sys.argv[8]
+documentName = sys.argv[1]
+bufferPath = '../buffer'
+documentPath = bufferPath + '/' + documentName
+font = sys.argv[2]
+fontsize = sys.argv[3]
+alignment = sys.argv[4]
+spacing = sys.argv[5]
+beforespacing = sys.argv[6]
+afterspacing = sys.argv[7]
+firstindentation = sys.argv[8]
+listtabulation = sys.argv[9]
 
-    if not os.path.exists(documentPath):
-        print(f"Document not found: {documentPath}")
-        sys.exit(1)
+if not os.path.exists(documentPath):
+    print(f"Document not found: {documentPath}")
+    sys.exit(1)
 
-    try:
-        formattedDocumentPath = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation)
-        print(f"Formatted document created: {formattedDocumentPath}")
-    except Exception as e:
-        print(f"Error formatting document: {e}")
-        sys.exit(1)
-main()
+try:
+    formattedDocumentPath = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation)
+    print(f"Formatted document created: {formattedDocumentPath}")
+except Exception as e:
+    print(f"Error formatting document: {e}")
+    sys.exit(1)

@@ -7,6 +7,7 @@ import (
 	"formatting-documents/internal/services"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 )
 
 func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, domain.WrongData, error) {
@@ -69,9 +70,9 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 	} else if !strings.HasSuffix(documentHeader.Filename, ".docx") {
 		wrongData.ErrorDecorationButton = "-error"
 		wrongData.ErrorCommentButton += "Для загрузки доступны документы только формата docx."
-	} else if len(documentHeader.Filename) > 50 {
+	} else if utf8.RuneCountInString(documentHeader.Filename) > 60 {
 		wrongData.ErrorDecorationButton = "-error"
-		wrongData.ErrorCommentButton += "Название документа должно быть не длиннее 50 символов."
+		wrongData.ErrorCommentButton += "Название документа должно быть не длиннее 60 символов."
 	} else if int(documentHeader.Size) >= maxDocumentSize {
 		wrongData.ErrorDecorationButton = "-error"
 		wrongData.ErrorCommentButton += "Размер документа должен быть меньше 20 Мегабайт."
@@ -88,9 +89,10 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 	params.Fontsize = r.FormValue("fontsize")
 	params.Alignment = r.FormValue("alignment")
 	params.Spacing = r.FormValue("spacing")
-	params.Beforespacing = r.FormValue("beforespacing")
-	params.Afterspacing = r.FormValue("afterspacing")
-	params.Firstindentation = r.FormValue("firstindentation")
+	params.BeforeSpacing = r.FormValue("beforespacing")
+	params.AfterSpacing = r.FormValue("afterspacing")
+	params.FirstIndentation = r.FormValue("firstindentation")
+	params.ListTabulation = r.FormValue("listtabulation")
 
 	if !services.InSlice(params.Font, domain.Font) {
 		wrongData.ErrorDecorationParameters = "-error"
@@ -104,15 +106,18 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 	} else if !services.InSlice(params.Spacing, domain.Spacing) {
 		wrongData.ErrorDecorationParameters = "-error"
 		wrongData.ErrorCommentParameters = "С междустрочным интервалом что-то не так."
-	} else if !services.InSlice(params.Beforespacing, domain.Beforespacing) {
+	} else if !services.InSlice(params.BeforeSpacing, domain.BeforeSpacing) {
 		wrongData.ErrorDecorationParameters = "-error"
 		wrongData.ErrorCommentParameters = "С интервалом перед абзацем что-то не так."
-	} else if !services.InSlice(params.Afterspacing, domain.Afterspacing) {
+	} else if !services.InSlice(params.AfterSpacing, domain.AfterSpacing) {
 		wrongData.ErrorDecorationParameters = "-error"
 		wrongData.ErrorCommentParameters = "С интервалом после абзаца что-то не так."
-	} else if !services.InSlice(params.Firstindentation, domain.Firstindentation) {
+	} else if !services.InSlice(params.FirstIndentation, domain.FirstIndentation) {
 		wrongData.ErrorDecorationParameters = "-error"
 		wrongData.ErrorCommentParameters = "С отступом первой строки что-то не так."
+	} else if !services.InSlice(params.ListTabulation, domain.ListTabulation) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С табуляцией в списках что-то не так."
 	}
 
 	// если данные валидны, то сохраняем их в структуре

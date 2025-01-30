@@ -58,11 +58,13 @@ func ShowOptions(w http.ResponseWriter, r *http.Request) {
 	case "spacing":
 		options = domain.Spacing
 	case "beforespacing":
-		options = domain.Beforespacing
+		options = domain.BeforeSpacing
 	case "afterspacing":
-		options = domain.Afterspacing
+		options = domain.AfterSpacing
 	case "firstindentation":
-		options = domain.Firstindentation
+		options = domain.FirstIndentation
+	case "listtabulation":
+		options = domain.ListTabulation
 	default:
 		options = []string{}
 	}
