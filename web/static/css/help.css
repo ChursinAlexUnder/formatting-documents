@@ -1,0 +1,78 @@
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-icon {
+    font-size: 60%;
+    font-weight: bold;
+    width: 1.37vw;
+    height: 1.37vw;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgb(36, 167, 255);
+    color: white;
+    cursor: pointer;
+    position: absolute;
+    top: 10%;
+    right: 1.55%;
+    transition: background-color 0.3s ease-in-out, transform 0.3s;
+}
+
+.tooltip-icon:hover {
+    background-color: rgb(0, 60, 100);
+}
+
+.tooltip-text {
+    font-family: "Arial";
+    position: absolute;
+    top: -5vw;
+    right: 0;
+    width: max-content;
+    max-width: 20vw;
+    background-color: rgb(207, 229, 247);
+    color: black;
+    text-align: center;
+    padding: 0.5vw 1vw;
+    border-radius: 0.5vw;
+    font-size: 1.1vw;
+    white-space: normal;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transform: translateY(-5px);
+    box-shadow: 0 0.2vw 0.5vw rgba(0, 0, 0, 0.5);
+}
+
+/* Показываем подсказку при наведении на значок */
+.tooltip-icon:hover + .tooltip-text {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+@media screen and (max-width: 768px) {
+    .tooltip-icon {
+        width: 1.8vw;
+        height: 1.8vw;
+    }
+    .tooltip-text {
+        font-size: 1.5vw;
+        top: -8vw;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .tooltip-icon {
+        width: 2vw;
+        height: 2vw;
+    }
+    .tooltip-text {
+        font-size: 1.7vw;
+        top: -9.5vw;
+    }
+}

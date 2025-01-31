@@ -7,7 +7,7 @@ from docx.shared import Cm
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
-def remove_tabs_from_paragraph(paragraph):
+def removeTabs(paragraph):
     """
     Удаляет все табуляции из указанного параграфа.
     """
@@ -22,7 +22,7 @@ def remove_tabs_from_paragraph(paragraph):
             # Удаляем найденный элемент w:tabs
             pPr.remove(tabs)
 
-def add_tab_in_paragraph(paragraph, listtabulation):
+def addTab(paragraph, listtabulation):
     """
     Добавляет табуляцию в параграф, если она ещё не добавлена.
     """
@@ -46,10 +46,9 @@ def add_tab_in_paragraph(paragraph, listtabulation):
         tab.set(qn('w:pos'), str(tab_pos))
         tabs.append(tab)
 
-def modify_list_numbering_style(doc, font, fontsize):
+def modifyList(doc, font, fontsize):
     """
     Изменяет стиль номеров или маркеров списка в документе.
-    Также изменяет табуляцию (расстояние между маркером и текстом списка).
     """
     numbering_part = doc.part.numbering_part
     numbering_xml = numbering_part.element
@@ -99,12 +98,11 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
     for paragraph in doc.paragraphs:
 
         if paragraph._element.xpath(".//w:numPr"):
-            remove_tabs_from_paragraph(paragraph)  # Удаляем табуляции перед добавлением новой
-            add_tab_in_paragraph(paragraph, listtabulation)
+            removeTabs(paragraph)  # Удаляем табуляции перед добавлением новой
+            addTab(paragraph, listtabulation)
             if not haveList:
                 haveList = True
-                # delete_tabulation(doc)
-                modify_list_numbering_style(doc, font, int(fontsize))
+                modifyList(doc, font, int(fontsize))
 
         # Доступ к низкоуровневому XML-элементу параграфа
         p = paragraph._element
