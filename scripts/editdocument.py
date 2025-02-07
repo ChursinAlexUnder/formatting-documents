@@ -1,50 +1,59 @@
 import sys
 import os
 from docx import Document
-from docx.shared import Pt
+from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.shared import Cm
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
-def removeTabs(paragraph):
-    """
-    Удаляет все табуляции из указанного параграфа.
-    """
-    # Получаем элемент w:pPr (настройки параграфа)
-    pPr = paragraph._element.find('.//w:pPr', namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
-    
-    if pPr is not None:
-        # Ищем элемент w:tabs
-        tabs = pPr.find('.//w:tabs', namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
-        
-        if tabs is not None:
-            # Удаляем найденный элемент w:tabs
-            pPr.remove(tabs)
+from modules.tabs import removeTabs, addTab
+from modules.headings import headingLevel, isHeading, getDefaultFontSize, removeEmptyLinesAndPageBreaks, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle
 
-def addTab(paragraph, listtabulation):
-    """
-    Добавляет табуляцию в параграф, если она ещё не добавлена.
-    """
-    tab_pos = 142 * int(float(listtabulation) / 0.25) - int(float(listtabulation) / 1)
+def updateParagraphDefaultFont(paragraph, font):
+    """Изменяет шрифт в первом <w:rFonts> внутри <w:pPr>, если он существует."""
     
-    # Получаем элемент w:pPr (параграф)
-    pPr = paragraph._element.find('.//w:pPr', namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
-    
+    # Ищем <w:pPr> внутри параграфа
+    pPr = paragraph._element.find(qn("w:pPr"))
     if pPr is not None:
-        # Проверяем, есть ли уже tabs
-        tabs = pPr.find('.//w:tabs', namespaces={'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
-        
-        if tabs is None:
-            # Если нет, создаем новый элемент w:tabs
-            tabs = OxmlElement('w:tabs')
-            pPr.append(tabs)
-        
-        # Добавляем новую табуляцию
-        tab = OxmlElement('w:tab')
-        tab.set(qn('w:val'), 'left')
-        tab.set(qn('w:pos'), str(tab_pos))
-        tabs.append(tab)
+        # Ищем <w:rPr> внутри <w:pPr>
+        rPr = pPr.find(qn("w:rPr"))
+        if rPr is not None:
+            # Ищем <w:rFonts> внутри <w:rPr>
+            rFonts = rPr.find(qn("w:rFonts"))
+            if rFonts is not None:
+                # Меняем шрифт только если <w:rFonts> уже есть
+                rFonts.set(qn("w:ascii"), font)
+                rFonts.set(qn("w:hAnsi"), font)
+
+# ещё раз исправлено и теперь точно работает
+def cleanParagraphText(paragraph):
+    """Удаляет пробелы в начале и в конце текста параграфа, 
+    сохраняя изображения, гиперссылки и другие элементы."""
+
+    if not paragraph.runs:  # Если нет run'ов, ничего не делаем
+        return
+
+    # --- Удаляем пробелы в начале ---
+    found_non_space = False  # Флаг, нашли ли непустой текст
+    for run in paragraph.runs:
+        if not found_non_space:
+            if run.text.strip():  # Нашли первый run с текстом
+                run.text = run.text.lstrip()  # Убираем пробелы слева
+                found_non_space = True  # Дальше пробелы не трогаем
+            elif run.text.isspace():  
+                run.text = ""  # Полностью пробельные run'ы в начале удаляем
+
+    # --- Удаляем пробелы в конце ---
+    found_non_space = False
+    for run in reversed(paragraph.runs):
+        if not found_non_space:
+            if run.text.strip():  # Нашли последний run с текстом
+                run.text = run.text.rstrip()  # Убираем пробелы справа
+                found_non_space = True  # Дальше пробелы не трогаем
+            elif run.text.isspace():  
+                run.text = ""  # Полностью пробельные run'ы в конце удаляем
+
+
 
 def modifyList(doc, font, fontsize):
     """
@@ -85,6 +94,8 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
     # Открываем документ
     doc = Document(bufferPath + '/' + documentName)
 
+    defaultFontsize = getDefaultFontSize(doc, fontsize)
+
     haveList = False
 
     # Настройка полей для основного раздела
@@ -95,7 +106,19 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         section.bottom_margin = Cm(2)
 
     # обработка всего документа (по всем paragraphs и всем runs)
-    for paragraph in doc.paragraphs:
+    for index, paragraph in enumerate(doc.paragraphs):
+        isHead = False
+        isDraw = False
+
+        cleanParagraphText(paragraph)  # Убираем пробелы перед проверкой
+
+        # Проверяем наличие элемента <w:drawing> или <w:pict>
+        for run in paragraph.runs:
+            drawing = run._element.find(qn("w:drawing"))
+            pict = run._element.find(qn("w:pict"))
+            if drawing is not None or pict is not None:
+                isDraw = True
+                break
 
         if paragraph._element.xpath(".//w:numPr"):
             removeTabs(paragraph)  # Удаляем табуляции перед добавлением новой
@@ -103,6 +126,21 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             if not haveList:
                 haveList = True
                 modifyList(doc, font, int(fontsize))
+        elif not isDraw and isHeading(paragraph, index, doc, defaultFontsize):
+            level = headingLevel(paragraph.text)
+            style_name = ensureHeadingStyle(doc, level, font, fontsize)
+            paragraph.style = style_name
+            isHead = True
+            removeEmptyLinesAndPageBreaks(doc, index)
+
+            if level == 1:
+                addPageBreak(paragraph)
+                addEmptyParagraphAfter(paragraph)
+            else:
+                if index > 0:
+                    addEmptyParagraphBefore(paragraph)
+                addEmptyParagraphAfter(paragraph)
+
 
         # Доступ к низкоуровневому XML-элементу параграфа
         p = paragraph._element
@@ -113,7 +151,9 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             spacing_elem.getparent().remove(spacing_elem)
 
         # Выравнивание текста
-        if alignment == "По левому краю":
+        if isDraw == True:
+            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        elif isHead == True or alignment == "По левому краю":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
         elif alignment == "По центру":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
@@ -142,24 +182,20 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         paragraph.paragraph_format.right_indent = 0
         
         # отступ первой строки
-        paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
+        if isDraw == True:
+            paragraph.paragraph_format.first_line_indent = Cm(0)
+        else:
+            paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
 
+        updateParagraphDefaultFont(paragraph, font)
+        
         for run in paragraph.runs:
             # Шрифт
             run.font.name = font
             # Размер шрифта
             run.font.size = Pt(float(fontsize))
-        
-        # Проверяем наличие элемента <w:drawing> или <w:pict>
-        for run in paragraph.runs:
-            drawing = run._element.find(qn("w:drawing"))
-            pict = run._element.find(qn("w:pict"))
-            if drawing is not None or pict is not None:
-                # Устанавливаем выравнивание параграфа по центру
-                paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-                # отступ первой строки для картинки
-                paragraph.paragraph_format.first_line_indent = Cm(0)
-                break
+            # цвет текста
+            run.font.color.rgb = RGBColor(0, 0, 0)  # Чёрный цвет (RGB: 0, 0, 0)
 
 
     # Работа с именем отформатированного документа
