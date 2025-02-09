@@ -2,7 +2,7 @@ import re
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from collections import Counter
-from docx.shared import Pt, RGBColor
+from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.style import WD_STYLE_TYPE
 
@@ -15,39 +15,15 @@ def getDefaultFontSize(doc, fontsize):
             text = run.text.strip()  # Игнорируем пустые строки (например, изображения)
             if text:  
                 size = run.font.size
-                if size is None and paragraph.style.font.size:
-                    size = paragraph.style.font.size  # Используем стиль абзаца, если размер не задан
-                
+                if size is None:
+                    if paragraph.style.font.size:
+                        size = paragraph.style.font.size  # Используем стиль абзаца, если размер не задан
+                    else:
+                        size = Pt(11)
                 if size:
                     font_sizes[size.pt] += len(text)  # Взвешиваем размер шрифта по количеству символов
 
     return font_sizes.most_common(1)[0][0] if font_sizes else fontsize
-
-def isSurroundedEmptyLines(doc, index):
-    """ Проверяет, окружён ли абзац полностью пустыми строками сверху и снизу (без текста и объектов). """
-    
-    def isTrulyEmpty(paragraph):
-        """ Проверяет, является ли параграф полностью пустым (не содержит текста и объектов). """
-        if paragraph.text.strip():  # Если есть текст, параграф не пустой
-            return False
-        
-        # Проверяем, есть ли в runs хоть что-то, кроме текста (например, картинки)
-        for run in paragraph.runs:
-            if run.text.strip():  # Если в run есть текст, значит, параграф не пустой
-                return False
-            if run._element.getchildren():  # Если у run есть вложенные элементы (например, <w:drawing>), значит, там объект
-                return False
-        
-        return True  # Если ничего нет, параграф считается пустым
-
-    # Если это последний параграф, сразу возвращаем False
-    if index == len(doc.paragraphs) - 1:
-        return False
-    
-    # Проверяем, окружён ли параграф пустыми строками сверху и снизу
-    return (index > 0 and isTrulyEmpty(doc.paragraphs[index - 1])) and \
-           (index < len(doc.paragraphs) - 1 and isTrulyEmpty(doc.paragraphs[index + 1]))
-
 
 def isBeforePageBreak(doc, index):
     """Проверяет, есть ли перед данным абзацем разрыв страницы.
@@ -78,7 +54,7 @@ def isBeforePageBreak(doc, index):
 def headingLevel(text):
     """ Определяет уровень заголовка."""
     match = re.match(r"^\d+(\.\d+){0,3}", text)
-    return min(len(match.group().split(".")), 4) if match else 1
+    return min(len(match.group().split(".")), 4) if match else False
 
 def isHeading(paragraph, index, doc, defaultFontSize):
     """ Проверяет, является ли абзац заголовком. """
@@ -137,7 +113,7 @@ def isHeading(paragraph, index, doc, defaultFontSize):
         total_chars - bold_count <= 3 or 
         total_chars - large_font_count <= 3):
         return True
-    return isSurroundedEmptyLines(doc, index) or isBeforePageBreak(doc, index)
+    return isBeforePageBreak(doc, index)
 
 def removeEmptyLinesAndPageBreaks(doc, index):
     """Удаляет пустые строки, пустые абзацы и разрывы страниц перед и после параграфа, не затрагивая контент (картинки, таблицы)."""
@@ -147,23 +123,20 @@ def removeEmptyLinesAndPageBreaks(doc, index):
         """
         Проверяет, является ли абзац пустым.
         Абзац считается непустым, если:
-          - содержит не только пробельные символы, или
+          - содержит текст (даже если `paragraph.text` пуст),
           - содержит встроенные объекты (например, картинки).
         """
         # Если есть текст, отличающийся от пробелов, считаем абзац не пустым.
         if paragraph.text and paragraph.text.strip():
             return False
 
-        # Если в абзаце присутствуют встроенные объекты (например, картинки),
-        # то он не должен удаляться.
-        if paragraph._element.find('.//w:drawing', namespaces=ns) is not None:
-            return False
+        if paragraph._element.find('.//w:drawing', namespaces=ns) is not None or paragraph._element.find('.//w:pict', namespaces=ns) is not None:
+            return False  # В абзаце есть объект (например, картинка)
 
-        # Если абзац содержит только разрывы страниц, пробелы или вообще ничего – он пустой.
-        return True
+        return True  # Если ничего нет, считаем абзац пустым
 
     def remove_paragraph(paragraph):
-        """Корректно удаляет абзац из документа."""
+        """Удаляет абзац из документа."""
         parent = paragraph._element.getparent()
         if parent is not None:
             parent.remove(paragraph._element)
@@ -173,7 +146,7 @@ def removeEmptyLinesAndPageBreaks(doc, index):
         for br in paragraph._element.findall(".//w:br[@w:type='page']", namespaces=ns):
             br.getparent().remove(br)
 
-    # Удаление пустых абзацев и разрывов страниц перед указанным индексом
+     # Удаление пустых абзацев и разрывов страниц перед указанным индексом
     i = index - 1
     while i >= 0:
         if i >= len(doc.paragraphs):
@@ -191,7 +164,7 @@ def removeEmptyLinesAndPageBreaks(doc, index):
             break
         i -= 1
 
-    # Удаление пустых абзацев и разрывов страниц после указанного индекса
+    # Удаляем пустые абзацы и разрывы страниц после целевого абзаца
     i = index + 1
     while i < len(doc.paragraphs):
         paragraph = doc.paragraphs[i]
@@ -204,77 +177,197 @@ def removeEmptyLinesAndPageBreaks(doc, index):
         else:
             break
 
+
 def addPageBreak(paragraph):
-    """Добавляет разрыв страницы в конец предыдущего абзаца.  
-    Если параграф первый в документе, создаёт разрыв страницы отдельным абзацем."""
-    
+    """
+    Добавляет разрыв страницы в конец предыдущего абзаца.
+    Если перед параграфом уже есть разрыв страницы (либо как отдельный абзац,
+    либо в конце предыдущего абзаца), новый не добавляется.
+    """
+    ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
     prev_paragraph = paragraph._element.getprevious()
 
-    if prev_paragraph is not None:
-        # Если перед параграфом уже есть другой абзац, добавляем разрыв страницы в его конец
-        page_break = OxmlElement("w:br")
-        page_break.set(qn("w:type"), "page")
-        prev_paragraph.append(page_break)
+    # Если предыдущего абзаца нет - выходим
+    if prev_paragraph is None:
+        return
+
+    # Проверяем, содержит ли предыдущий абзац уже разрыв страницы
+    # Ищем все элементы <w:br> с атрибутом w:type="page" в предыдущем абзаце
+    page_breaks = prev_paragraph.findall(".//w:br[@w:type='page']", namespaces=ns)
+    if page_breaks:
+        # Если разрыв уже есть – ничего не делаем
+        return
+
+    # Если разрыва нет, добавляем его в конец предыдущего абзаца
+    page_break = OxmlElement("w:br")
+    page_break.set(qn("w:type"), "page")
+    prev_paragraph.append(page_break)
+
+def is_empty_paragraph_element(p_element):
+    """
+    Проверяет, является ли XML-элемент абзаца пустым.
+    Пустым считается, если конкатенированный текст всех узлов пуст (после удаления пробелов).
+    """
+    text = ''.join(p_element.itertext()).strip()
+    return text == ''
 
 def addEmptyParagraphAfter(paragraph):
-    """Добавляет пустой параграф сразу после указанного абзаца."""
+    """Добавляет пустой параграф сразу после указанного абзаца, если его там ещё нет."""
     if paragraph is None:
         return
-    
-    # Создаём новый пустой параграф (XML-элемент <w:p>)
+
+    next_elem = paragraph._element.getnext()
+    # Если существует следующий элемент и он является параграфом, проверяем его содержимое
+    if next_elem is not None and next_elem.tag == qn("w:p") and is_empty_paragraph_element(next_elem):
+        # Пустой абзац уже присутствует – ничего не делаем
+        return
+
+    # Иначе создаём новый пустой параграф и вставляем его сразу после текущего
     new_paragraph = OxmlElement("w:p")
-    # Вставляем его сразу после переданного абзаца
     paragraph._element.addnext(new_paragraph)
 
 def addEmptyParagraphBefore(paragraph):
-    """Добавляет пустой параграф перед указанным абзацем."""
+    """Добавляет пустой параграф перед указанным абзацем, если его там ещё нет."""
     if paragraph is None:
         return
-    
-    # Создаём новый пустой параграф (XML-элемент <w:p>)
+
+    prev_elem = paragraph._element.getprevious()
+    # Если существует предыдущий элемент и он является параграфом, проверяем его содержимое
+    if prev_elem is not None and prev_elem.tag == qn("w:p") and is_empty_paragraph_element(prev_elem):
+        # Пустой абзац уже присутствует – ничего не делаем
+        return
+
+    # Иначе создаём новый пустой параграф и вставляем его перед текущим
     new_paragraph = OxmlElement("w:p")
-    # Вставляем его перед переданным абзацем
     paragraph._element.addprevious(new_paragraph)
 
 def ensureHeadingStyle(doc, level, font, fontsize):
     """Проверяет, создаёт или обновляет стиль заголовка."""
-    style_name = f"Heading {level}"  # Название стиля, как в Word
+    base_style_name = f"Заголовок {level}"  # Русское название стиля
+    
+    # Проверяем существование стиля через XML
+    for style in doc.styles:
+        if style.type == WD_STYLE_TYPE.PARAGRAPH:
+            style_elm = style._element
+            name_elem = style_elm.find(qn("w:name"))
+            if name_elem is not None and name_elem.get(qn("w:val")) and name_elem.get(qn("w:val")).startswith(base_style_name):
+                return style.name  # Если стиль найден, возвращаем его имя
+    
+    # Создаём новый стиль, если не найден
+    style_name = f"{base_style_name}{len([s for s in doc.styles if base_style_name in s.name]) + 1}"  # Добавляем номер к названию
+    style = doc.styles.add_style(style_name, WD_STYLE_TYPE.PARAGRAPH)
 
-    # Проверяем, есть ли уже такой стиль
-    if style_name in doc.styles:
-        style = doc.styles[style_name]  # Если есть, получаем стиль
-    else:
-        style = doc.styles.add_style(style_name, WD_STYLE_TYPE.PARAGRAPH)  # Если нет, создаём
-
-    # Получаем объект run, чтобы корректно менять шрифт (исправляет баг с невидимым шрифтом)
+    # Удаляем старые настройки шрифта
     for r in style.element.findall(qn("w:rPr")):
-        style.element.remove(r)  # Удаляем старые настройки шрифта (чтобы обновились)
-
-    # Настраиваем шрифт и другие параметры (вне зависимости от существования стиля)
+        style.element.remove(r)
+    
+    # Настраиваем шрифт и другие параметры
     style.font.name = font  # Шрифт
     style.font.size = Pt(float(fontsize))  # Размер шрифта
     style.font.bold = True  # Жирный текст
     style.font.color.rgb = RGBColor(0, 0, 0)  # Чёрный цвет
-
+    
     # Настраиваем выравнивание
     style.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-
-    # Добавляем уровень заголовка (чтобы отображался в оглавлении и сворачивался)
+    
+    # Добавляем уровень заголовка
     style_elm = style._element
     pPr = style_elm.find(qn("w:pPr"))
     if pPr is None:
         pPr = OxmlElement("w:pPr")
         style_elm.append(pPr)
-
+    
     outline_lvl = pPr.find(qn("w:outlineLvl"))
     if outline_lvl is None:
         outline_lvl = OxmlElement("w:outlineLvl")
         pPr.append(outline_lvl)
     
     outline_lvl.set(qn("w:val"), str(level - 1))  # Word использует 0-основанные уровни
-
+    
     # Делаем стиль видимым в списке стилей Word
     style.hidden = False
     style.quick_style = True  # Включает отображение в меню стилей
-
+    
     return style_name  # Возвращаем имя стиля
+
+def cycle_removeEmptyLinesAndPageBreaks(doc, defaultFontsize):
+    """
+    Вызывает функцию removeEmptyLinesAndPageBreaks(doc, index) до тех пор,
+    пока документ не перестанет изменяться. Для проверки изменений сравниваются
+    XML-представление документа и количество параграфов.
+    """
+    prev_xml = doc._element.xml
+    prev_par_count = len(doc.paragraphs)
+
+    while True:
+        for index, paragraph in enumerate(doc.paragraphs):
+            isDraw = False
+            level = headingLevel(paragraph.text)
+            # Проверяем наличие элемента <w:drawing> или <w:pict>
+            for run in paragraph.runs:
+                drawing = run._element.find(qn("w:drawing"))
+                pict = run._element.find(qn("w:pict"))
+                if drawing is not None or pict is not None:
+                    isDraw = True
+                    break
+            if not paragraph._element.xpath(".//w:numPr") and not isDraw and isHeading(paragraph, index, doc, defaultFontsize) and level != False:
+                removeEmptyLinesAndPageBreaks(doc, index)
+                if level == 1:
+                    addPageBreak(paragraph)
+                    addEmptyParagraphAfter(paragraph)
+                else:
+                    if index > 0:
+                        addEmptyParagraphBefore(paragraph)
+                    addEmptyParagraphAfter(paragraph)
+        current_xml = doc._element.xml
+        current_par_count = len(doc.paragraphs)
+
+        # Если документ не изменился ни по структуре, ни по количеству параграфов – завершаем цикл
+        if current_xml == prev_xml and current_par_count == prev_par_count:
+            break
+
+        prev_xml = current_xml
+        prev_par_count = current_par_count
+
+def changeNormalStyle(doc, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation):
+    """
+    Изменяет стиль Normal во всём документе, используя заданные параметры.
+    """
+    # Получаем стиль Normal
+    style = doc.styles['Normal']
+
+    # Изменяем настройки шрифта
+    style.font.name = font
+    style.font.size = Pt(float(fontsize))
+    style.font.color.rgb = RGBColor(0, 0, 0)
+
+    # Изменяем выравнивание абзаца
+    if alignment == "По левому краю":
+        style.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+    elif alignment == "По центру":
+        style.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    elif alignment == "По правому краю":
+        style.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
+    elif alignment == "По ширине":
+        style.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+
+    # Междустрочный интервал
+    style.paragraph_format.line_spacing = float(spacing)
+
+    # Интервал перед абзацем
+    if beforespacing == "Нет":
+        style.paragraph_format.space_before = Pt(0)
+    else:
+        style.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
+
+    # Интервал после абзаца
+    if afterspacing == "Нет":
+        style.paragraph_format.space_after = Pt(0)
+    else:
+        style.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
+
+    # Сброс отступа всего абзаца к стандартному (без дополнительного левого отступа)
+    style.paragraph_format.left_indent = Cm(0)
+
+    # Отступ первой строки
+    style.paragraph_format.first_line_indent = Cm(float(firstindentation))

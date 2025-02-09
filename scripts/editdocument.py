@@ -7,7 +7,7 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 from modules.tabs import removeTabs, addTab
-from modules.headings import headingLevel, isHeading, getDefaultFontSize, removeEmptyLinesAndPageBreaks, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle
+from modules.headings import headingLevel, isHeading, getDefaultFontSize, cycle_removeEmptyLinesAndPageBreaks, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle, changeNormalStyle
 
 def updateParagraphDefaultFont(paragraph, font):
     """Изменяет шрифт в первом <w:rFonts> внутри <w:pPr>, если он существует."""
@@ -25,7 +25,6 @@ def updateParagraphDefaultFont(paragraph, font):
                 rFonts.set(qn("w:ascii"), font)
                 rFonts.set(qn("w:hAnsi"), font)
 
-# ещё раз исправлено и теперь точно работает
 def cleanParagraphText(paragraph):
     """Удаляет пробелы в начале и в конце текста параграфа, 
     сохраняя изображения, гиперссылки и другие элементы."""
@@ -105,12 +104,16 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         section.top_margin = Cm(2)
         section.bottom_margin = Cm(2)
 
+    # задание настроек для обычного стандартного стиля Normal (в основном, для создаваемых отступов и разрывов страниц)
+    changeNormalStyle(doc, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation)
+
     # обработка всего документа (по всем paragraphs и всем runs)
     for index, paragraph in enumerate(doc.paragraphs):
         isHead = False
         isDraw = False
 
         cleanParagraphText(paragraph)  # Убираем пробелы перед проверкой
+        level = headingLevel(paragraph.text)
 
         # Проверяем наличие элемента <w:drawing> или <w:pict>
         for run in paragraph.runs:
@@ -126,12 +129,12 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             if not haveList:
                 haveList = True
                 modifyList(doc, font, int(fontsize))
-        elif not isDraw and isHeading(paragraph, index, doc, defaultFontsize):
-            level = headingLevel(paragraph.text)
+        elif not isDraw and isHeading(paragraph, index, doc, defaultFontsize) and level != False:
             style_name = ensureHeadingStyle(doc, level, font, fontsize)
             paragraph.style = style_name
             isHead = True
-            removeEmptyLinesAndPageBreaks(doc, index)
+
+            cycle_removeEmptyLinesAndPageBreaks(doc, defaultFontsize)
 
             if level == 1:
                 addPageBreak(paragraph)
@@ -188,6 +191,10 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
 
         updateParagraphDefaultFont(paragraph, font)
+        
+        # для уверенности
+        paragraph.style.font.name = font
+        paragraph.style.font.size = Pt(float(fontsize))
         
         for run in paragraph.runs:
             # Шрифт
