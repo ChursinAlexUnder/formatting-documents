@@ -9,15 +9,21 @@ type Answer struct {
 	Params       Parameters
 }
 
+type Data struct {
+	Count          int          `json:"count"`
+	Date           string       `json:"date"`
+	LastFormatting []Parameters `json:"last-formatting"`
+}
+
 type Parameters struct {
-	Font             string
-	Fontsize         string
-	Alignment        string
-	Spacing          string
-	BeforeSpacing    string
-	AfterSpacing     string
-	FirstIndentation string
-	ListTabulation   string
+	Font             string `json:"font"`
+	Fontsize         string `json:"fontsize"`
+	Alignment        string `json:"alignment"`
+	Spacing          string `json:"spacing"`
+	BeforeSpacing    string `json:"beforeSpacing"`
+	AfterSpacing     string `json:"afterSpacing"`
+	FirstIndentation string `json:"firstIndentation"`
+	ListTabulation   string `json:"listTabulation"`
 }
 
 // структура для отправки на страницу пользователю перез скачиванием
@@ -40,8 +46,8 @@ var (
 	Fontsize         []string = []string{"8", "9", "10", "11", "12", "13", "14", "16", "18", "20"}
 	Alignment        []string = []string{"По левому краю", "По центру", "По правому краю", "По ширине"}
 	Spacing          []string = []string{"1.0", "1.5", "2.0", "2.5", "3.0"}
-	BeforeSpacing    []string = []string{"Нет", "1.0", "1.5", "2.0", "2.5", "3.0"}
-	AfterSpacing     []string = []string{"Нет", "1.0", "1.5", "2.0", "2.5", "3.0"}
+	BeforeSpacing    []string = []string{"0", "1.0", "1.5", "2.0", "2.5", "3.0"}
+	AfterSpacing     []string = []string{"0", "1.0", "1.5", "2.0", "2.5", "3.0"}
 	FirstIndentation []string = []string{"0", "0.5", "1.0", "1.25", "1.5", "1.75", "2.0", "2.5", "3.0"}
 	ListTabulation   []string = []string{"0", "0.25", "0.5", "0.75", "1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0", "3.25", "3.5", "3.75", "4.0"}
 )

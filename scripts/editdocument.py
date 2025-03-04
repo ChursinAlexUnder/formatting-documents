@@ -169,16 +169,10 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         paragraph.paragraph_format.line_spacing = float(spacing)
 
         # интервал перед абзацем
-        if beforespacing == "Нет":
-            paragraph.paragraph_format.space_before = Pt(0)
-        else:
-            paragraph.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
+        paragraph.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
         
         # интервал после абзаца
-        if afterspacing == "Нет":
-            paragraph.paragraph_format.space_after = Pt(0)
-        else:
-            paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
+        paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
         
         # сбрасываем отступ всего абзаца
         paragraph.paragraph_format.left_indent = 0

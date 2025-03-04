@@ -355,16 +355,10 @@ def changeNormalStyle(doc, font, fontsize, alignment, spacing, beforespacing, af
     style.paragraph_format.line_spacing = float(spacing)
 
     # Интервал перед абзацем
-    if beforespacing == "Нет":
-        style.paragraph_format.space_before = Pt(0)
-    else:
-        style.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
+    style.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
 
     # Интервал после абзаца
-    if afterspacing == "Нет":
-        style.paragraph_format.space_after = Pt(0)
-    else:
-        style.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
+    style.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
 
     # Сброс отступа всего абзаца к стандартному (без дополнительного левого отступа)
     style.paragraph_format.left_indent = Cm(0)

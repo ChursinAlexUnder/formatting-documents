@@ -6,6 +6,7 @@ import (
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,12 +14,20 @@ import (
 	"text/template"
 )
 
+var counter int
+
+//
+
 func MainPage(w http.ResponseWriter, r *http.Request) {
 	var (
 		wrongData domain.WrongData = domain.WrongData{}
 		data      domain.Answer
 		err       error
 	)
+	//
+	log.Printf("Counter: %d", counter)
+	counter++
+	//
 	if r.Method == http.MethodPost {
 		data, wrongData, err = ManagementData(w, r)
 		if err != nil && err.Error() != "error validation" {
