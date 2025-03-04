@@ -6,17 +6,12 @@ import (
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"text/template"
 )
-
-var counter int
-
-//
 
 func MainPage(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -25,8 +20,7 @@ func MainPage(w http.ResponseWriter, r *http.Request) {
 		err       error
 	)
 	//
-	log.Printf("Counter: %d", counter)
-	counter++
+	// добавить вызов функции проверки даты (работа с JSON)!!!
 	//
 	if r.Method == http.MethodPost {
 		data, wrongData, err = ManagementData(w, r)
