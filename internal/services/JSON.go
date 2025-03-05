@@ -9,26 +9,55 @@ import (
 	"time"
 )
 
-var mu sync.Mutex
+var mu sync.RWMutex
 
-func CheckDataJSON() error {
-	var (
-		filename string = "data.json"
-		data     domain.Data
-	)
-	mu.Lock()
-	defer mu.Unlock()
+func ReadFileJSON(filename string) (domain.Data, error) {
+	var data domain.Data
 
-	currentDate := time.Now().Format("2006-01-02")
+	mu.RLock()
+	defer mu.RUnlock()
 
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return fmt.Errorf("error reading json file: %v", err)
+		return data, fmt.Errorf("error reading JSON file: %v", err)
 	}
 
 	err = json.Unmarshal(file, &data)
 	if err != nil {
-		return fmt.Errorf("error decoding json file: %v", err)
+		return data, fmt.Errorf("error decoding JSON file: %v", err)
+	}
+
+	return data, nil
+}
+
+func WriteFileJSON(data domain.Data, filename string) error {
+	updatedFile, err := json.MarshalIndent(data, "", "    ")
+	if err != nil {
+		return fmt.Errorf("error coding JSON: %v", err)
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	err = ioutil.WriteFile(filename, updatedFile, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing in json file: %v", err)
+	}
+
+	return nil
+}
+
+func CheckDataJSON() error {
+	var (
+		filename string = "../data.json"
+		data     domain.Data
+	)
+
+	currentDate := time.Now().Format("2006-01-02")
+
+	data, err := ReadFileJSON(filename)
+	if err != nil {
+		return fmt.Errorf("error getting information from JSON file for CHECK: %v", err)
 	}
 
 	if data.Date != currentDate {
@@ -36,14 +65,9 @@ func CheckDataJSON() error {
 		data.Date = currentDate
 		data.LastFormatting = []domain.Parameters{}
 
-		updatedFile, err := json.MarshalIndent(data, "", "    ")
+		err = WriteFileJSON(data, filename)
 		if err != nil {
-			return fmt.Errorf("error coding json: %v", err)
-		}
-
-		err = ioutil.WriteFile(filename, updatedFile, 0644)
-		if err != nil {
-			return fmt.Errorf("error writing in json file: %v", err)
+			return fmt.Errorf("error writing information in JSON file for CHECK: %v", err)
 		}
 	}
 	return nil
@@ -51,20 +75,13 @@ func CheckDataJSON() error {
 
 func UpdateDataJSON(params domain.Parameters) error {
 	var (
-		filename string = "data.json"
+		filename string = "../data.json"
 		data     domain.Data
 	)
-	mu.Lock()
-	defer mu.Unlock()
 
-	file, err := ioutil.ReadFile(filename)
+	data, err := ReadFileJSON(filename)
 	if err != nil {
-		return fmt.Errorf("error reading json file: %v", err)
-	}
-
-	err = json.Unmarshal(file, &data)
-	if err != nil {
-		return fmt.Errorf("error decoding json file: %v", err)
+		return fmt.Errorf("error getting information from JSON file for UPDATE: %v", err)
 	}
 
 	data.Count++
@@ -74,14 +91,9 @@ func UpdateDataJSON(params domain.Parameters) error {
 		data.LastFormatting = data.LastFormatting[:5]
 	}
 
-	updatedFile, err := json.MarshalIndent(data, "", "    ")
+	err = WriteFileJSON(data, filename)
 	if err != nil {
-		return fmt.Errorf("error encoding json: %v", err)
-	}
-
-	err = ioutil.WriteFile(filename, updatedFile, 0644)
-	if err != nil {
-		return fmt.Errorf("error writing to json file: %v", err)
+		return fmt.Errorf("error writing information in JSON file for UPDATE: %v", err)
 	}
 
 	return nil

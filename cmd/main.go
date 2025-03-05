@@ -11,8 +11,6 @@ func main() {
 	pkg.HandlerPages()
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
-		log.Print("Error: the server did not start")
-	} else {
-		log.Print("The server has started successfully")
+		log.Printf("Error: the server did not start: %v", err)
 	}
 }

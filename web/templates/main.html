@@ -11,11 +11,13 @@
         <link rel="stylesheet" href="../static/css/windows.css">
         <link rel="stylesheet" href="../static/css/parameters.css">
         <link rel="stylesheet" href="../static/css/help.css">
+        <link rel="stylesheet" href="../static/css/SSE.css">
 
         <script defer src="../static/js/parameter.js"></script>
         <script defer src="../static/js/upload.js"></script>
         <script defer src="../static/js/preloader.js"></script>
         <script defer src="../static/js/menu.js"></script>
+        <script defer src="../static/js/SSE.js"></script>
         {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentParameters "") }}
             <script defer>
                 // Заменяем текущее состояние на URL без отправки POST
@@ -100,11 +102,11 @@
                         </div>
                         <div class="parameter">
                             <p class="parameter-text">Интервал перед абзацем:</p>
-                            <input class="parameter-input" name="beforespacing" type="text" value="Нет" readonly>
+                            <input class="parameter-input" name="beforespacing" type="text" value="0" readonly>
                         </div>
                         <div class="parameter">
                             <p class="parameter-text">Интервал после абзаца:</p>
-                            <input class="parameter-input" name="afterspacing" type="text" value="Нет" readonly>
+                            <input class="parameter-input" name="afterspacing" type="text" value="0" readonly>
                         </div>
                         <div class="parameter">
                             <p class="parameter-text">Отступ первой строки:</p>
@@ -124,6 +126,10 @@
                 </div>
             </form>
         </div>
+<!--  -->
+        <div id="counter">Счётчик: 0</div>
+        <div id="slider"></div>
+<!--  -->
         <div id="preloader" class="overlay-loader">
             <div class="loader-background color-flip"></div>
             <img class="loader-icon spinning-cog" src="../static/pictures/gear-white.svg">

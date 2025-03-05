@@ -12,7 +12,12 @@ type Answer struct {
 type Data struct {
 	Count          int          `json:"count"`
 	Date           string       `json:"date"`
-	LastFormatting []Parameters `json:"last-formatting"`
+	LastFormatting []Parameters `json:"last_formatting"`
+}
+
+type SSEData struct {
+	Count          int          `json:"count"`
+	LastFormatting []Parameters `json:"last_formatting"`
 }
 
 type Parameters struct {

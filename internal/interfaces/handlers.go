@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
+	"formatting-documents/internal/services"
 	"io"
 	"net/http"
 	"net/url"
@@ -19,9 +20,11 @@ func MainPage(w http.ResponseWriter, r *http.Request) {
 		data      domain.Answer
 		err       error
 	)
-	//
-	// добавить вызов функции проверки даты (работа с JSON)!!!
-	//
+	err = services.CheckDataJSON()
+	if err != nil {
+		fmt.Fprintf(w, "Error checking JSON data: %v", err)
+		return
+	}
 	if r.Method == http.MethodPost {
 		data, wrongData, err = ManagementData(w, r)
 		if err != nil && err.Error() != "error validation" {

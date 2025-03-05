@@ -48,6 +48,12 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, doma
 	if err != nil {
 		return data, wrongData, fmt.Errorf("error formatting the document on the server: %v", err)
 	}
+
+	// обновление счетчика и данных для слайдера
+	err = services.UpdateDataJSON(data.Params)
+	if err != nil {
+		return data, wrongData, fmt.Errorf("error update counter in JSON file: %v", err)
+	}
 	return data, wrongData, nil
 }
 
