@@ -21,6 +21,7 @@ type SSEData struct {
 }
 
 type Parameters struct {
+	Time             string `json:"time"`
 	Font             string `json:"font"`
 	Fontsize         string `json:"fontsize"`
 	Alignment        string `json:"alignment"`

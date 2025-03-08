@@ -126,10 +126,17 @@
                 </div>
             </form>
         </div>
-<!--  -->
-        <div id="counter">Счётчик: 0</div>
-        <div id="slider"></div>
-<!--  -->
+        <div class="main-window">
+            <h2 class="statistic-title">Статистика за сегодня</h2>
+            <div class="counter-text">Количество отформатированных документов за сегодня: <strong id="counter">0</strong></div>
+            <div class="counter-text">Последние 5 наборов параметров пользователей</div>
+            <div class="slider-container">
+                <button class="slider-arrow slider-prev">&lt;</button>
+                <div id="slider" class="slider"></div>
+                <button class="slider-arrow slider-next">&gt;</button>
+            </div>
+            <div class="slider-dots"></div>
+        </div>
         <div id="preloader" class="overlay-loader">
             <div class="loader-background color-flip"></div>
             <img class="loader-icon spinning-cog" src="../static/pictures/gear-white.svg">
