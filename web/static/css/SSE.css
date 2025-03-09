@@ -6,17 +6,25 @@
     padding: 0 3%;
 }
 
-.counter-text, .empty-text {
+.counter-text, .slider-empty-text, .slider-download-text {
     font-family: "Arial";
     font-size: 25px;
     margin: 50px 0;
     padding: 0 3%;
 }
 
-.empty-text {
+.slider-empty-text, .slider-download-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slider-empty-text {
     color: rgb(100, 100, 100);
-    margin-left: auto;
-    margin-right: auto;
+}
+
+.slider-download-text {
+    color: rgb(0, 113, 187);
 }
 
 .slider-container {
@@ -41,8 +49,11 @@
     border-radius: 15px;
     padding: 20px;
     transition: all 0.3s ease;
+}
+
+.slider-item-animation {
     opacity: 0;
-    animation: slideDown 0.6s forwards;
+    animation: slideDown 0.8s forwards;
     animation-delay: calc(0.1s * var(--index));
 }
 
@@ -52,12 +63,13 @@
 
 /* Стили для фиктивных слайдов */
 .slider-item-dummy {
+    visibility: hidden;
     background: transparent;
     animation: none;
     pointer-events: none;
 }
 
-.slider-item p {
+.slider-item p, .slider-item-dummy p {
     font-family: Arial;
     font-size: 1.1em;
     margin: 0.8em 0;
@@ -97,8 +109,8 @@
     justify-content: center;
 }
 
-.slider-prev { left: 0; }
-.slider-next { right: 0; }
+.slider-prev { left: 0; visibility: hidden; }
+.slider-next { right: 0; visibility: hidden; }
 
 .slider-prev:hover {
     background: rgb(36, 167, 255);
@@ -115,7 +127,7 @@
     justify-content: center;
     gap: 10px;
     margin-bottom: 70px;
-    min-height: 20px; /* Фиксированная высота */
+    height: 20px; /* Фиксированная высота */
 }
 
 .slider-dot {
@@ -143,7 +155,7 @@
     .statistic-title {
         font-size: 30px;
     }
-    .counter-text, .empty-text {
+    .counter-text, .slider-empty-text, .slider-download-text {
         font-size: 21px;
         margin: 35px 0;
     }
@@ -166,7 +178,7 @@
     .statistic-title {
         font-size: 21px;
     }
-    .counter-text, .empty-text {
+    .counter-text, .slider-empty-text, .slider-download-text {
         font-size: 17px;
         margin: 20px 0;
     }
