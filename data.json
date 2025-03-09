@@ -1,61 +1,6 @@
 {
-    "count": 23,
+    "count": 0,
     "date": "2025-03-10",
     "last_formatting": [
-        {
-            "time": "23:57",
-            "font": "New Roman",
-            "fontsize": "14",
-            "alignment": "По ширине",
-            "spacing": "1.5",
-            "beforeSpacing": "0",
-            "afterSpacing": "0",
-            "firstIndentation": "1.25",
-            "listTabulation": "2.0"
-        },
-        {
-            "time": "23:57",
-            "font": "Times New Roman",
-            "fontsize": "14",
-            "alignment": "По ширине",
-            "spacing": "1.5",
-            "beforeSpacing": "0",
-            "afterSpacing": "0",
-            "firstIndentation": "1.25",
-            "listTabulation": "2.0"
-        },
-        {
-            "time": "00:00",
-            "font": "Arial",
-            "fontsize": "14",
-            "alignment": "По ширине",
-            "spacing": "1.5",
-            "beforeSpacing": "0",
-            "afterSpacing": "0",
-            "firstIndentation": "1.25",
-            "listTabulation": "2.0"
-        },
-        {
-            "time": "23:57",
-            "font": "New Roman",
-            "fontsize": "14",
-            "alignment": "По ширине",
-            "spacing": "1.5",
-            "beforeSpacing": "0",
-            "afterSpacing": "0",
-            "firstIndentation": "1.25",
-            "listTabulation": "2.0"
-        },
-        {
-            "time": "23:57",
-            "font": "New Roman",
-            "fontsize": "14",
-            "alignment": "По ширине",
-            "spacing": "1.5",
-            "beforeSpacing": "0",
-            "afterSpacing": "0",
-            "firstIndentation": "1.25",
-            "listTabulation": "2.0"
-        }
     ]
 }
