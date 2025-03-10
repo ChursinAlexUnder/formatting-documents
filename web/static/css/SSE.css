@@ -99,7 +99,6 @@
     height: 40px;
     border: none;
     border-radius: 50%;
-    background: rgb(0, 113, 187);
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -119,6 +118,16 @@
 .slider-next:hover { 
     background: rgb(36, 167, 255);
     transition: background-color 0.3s, color 0.3s; 
+}
+
+.slider-prev, .slider-next {
+    pointer-events: auto;
+    background-color: rgb(0, 113, 187);
+}
+
+.slider-prev-next-off {
+    pointer-events: none;
+    background-color: rgb(99, 185, 242);
 }
 
 /* Точки навигации */

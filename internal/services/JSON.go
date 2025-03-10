@@ -85,7 +85,7 @@ func UpdateDataJSON(params domain.Parameters) error {
 	}
 
 	data.Count++
-	params.Time = time.Now().Format("15:04")
+	params.Time = time.Now().Add(3 * time.Hour).Format("15:04")
 
 	data.LastFormatting = append([]domain.Parameters{params}, data.LastFormatting...)
 	if len(data.LastFormatting) > 5 {

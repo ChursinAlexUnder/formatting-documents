@@ -12,10 +12,16 @@ function buttonControl() {
     const prevButton = document.querySelector('.slider-prev');
     const nextButton = document.querySelector('.slider-next');
 
-    prevButton.style.pointerEvents = currentSlide === 0 || sliderItems.length === 0 ? 'none' : 'auto';
-    prevButton.style.backgroundColor = currentSlide === 0 || sliderItems.length === 0 ? 'rgb(99, 185, 242)' : '';
-    nextButton.style.pointerEvents = currentSlide === sliderItems.length - 1 || sliderItems.length === 0 ? 'none' : 'auto';
-    nextButton.style.backgroundColor = currentSlide === sliderItems.length - 1 || sliderItems.length === 0 ? 'rgb(99, 185, 242)' : '';
+    if (currentSlide !== 0 && sliderItems.length !== 0) {
+        prevButton.classList.remove('slider-prev-next-off');
+    } else if (!prevButton.classList.contains('slider-prev-next-off')) {
+        prevButton.classList.add('slider-prev-next-off');
+    }
+    if (currentSlide !== sliderItems.length - 1 && sliderItems.length !== 0) {
+        nextButton.classList.remove('slider-prev-next-off');
+    } else if (!nextButton.classList.contains('slider-prev-next-off')) {
+        nextButton.classList.add('slider-prev-next-off');
+    }
 }
 
 // Инициализация слайдера
