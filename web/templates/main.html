@@ -77,6 +77,7 @@
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">Табуляция – это расстояние от начала строки до начала текста.</span>
                         </a>
+                        <a class="window-one-button" href="/menu?parameter=content">Содержание</a>
                     </div>
                     <div class="window-two">
                         <img id="window-preloader" class="window-preloader" src="../static/pictures/gear-darkblue.svg">
@@ -116,6 +117,10 @@
                             <p class="parameter-text">Табуляция в списках:</p>
                             <input class="parameter-input" name="listtabulation" type="text" value="2.0" readonly>
                         </div>
+                        <div class="parameter">
+                            <p class="parameter-text">Содержание:</p>
+                            <input class="parameter-input" name="content" type="text" value="Добавить/обновить" readonly>
+                        </div>
                     </div>
                 </div>
                 {{ if ne .ErrorCommentParameters "" }}
@@ -143,6 +148,7 @@
                         <p><strong>Интервал после абзаца:</strong> 3.0</p>
                         <p><strong>Отступ первой строки:</strong> 1.75</p>
                         <p><strong>Табуляция в списках:</strong> 3.75</p>
+                        <p><strong>Работа с содержанием:</strong> Нет</p>
                     </div>
                     <div class="slider-download-text">Загрузка...</div>
                     <div class="slider-item-dummy">

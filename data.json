@@ -1,6 +1,18 @@
 {
-    "count": 0,
-    "date": "2025-03-10",
+    "count": 1,
+    "date": "2025-03-14",
     "last_formatting": [
+        {
+            "time": "01:26",
+            "font": "Times New Roman",
+            "fontsize": "14",
+            "alignment": "По ширине",
+            "spacing": "1.5",
+            "beforeSpacing": "0",
+            "afterSpacing": "0",
+            "firstIndentation": "1.25",
+            "listTabulation": "2.0",
+            "content": "Не добавлять/не обновлять"
+        }
     ]
 }
