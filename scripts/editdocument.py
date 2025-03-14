@@ -52,8 +52,6 @@ def cleanParagraphText(paragraph):
             elif run.text.isspace():  
                 run.text = ""  # Полностью пробельные run'ы в конце удаляем
 
-
-
 def modifyList(doc, font, fontsize):
     """
     Изменяет стиль номеров или маркеров списка в документе.
@@ -144,7 +142,6 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
                     addEmptyParagraphBefore(paragraph)
                 addEmptyParagraphAfter(paragraph)
 
-
         # Доступ к низкоуровневому XML-элементу параграфа
         p = paragraph._element
 
@@ -197,7 +194,6 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             run.font.size = Pt(float(fontsize))
             # цвет текста
             run.font.color.rgb = RGBColor(0, 0, 0)  # Чёрный цвет (RGB: 0, 0, 0)
-
 
     # Работа с именем отформатированного документа
     formattedDocumentName = 'formatted_' + documentName
