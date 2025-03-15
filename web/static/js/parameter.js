@@ -3,11 +3,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const windowTwo = document.querySelector('.window-two'); // Получение второго окна
     const parametersContainer = document.querySelector('.parameters-container'); // Контейнер параметров
 
-
+    // Глобальная переменная для текущего AbortController
+    let currentController = null;
+    
     buttons.forEach(button => {
         button.addEventListener('click', function (event) {
             event.preventDefault(); // Отмена стандартного действия кнопки (перехода по ссылке)
 
+            // Отменяем предыдущий запрос, если он ещё выполняется
+            if (currentController) {
+                currentController.abort();
+            }
+            // Создаем новый AbortController для нового запроса
+            currentController = new AbortController();
+            const signal = currentController.signal;
+            
             // Получаем значение параметра из ссылки
             const url = new URL(this.href);
             const parameterName = url.searchParams.get('parameter');
@@ -16,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Показываем прелоадер
             document.getElementById('window-preloader').style.display = 'block';
             
-            fetch(this.href) // Отправка AJAX-запроса на сервер
+            fetch(this.href, { signal }) // Отправка AJAX-запроса на сервер
                 .then(response => response.json()) // Преобразование ответа сервера в JSON
                 .then(data => {
                     document.getElementById('window-preloader').style.display = 'none';
@@ -34,8 +44,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 })
                 .catch(error => {
-                    document.getElementById('window-preloader').style.display = 'none';
-                    windowTwo.innerHTML = `<p>Произошла ошибка: ${error.message}</p>`; // Передача текста ошибки в тег <p>
+                    if (error.name !== 'AbortError') {
+                        document.getElementById('window-preloader').style.display = 'none';
+                        windowTwo.innerHTML = `<p>Произошла ошибка: ${error.message}</p>`;
+                    }
                 })
         });
     });

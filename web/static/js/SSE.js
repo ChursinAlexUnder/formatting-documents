@@ -12,10 +12,16 @@ function buttonControl() {
     const prevButton = document.querySelector('.slider-prev');
     const nextButton = document.querySelector('.slider-next');
 
-    prevButton.style.pointerEvents = currentSlide === 0 || sliderItems.length === 0 ? 'none' : 'auto';
-    prevButton.style.backgroundColor = currentSlide === 0 || sliderItems.length === 0 ? 'rgb(99, 185, 242)' : '';
-    nextButton.style.pointerEvents = currentSlide === sliderItems.length - 1 || sliderItems.length === 0 ? 'none' : 'auto';
-    nextButton.style.backgroundColor = currentSlide === sliderItems.length - 1 || sliderItems.length === 0 ? 'rgb(99, 185, 242)' : '';
+    if (currentSlide !== 0 && sliderItems.length !== 0) {
+        prevButton.classList.remove('slider-prev-next-off');
+    } else if (!prevButton.classList.contains('slider-prev-next-off')) {
+        prevButton.classList.add('slider-prev-next-off');
+    }
+    if (currentSlide !== sliderItems.length - 1 && sliderItems.length !== 0) {
+        nextButton.classList.remove('slider-prev-next-off');
+    } else if (!nextButton.classList.contains('slider-prev-next-off')) {
+        nextButton.classList.add('slider-prev-next-off');
+    }
 }
 
 // Инициализация слайдера
@@ -25,6 +31,9 @@ const initSlider = (items) => {
     // обновление текущей позиции в соответствии с измененными данными в слайдере
     if (currentSlide >= sliderItems.length) {
         currentSlide = Math.max(0, sliderItems.length - 1);
+        goToSlide(currentSlide)
+    } else {
+        currentSlide = Math.min(currentSlide + newHighlightCount, sliderItems.length - 1)
         goToSlide(currentSlide)
     }
 
@@ -45,20 +54,42 @@ const initSlider = (items) => {
 const updateSlider = (items) => {
     const slider = document.getElementById('slider');
     let realSlides;
+    let isWorkContent;
     sliderItems = items;
     
     // Фиктивный слайд (левый)
-    const dummyLeft = `<div class="slider-item-dummy"></div>`;
+    const dummyLeft = `
+        <div class="slider-item-dummy">
+            <p><strong>Время форматирования:</strong> 00:00</p>
+            <p><strong>Шрифт:</strong> Times New Roman</p>
+            <p><strong>Размер шрифта:</strong> 20</p>
+            <p><strong>Выравнивание:</strong> По правому краю</p>
+            <p><strong>Интервал:</strong> 3.0</p>
+            <p><strong>Интервал перед абзацем:</strong> 3.0</p>
+            <p><strong>Интервал после абзаца:</strong> 3.0</p>
+            <p><strong>Отступ первой строки:</strong> 1.75</p>
+            <p><strong>Табуляция в списках:</strong> 3.75</p>
+            <p><strong>Работа с содержанием:</strong> Нет</p>
+        </div>
+    `;
     // Формируем HTML для реальных слайдов
     if (!items || items.length === 0) {
-        realSlides = `<div class="empty-text">Пока ничего нет...</div>`;
+        realSlides = `<div class="slider-empty-text">Пока ничего нет</div>`;
     } else {
         realSlides = items.map((item, index) => {
-            // Если элемент входит в первые newHighlightCount, добавляем класс "new-highlight"
-            const highlightClass = index < newHighlightCount ? " new-highlight" : "";
+            // Если элемент входит в первые newHighlightCount, добавляем класс "new-highlight и slider-item-animation (для плавного появления)"
+            const highlightClass = index < newHighlightCount ? " new-highlight slider-item-animation" : "";
+            const animationClass = isInit === false && highlightClass === "" ? " slider-item-animation" : "";
+            if (item.content === "Добавить/обновить") {
+                isWorkContent = "Да";
+            } else if (item.content === "Не добавлять/не обновлять") {
+                isWorkContent = "Нет";
+            } else {
+                isWorkContent = "-";
+            }
             return `
-                <div class="slider-item${highlightClass}" style="--index: ${index}">
-                <p><strong>Время форматирования:</strong> ${item.time}</p>
+                <div class="slider-item${highlightClass}${animationClass}" style="--index: ${index}">
+                    <p><strong>Время форматирования:</strong> ${item.time}</p>
                     <p><strong>Шрифт:</strong> ${item.font}</p>
                     <p><strong>Размер шрифта:</strong> ${item.fontsize}</p>
                     <p><strong>Выравнивание:</strong> ${item.alignment}</p>
@@ -67,6 +98,7 @@ const updateSlider = (items) => {
                     <p><strong>Интервал после абзаца:</strong> ${item.afterSpacing}</p>
                     <p><strong>Отступ первой строки:</strong> ${item.firstIndentation}</p>
                     <p><strong>Табуляция в списках:</strong> ${item.listTabulation}</p>
+                    <p><strong>Работа с содержанием:</strong> ${isWorkContent}</p>
                 </div>
             `;
         }).join('');
@@ -158,6 +190,10 @@ const connectSSE = () => {
             initSlider(data.last_formatting);
             if (isInit === false) {
                 goToSlide(0);
+                const prevButton = document.querySelector('.slider-prev');
+                const nextButton = document.querySelector('.slider-next');
+                prevButton.style.visibility = 'visible';
+                nextButton.style.visibility = 'visible';
                 isInit = true
             }
             

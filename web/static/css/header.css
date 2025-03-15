@@ -32,7 +32,7 @@
     display: inline-block;
     opacity: 0;
     transform: translateY(-50px);
-    animation: slideDown 1.5s forwards;
+    animation: wordDown 1.5s forwards;
 }
 
 .special {
@@ -51,7 +51,7 @@
     animation-delay: 1.5s; /* Третье слово*/
 }
 
-@keyframes slideDown {
+@keyframes wordDown {
     0% {
         opacity: 0;
         transform: translateY(-50px);
