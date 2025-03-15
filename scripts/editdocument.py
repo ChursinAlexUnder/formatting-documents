@@ -87,7 +87,7 @@ def modifyList(doc, font, fontsize):
                 rPr.append(sz)
             sz.set(qn("w:val"), str(fontsize * 2))
 
-def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation, content):
+def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation):
     # Открываем документ
     doc = Document(bufferPath + '/' + documentName)
 
@@ -194,10 +194,6 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             run.font.size = Pt(float(fontsize))
             # цвет текста
             run.font.color.rgb = RGBColor(0, 0, 0)  # Чёрный цвет (RGB: 0, 0, 0)
-    
-    if content == "Добавить/обновить":
-        # создание/обновление содержания!!!
-        print("Hello")
 
     # Работа с именем отформатированного документа
     formattedDocumentName = 'formatted_' + documentName
@@ -217,14 +213,13 @@ beforespacing = sys.argv[6]
 afterspacing = sys.argv[7]
 firstindentation = sys.argv[8]
 listtabulation = sys.argv[9]
-content = sys.argv[10]
 
 if not os.path.exists(documentPath):
     print(f"Document not found: {documentPath}")
     sys.exit(1)
 
 try:
-    formattedDocumentPath = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation, content)
+    formattedDocumentPath = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation)
     print(f"Formatted document created: {formattedDocumentPath}")
 except Exception as e:
     print(f"Error formatting document: {e}")

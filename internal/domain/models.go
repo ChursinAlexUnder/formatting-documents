@@ -30,7 +30,6 @@ type Parameters struct {
 	AfterSpacing     string `json:"afterSpacing"`
 	FirstIndentation string `json:"firstIndentation"`
 	ListTabulation   string `json:"listTabulation"`
-	Content          string `json:"content"`
 }
 
 // структура для отправки на страницу пользователю перез скачиванием
@@ -57,5 +56,4 @@ var (
 	AfterSpacing     []string = []string{"0", "1.0", "1.5", "2.0", "2.5", "3.0"}
 	FirstIndentation []string = []string{"0", "0.5", "1.0", "1.25", "1.5", "1.75", "2.0", "2.5", "3.0"}
 	ListTabulation   []string = []string{"0", "0.25", "0.5", "0.75", "1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0", "3.25", "3.5", "3.75", "4.0"}
-	Content          []string = []string{"Добавить/обновить", "Не добавлять/не обновлять"}
 )

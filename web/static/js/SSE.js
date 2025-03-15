@@ -54,7 +54,6 @@ const initSlider = (items) => {
 const updateSlider = (items) => {
     const slider = document.getElementById('slider');
     let realSlides;
-    let isWorkContent;
     sliderItems = items;
     
     // Фиктивный слайд (левый)
@@ -69,7 +68,6 @@ const updateSlider = (items) => {
             <p><strong>Интервал после абзаца:</strong> 3.0</p>
             <p><strong>Отступ первой строки:</strong> 1.75</p>
             <p><strong>Табуляция в списках:</strong> 3.75</p>
-            <p><strong>Работа с содержанием:</strong> Нет</p>
         </div>
     `;
     // Формируем HTML для реальных слайдов
@@ -80,13 +78,6 @@ const updateSlider = (items) => {
             // Если элемент входит в первые newHighlightCount, добавляем класс "new-highlight и slider-item-animation (для плавного появления)"
             const highlightClass = index < newHighlightCount ? " new-highlight slider-item-animation" : "";
             const animationClass = isInit === false && highlightClass === "" ? " slider-item-animation" : "";
-            if (item.content === "Добавить/обновить") {
-                isWorkContent = "Да";
-            } else if (item.content === "Не добавлять/не обновлять") {
-                isWorkContent = "Нет";
-            } else {
-                isWorkContent = "-";
-            }
             return `
                 <div class="slider-item${highlightClass}${animationClass}" style="--index: ${index}">
                     <p><strong>Время форматирования:</strong> ${item.time}</p>
@@ -98,7 +89,6 @@ const updateSlider = (items) => {
                     <p><strong>Интервал после абзаца:</strong> ${item.afterSpacing}</p>
                     <p><strong>Отступ первой строки:</strong> ${item.firstIndentation}</p>
                     <p><strong>Табуляция в списках:</strong> ${item.listTabulation}</p>
-                    <p><strong>Работа с содержанием:</strong> ${isWorkContent}</p>
                 </div>
             `;
         }).join('');
