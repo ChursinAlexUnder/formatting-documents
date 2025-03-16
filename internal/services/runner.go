@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"formatting-documents/internal/domain"
 	"os"
@@ -29,5 +30,18 @@ func RunPythonScript(documentName string, params domain.Parameters) error {
 	if _, err := os.Stat(bufferPath + "/" + formattedDocumentName); err != nil {
 		return fmt.Errorf("error creating formatted document: %v", err)
 	}
+
+	// TODO: НАЛАДИТЬ ОБРАБОТКУ И ВЫВОД ДАННЫХ ПОЛЬЗОВАТЕЛЮ НА СТРАНИЦУ!!!!
+
+	// Например, ожидаем, что Python вернул список массивов: [[...], [...], [...]]
+	var result [][]bool
+	err = json.Unmarshal(output, &result)
+	if err != nil {
+		return fmt.Errorf("error parsing json output from python script: %v", err)
+	}
+
+	// Теперь result содержит три массива, и вы можете их использовать
+	fmt.Println("Parsed arrays:", result)
+
 	return nil
 }

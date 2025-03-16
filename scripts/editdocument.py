@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -8,6 +9,7 @@ from docx.oxml import OxmlElement
 
 from modules.tabs import removeTabs, addTab
 from modules.headings import headingLevel, isHeading, getDefaultFontSize, cycle_removeEmptyLinesAndPageBreaks, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle, changeNormalStyle
+from modules.usednumbers import centerTableAndFormatTitle
 
 def updateParagraphDefaultFont(paragraph, font):
     """Изменяет шрифт в первом <w:rFonts> внутри <w:pPr>, если он существует."""
@@ -94,6 +96,7 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
     defaultFontsize = getDefaultFontSize(doc, fontsize)
 
     haveList = False
+    isDrawTitle = False
 
     # Настройка полей для основного раздела
     for section in doc.sections:
@@ -119,6 +122,7 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             pict = run._element.find(qn("w:pict"))
             if drawing is not None or pict is not None:
                 isDraw = True
+                isDrawTitle = True
                 break
 
         if paragraph._element.xpath(".//w:numPr"):
@@ -127,7 +131,7 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             if not haveList:
                 haveList = True
                 modifyList(doc, font, int(fontsize))
-        elif not isDraw and isHeading(paragraph, index, doc, defaultFontsize) and level != False:
+        elif not isDraw and not isDrawTitle and isHeading(paragraph, index, doc, defaultFontsize) and level != False:
             style_name = ensureHeadingStyle(doc, level, font, fontsize)
             paragraph.style = style_name
             isHead = True
@@ -151,7 +155,7 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             spacing_elem.getparent().remove(spacing_elem)
 
         # Выравнивание текста
-        if isDraw == True:
+        if isDraw == True or (isDrawTitle == True and "рисун" in paragraph.text.strip().lower()):
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         elif isHead == True or alignment == "По левому краю":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
@@ -176,7 +180,7 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         paragraph.paragraph_format.right_indent = 0
         
         # отступ первой строки
-        if isDraw == True:
+        if isDraw == True or isDrawTitle == True:
             paragraph.paragraph_format.first_line_indent = Cm(0)
         else:
             paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
@@ -194,6 +198,13 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             run.font.size = Pt(float(fontsize))
             # цвет текста
             run.font.color.rgb = RGBColor(0, 0, 0)  # Чёрный цвет (RGB: 0, 0, 0)
+
+        # Заголовок изображения закончился
+        if isDrawTitle == True and isDraw == False:
+            isDrawTitle = False
+
+    # Работа с таблицами и их заголовками
+    centerTableAndFormatTitle(doc)
 
     # Работа с именем отформатированного документа
     formattedDocumentName = 'formatted_' + documentName
@@ -219,8 +230,15 @@ if not os.path.exists(documentPath):
     sys.exit(1)
 
 try:
+    # TODO: СДЕЛАТЬ СОЗДАНИЕ ТРЕХ СПИСКОВ!!!!
     formattedDocumentPath = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation)
-    print(f"Formatted document created: {formattedDocumentPath}")
+    array1 = [1, 2, 3]      # Пример массива 1
+    array2 = [4, 5, 6]      # Пример массива 2
+    array3 = [7, 8, 9]      # Пример массива 3
+
+    # Объединяем массивы в один список или словарь:
+    result = [array1, array2, array3]# Выводим результат в формате JSON:
+    print(json.dumps(result))
 except Exception as e:
     print(f"Error formatting document: {e}")
     sys.exit(1)
