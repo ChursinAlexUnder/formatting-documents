@@ -13,17 +13,7 @@ body {
     background-attachment: fixed;
 }
 
-.download-title {
-    font-family: "Arial";
-    text-align: left;
-    font-weight: normal;
-    font-size: 30px;
-    background: rgb(207, 229, 247);
-    margin: 0;
-    padding: 0 10% 5% 10%;
-}
-
-.main-window, .main-window-secondary {
+.main-window {
     width: 100%;
     text-align: center;
     background: rgb(207, 229, 247);
@@ -35,24 +25,13 @@ body {
     body {
         background-image: url('../pictures/instruction.png');
     }
-    .main-window, .main-window-secondary {
+    .main-window {
         padding-top: 55px;
-    }
-    .download-title {
-        font-size: 24px;
-        padding: 0 3% 55px 3%;
     }
 }
 
 @media screen and (max-width: 480px) {
-    .main-window, .main-window-secondary {
+    .main-window {
         padding-top: 40px;
-    }
-    .main-window-secondary {
-        margin-bottom: 24vh;
-    }
-    .download-title {
-        font-size: 18px;
-        padding: 0 3% 40px 3%;
     }
 }

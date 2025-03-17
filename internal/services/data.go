@@ -8,3 +8,7 @@ func InSlice(elem string, slice []string) bool {
 	}
 	return false
 }
+
+func Add(a, b int) int {
+	return a + b
+}

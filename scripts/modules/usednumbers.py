@@ -1,29 +1,28 @@
 import re
 from docx.oxml.ns import qn
-from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Cm
 
 ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
 
-def find_bibliography_list(doc):
+def findBibliographyList(doc):
     """Находит список литературы в конце документа и возвращает словарь с его длиной."""
     flag = False
-    bibliography_start = None
-    bibliography_length = 0
+    bibliographyStart = None
+    bibliographyLength = 0
     paragraphs = doc.paragraphs[::-1]  # Проходим документ с конца
 
     for i, para in enumerate(paragraphs):
         text = para.text.strip().lower()
 
         # Проверяем, является ли абзац заголовком списка литературы
-        if "список" in text and ("источников" in text or "литературы" in text):
-            bibliography_start = len(doc.paragraphs) - 1 - i
+        if text.startswith("список") and ("источников" in text or "литературы" in text):
+            bibliographyStart = len(doc.paragraphs) - 1 - i
             break
 
-    if bibliography_start is not None:
+    if bibliographyStart is not None:
         # Теперь считаем абзацы списка литературы
-        for i in range(bibliography_start + 1, len(doc.paragraphs)):
+        for i in range(bibliographyStart + 1, len(doc.paragraphs)):
             para = doc.paragraphs[i]
             text = para.text.strip()
 
@@ -43,13 +42,12 @@ def find_bibliography_list(doc):
                 break
 
             if text:
-                bibliography_length += 1
+                bibliographyLength += 1
 
-    # Формируем список из bibliography_length элементов, каждый из которых False
-    bibliography_list = [False] * bibliography_length
-    return bibliography_list
+    bibliographyList = [False] * bibliographyLength
+    return bibliographyList
 
-def has_reference(doc, start_index, number, pattern):
+def hasReference(doc, start_index, number, pattern):
     """
     Ищет ссылку на рисунок в виде (рисунок N), (рисунок N-M) или (рисунок N, M, ...)
     начиная с параграфа перед картинкой и до начала документа.
@@ -72,30 +70,9 @@ def has_reference(doc, start_index, number, pattern):
 
     return False
 
-def find_pictures(doc):
-    """Находит все рисунки в документе и возвращает их массив"""
-    figure_list = []
-    figure_count = 0
-    pattern = re.compile(r"(?:\(\s*)?рисун\w*\s+([\d,\-\s]+?)(?:\s*\))?", re.IGNORECASE)
-
-    for index, paragraph in enumerate(doc.paragraphs):
-        for run in paragraph.runs:
-            drawing = run._element.find(qn("w:drawing"))
-            pict = run._element.find(qn("w:pict"))
-            if drawing is not None or pict is not None:
-                figure_count += 1
-                has_ref = has_reference(doc, index, figure_count, pattern)
-                figure_list.append(has_ref)
-
-    return figure_list
-
-def get_table_paragraph_index(doc, table):
+def getTableParagraphIndex(doc, table):
     """
     Определяет индекс параграфа, непосредственно предшествующего таблице.
-    
-    Для этого перебираем дочерние элементы тела документа (doc.element.body),
-    считая параграфы. Когда встречается элемент таблицы, сравниваем его с
-    table._element и возвращаем индекс последнего найденного параграфа.
     """
     last_paragraph_index = None
     p_index = 0
@@ -112,39 +89,23 @@ def get_table_paragraph_index(doc, table):
         last_paragraph_index = len(doc.paragraphs) - 1
     return last_paragraph_index
 
-def find_tables(doc):
+def findAndFormatTables(doc):
     """
-    Находит все таблицы в документе и возвращает список булевых значений,
+    Находит все таблицы в документе, форматирует их вместе с заголовками и возвращает список булевых значений,
     соответствующих наличию ссылки на таблицу.
-    
-    Для каждой таблицы определяется порядковый номер (по порядку появления)
-    и индекс параграфа непосредственно перед таблицей, после чего вызывается
-    has_reference для поиска ссылки.
     """
-    table_list = []
-    table_count = 0
-    pattern = re.compile(r"(?:\(\s*)?таблиц\w*\s+([\d,\-\s]+?)(?:\s*\))?", re.IGNORECASE)
+    tableList = []
+    tableCount = 0
+    tablePattern = re.compile(r"(?:\(\s*)?таблиц\w*\s+([\d,\-\s]+?)(?:\s*\))?", re.IGNORECASE)
 
     for table in doc.tables:
-        table_count += 1
-        table_paragraph_index = get_table_paragraph_index(doc, table)
-        has_ref = has_reference(doc, table_paragraph_index, table_count, pattern)
-        table_list.append(has_ref)
-
-    return table_list
-
-def centerTableAndFormatTitle(doc):
-    """
-    Проходит по всем таблицам в документе и для каждой:
-    - выравнивает таблицу по центру;
-    - получает индекс параграфа, непосредственно предшествующего таблице,
-      и форматирует его.
-    """
-    for table in doc.tables:
-        # Получаем индекс параграфа, непосредственно предшествующего таблице.
-        para_index = get_table_paragraph_index(doc, table)
-        
+        tableCount += 1
+        tableParagraphIndex = getTableParagraphIndex(doc, table)
         # Если предыдущий параграф существует, выравниваем его по центру.
-        if 0 <= para_index < len(doc.paragraphs) and "таблиц" in doc.paragraphs[para_index].text.strip().lower():
-            doc.paragraphs[para_index].paragraph_format.first_line_indent = Cm(0)
-            doc.paragraphs[para_index].alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+        
+        if 0 <= tableParagraphIndex < len(doc.paragraphs) and doc.paragraphs[tableParagraphIndex].text.strip().lower().startswith("таблиц"):
+            doc.paragraphs[tableParagraphIndex].paragraph_format.first_line_indent = Cm(0)
+            doc.paragraphs[tableParagraphIndex].alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+        hasRef = hasReference(doc, tableParagraphIndex, tableCount, tablePattern)
+        tableList.append(hasRef)
+    return tableList

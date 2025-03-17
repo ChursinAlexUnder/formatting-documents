@@ -91,7 +91,11 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request, data domain.Answer
 		fullData      domain.AnswerWithInterfaceName
 		interfaceName string
 	)
-	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/download.html")
+
+	// Загружаем и парсим шаблоны, добавляя пользовательскую функцию add
+	tmplt, err := template.New("index.html").Funcs(template.FuncMap{
+		"add": services.Add,
+	}).ParseFiles("../web/templates/index.html", "../web/templates/download.html")
 	if err != nil {
 		fmt.Fprintf(w, "Error parsing download.html: %v", err)
 		return

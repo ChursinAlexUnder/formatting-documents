@@ -1,0 +1,35 @@
+.download-title {
+    font-family: "Arial";
+    text-align: center;
+    font-size: 40px;
+    margin: 0;
+    padding: 0 6%;
+}
+
+.download-text {
+    font-family: "Arial";
+    text-align: left;
+    font-size: 25px;
+    margin: 70px 0;
+    padding: 0 6%;
+}
+
+@media screen and (max-width: 768px) {
+    .download-title {
+        font-size: 30px;
+    }
+    .download-text {
+        font-size: 21px;
+        margin: 55px 0;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .download-title {
+        font-size: 21px;
+    }
+    .download-text {
+        font-size: 17px;
+        margin: 40px 0;
+    }
+}

@@ -4,9 +4,11 @@ import "mime/multipart"
 
 // структура для передачи данных на сервере
 type Answer struct {
-	Document     multipart.File
-	DocumentData *multipart.FileHeader
-	Params       Parameters
+	Document            multipart.File
+	DocumentData        *multipart.FileHeader
+	Params              Parameters
+	DocumentInformation [][]bool
+	IsAllGood           []bool
 }
 
 type Data struct {

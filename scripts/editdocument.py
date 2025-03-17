@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import re
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -9,7 +10,7 @@ from docx.oxml import OxmlElement
 
 from modules.tabs import removeTabs, addTab
 from modules.headings import headingLevel, isHeading, getDefaultFontSize, cycle_removeEmptyLinesAndPageBreaks, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle, changeNormalStyle
-from modules.usednumbers import centerTableAndFormatTitle
+from modules.usednumbers import findAndFormatTables, findBibliographyList, hasReference
 
 def updateParagraphDefaultFont(paragraph, font):
     """Изменяет шрифт в первом <w:rFonts> внутри <w:pPr>, если он существует."""
@@ -98,6 +99,15 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
     haveList = False
     isDrawTitle = False
 
+    answer = []
+
+    drawList = []
+    drawCount = 0
+    drawPattern = re.compile(r"(?:\(\s*)?рисун\w*\s+([\d,\-\s]+?)(?:\s*\))?", re.IGNORECASE)
+
+    bibliographyList = findBibliographyList(doc)
+    bibliographyPattern = re.compile(r"\[\s*([\d,\-\s]+?)\s*\]")
+
     # Настройка полей для основного раздела
     for section in doc.sections:
         section.left_margin = Cm(3)
@@ -123,6 +133,9 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             if drawing is not None or pict is not None:
                 isDraw = True
                 isDrawTitle = True
+                drawCount += 1
+                hasRef = hasReference(doc, index, drawCount, drawPattern)
+                drawList.append(hasRef)
                 break
 
         if paragraph._element.xpath(".//w:numPr"):
@@ -154,8 +167,31 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             # Удаляем сам элемент
             spacing_elem.getparent().remove(spacing_elem)
 
+        # Поиск ссылок на список источников
+        matches = bibliographyPattern.findall(paragraph.text)
+        for match in matches:
+            # Разбиваем содержимое ссылки по запятым и пробелам
+            parts = re.split(r"[, ]+", match.strip())
+            for part in parts:
+                if "-" in part:
+                    try:
+                        start, end = map(int, part.split("-"))
+                        # Обрабатываем диапазон: отмечаем все номера источников от start до end
+                        for i in range(start, end + 1):
+                            if 1 <= i <= len(bibliographyList):
+                                bibliographyList[i - 1] = True
+                    except ValueError:
+                        continue
+                else:
+                    try:
+                        num = int(part)
+                        if 1 <= num <= len(bibliographyList):
+                            bibliographyList[num - 1] = True
+                    except ValueError:
+                        continue
+
         # Выравнивание текста
-        if isDraw == True or (isDrawTitle == True and "рисун" in paragraph.text.strip().lower()):
+        if isDraw == True or (isDrawTitle == True and paragraph.text.strip().lower().startswith("рисун")):
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         elif isHead == True or alignment == "По левому краю":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
@@ -203,15 +239,20 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         if isDrawTitle == True and isDraw == False:
             isDrawTitle = False
 
-    # Работа с таблицами и их заголовками
-    centerTableAndFormatTitle(doc)
+    # Добавление списка рисунков
+    answer.append(drawList)
+
+    # Создание списка таблиц и их форматирование
+    answer.append(findAndFormatTables(doc))
+
+    answer.append(bibliographyList)
 
     # Работа с именем отформатированного документа
     formattedDocumentName = 'formatted_' + documentName
     formattedDocumentPath = bufferPath + '/' + formattedDocumentName
     doc.save(formattedDocumentPath)
     
-    return formattedDocumentPath
+    return formattedDocumentPath, answer
 
 documentName = sys.argv[1]
 bufferPath = '../buffer'
@@ -230,14 +271,7 @@ if not os.path.exists(documentPath):
     sys.exit(1)
 
 try:
-    # TODO: СДЕЛАТЬ СОЗДАНИЕ ТРЕХ СПИСКОВ!!!!
-    formattedDocumentPath = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation)
-    array1 = [1, 2, 3]      # Пример массива 1
-    array2 = [4, 5, 6]      # Пример массива 2
-    array3 = [7, 8, 9]      # Пример массива 3
-
-    # Объединяем массивы в один список или словарь:
-    result = [array1, array2, array3]# Выводим результат в формате JSON:
+    formattedDocumentPath, result = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation)
     print(json.dumps(result))
 except Exception as e:
     print(f"Error formatting document: {e}")
