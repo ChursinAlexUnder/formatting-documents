@@ -111,6 +111,7 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 	params.AfterSpacing = r.FormValue("afterspacing")
 	params.FirstIndentation = r.FormValue("firstindentation")
 	params.ListTabulation = r.FormValue("listtabulation")
+	params.HaveTitle = r.FormValue("havetitle")
 
 	if !services.InSlice(params.Font, domain.Font) {
 		wrongData.ErrorDecorationParameters = "-error"
@@ -136,6 +137,9 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 	} else if !services.InSlice(params.ListTabulation, domain.ListTabulation) {
 		wrongData.ErrorDecorationParameters = "-error"
 		wrongData.ErrorCommentParameters = "С табуляцией в списках что-то не так."
+	} else if !services.InSlice(params.HaveTitle, domain.HaveTitle) {
+		wrongData.ErrorDecorationParameters = "-error"
+		wrongData.ErrorCommentParameters = "С обозначением наличия титульного листа что-то не так."
 	}
 
 	// если данные валидны, то сохраняем их в структуре

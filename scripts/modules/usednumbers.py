@@ -52,22 +52,31 @@ def hasReference(doc, start_index, number, pattern):
     Ищет ссылку на рисунок в виде (рисунок N), (рисунок N-M) или (рисунок N, M, ...)
     начиная с параграфа перед картинкой и до начала документа.
     """
-    for i in range(start_index - 1, -1, -1):  
-        matches = pattern.findall(doc.paragraphs[i].text)  
+    for i in range(start_index - 1, -1, -1):
+        matches = pattern.findall(doc.paragraphs[i].text)
         for match in matches:
-            numbers = set()  
-            parts = re.split(r"[, ]+", match.strip())
-
-            for part in parts:
-                if "-" in part:  
-                    start, end = map(int, part.split("-"))  
-                    numbers.update(range(start, end + 1))  
+            numbers = set()
+            # Сначала разбиваем содержимое ссылки по запятым
+            tokens = match.split(',')
+            for token in tokens:
+                token = token.strip()
+                # Если токен содержит тире (обычный, en dash или em dash)
+                if any(dash in token for dash in ["-", "–", "—"]):
+                    try:
+                        # Разбиваем токен по тире с учётом пробелов
+                        dash_split = re.split(r"\s*[-–—]\s*", token)
+                        if len(dash_split) == 2:
+                            start, end = map(int, dash_split)
+                            numbers.update(range(start, end + 1))
+                    except ValueError:
+                        continue
                 else:
-                    numbers.add(int(part))  
-
+                    try:
+                        numbers.add(int(token))
+                    except ValueError:
+                        continue
             if number in numbers:
                 return True
-
     return False
 
 def getTableParagraphIndex(doc, table):
@@ -96,7 +105,7 @@ def findAndFormatTables(doc):
     """
     tableList = []
     tableCount = 0
-    tablePattern = re.compile(r"(?:\(\s*)?таблиц\w*\s+([\d,\-\s]+?)(?:\s*\))?", re.IGNORECASE)
+    tablePattern = re.compile(r"(?:\(\s*)?таблиц\w*\s+([\d,\-–—\s]+?)(?:\s*\))?", re.IGNORECASE)
 
     for table in doc.tables:
         tableCount += 1

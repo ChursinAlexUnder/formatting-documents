@@ -9,8 +9,10 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 from modules.tabs import removeTabs, addTab
-from modules.headings import headingLevel, isHeading, getDefaultFontSize, cycle_removeEmptyLinesAndPageBreaks, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle, changeNormalStyle
+from modules.headings import headingLevel, isHeading, cycle_removeEmptyLinesAndPageBreaks, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle, changeNormalStyle
 from modules.usednumbers import findAndFormatTables, findBibliographyList, hasReference
+from modules.title import paragraphHasPageBreak
+
 
 def updateParagraphDefaultFont(paragraph, font):
     """Изменяет шрифт в первом <w:rFonts> внутри <w:pPr>, если он существует."""
@@ -90,11 +92,9 @@ def modifyList(doc, font, fontsize):
                 rPr.append(sz)
             sz.set(qn("w:val"), str(fontsize * 2))
 
-def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation):
+def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation, havetitle):
     # Открываем документ
     doc = Document(bufferPath + '/' + documentName)
-
-    defaultFontsize = getDefaultFontSize(doc, fontsize)
 
     haveList = False
     isDrawTitle = False
@@ -103,10 +103,10 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
 
     drawList = []
     drawCount = 0
-    drawPattern = re.compile(r"(?:\(\s*)?рисун\w*\s+([\d,\-\s]+?)(?:\s*\))?", re.IGNORECASE)
+    drawPattern = re.compile(r"(?:\(\s*)?рисун\w*\s+((?:\d+(?:\s*[-,–—]\s*)?)+)(?:\s*\))?", re.IGNORECASE)
 
     bibliographyList = findBibliographyList(doc)
-    bibliographyPattern = re.compile(r"\[\s*([\d,\-\s]+?)\s*\]")
+    bibliographyPattern = re.compile(r"\[\s*([\d,\-–—\s]+?)\s*\]")
 
     # Настройка полей для основного раздела
     for section in doc.sections:
@@ -116,10 +116,24 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         section.bottom_margin = Cm(2)
 
     # задание настроек для обычного стандартного стиля Normal (в основном, для создаваемых отступов и разрывов страниц)
-    changeNormalStyle(doc, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation)
+    if havetitle == "Нет":
+        changeNormalStyle(doc, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation)
 
+    isFirstPageBreak = False
+
+    isBibliographyList = False
+
+    index = 0
+    
     # обработка всего документа (по всем paragraphs и всем runs)
-    for index, paragraph in enumerate(doc.paragraphs):
+    for paragraph in doc.paragraphs:
+        
+        if havetitle == "Есть" and isFirstPageBreak == False:
+            isFirstPageBreak = paragraphHasPageBreak(paragraph)
+            if isFirstPageBreak == True:
+                havetitle = "Нет"
+            continue
+
         isHead = False
         isDraw = False
 
@@ -144,13 +158,15 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
             if not haveList:
                 haveList = True
                 modifyList(doc, font, int(fontsize))
-        elif not isDraw and not isDrawTitle and isHeading(paragraph, index, doc, defaultFontsize) and level != False:
+        elif not isDraw and not isDrawTitle and isHeading(paragraph) and level != False:
             style_name = ensureHeadingStyle(doc, level, font, fontsize)
             paragraph.style = style_name
             isHead = True
 
-            cycle_removeEmptyLinesAndPageBreaks(doc, defaultFontsize)
-
+            removed_paragraphs = cycle_removeEmptyLinesAndPageBreaks(doc)
+            if index - removed_paragraphs >= 0:
+                index = index - removed_paragraphs
+            
             if level == 1:
                 addPageBreak(paragraph)
                 addEmptyParagraphAfter(paragraph)
@@ -166,29 +182,38 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         for spacing_elem in p.xpath('.//w:spacing'):
             # Удаляем сам элемент
             spacing_elem.getparent().remove(spacing_elem)
+        
+        
+        # Если абзац является заголовком списка литературы, прекращаем поиск ссылок
+        paragraphText = paragraph.text.strip().lower()
+        if paragraphText.startswith("список") and ("источников" in paragraphText or "литературы" in paragraphText):
+            isBibliographyList = True
 
-        # Поиск ссылок на список источников
-        matches = bibliographyPattern.findall(paragraph.text)
-        for match in matches:
-            # Разбиваем содержимое ссылки по запятым и пробелам
-            parts = re.split(r"[, ]+", match.strip())
-            for part in parts:
-                if "-" in part:
-                    try:
-                        start, end = map(int, part.split("-"))
-                        # Обрабатываем диапазон: отмечаем все номера источников от start до end
-                        for i in range(start, end + 1):
-                            if 1 <= i <= len(bibliographyList):
-                                bibliographyList[i - 1] = True
-                    except ValueError:
-                        continue
-                else:
-                    try:
-                        num = int(part)
-                        if 1 <= num <= len(bibliographyList):
-                            bibliographyList[num - 1] = True
-                    except ValueError:
-                        continue
+        if isBibliographyList == False:
+            # Поиск ссылок на список источников
+            matches = bibliographyPattern.findall(paragraph.text)
+            for match in matches:
+                tokens = match.split(',')
+                for token in tokens:
+                    token = token.strip()
+                    if any(dash in token for dash in ["-", "–", "—"]):
+                        try:
+                            dash_split = re.split(r"\s*[-–—]\s*", token)
+                            if len(dash_split) == 2:
+                                start, end = map(int, dash_split)
+                                # Обрабатываем диапазон: отмечаем все номера источников от start до end
+                                for i in range(start, end + 1):
+                                    if 1 <= i <= len(bibliographyList):
+                                        bibliographyList[i - 1] = True
+                        except ValueError:
+                            continue
+                    else:
+                        try:
+                            num = int(token)
+                            if 1 <= num <= len(bibliographyList):
+                                bibliographyList[num - 1] = True
+                        except ValueError:
+                            continue
 
         # Выравнивание текста
         if isDraw == True or (isDrawTitle == True and paragraph.text.strip().lower().startswith("рисун")):
@@ -239,6 +264,8 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         if isDrawTitle == True and isDraw == False:
             isDrawTitle = False
 
+        index += 1
+
     # Добавление списка рисунков
     answer.append(drawList)
 
@@ -265,13 +292,14 @@ beforespacing = sys.argv[6]
 afterspacing = sys.argv[7]
 firstindentation = sys.argv[8]
 listtabulation = sys.argv[9]
+havetitle = sys.argv[10]
 
 if not os.path.exists(documentPath):
     print(f"Document not found: {documentPath}")
     sys.exit(1)
 
 try:
-    formattedDocumentPath, result = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation)
+    formattedDocumentPath, result = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation, havetitle)
     print(json.dumps(result))
 except Exception as e:
     print(f"Error formatting document: {e}")

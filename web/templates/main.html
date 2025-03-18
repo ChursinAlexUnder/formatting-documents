@@ -49,7 +49,7 @@
             </div>
         </div>
         <div class="main-window">
-            <h2 id="form" class="form-title">Отправка документа</h2>
+            <h2 id="form" class="form-title">Загрузка документа</h2>
             <form enctype="multipart/form-data" id="document-download-form" method="post" action="/#form">
                 <div class="document-input-container-shell">
                     <div class="document-input-container">
@@ -76,6 +76,13 @@
                         <a class="window-one-button tooltip-container" href="/menu?parameter=listtabulation">Табуляция в списках
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">Табуляция – это расстояние от начала строки до начала текста.</span>
+                        </a>
+                        <a class="window-one-button tooltip-container" href="/menu?parameter=havetitle">Титульный лист
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                Если указать наличие титульного листа, то первая страница не будет форматироваться.
+                                <strong>Важно, чтобы в конце титульного листа стоял разрыв страницы!</strong>
+                            </span>
                         </a>
                     </div>
                     <div class="window-two">
@@ -116,6 +123,10 @@
                             <p class="parameter-text">Табуляция в списках:</p>
                             <input class="parameter-input" name="listtabulation" type="text" value="2.0" readonly>
                         </div>
+                        <div class="parameter">
+                            <p class="parameter-text">Наличие титульного листа:</p>
+                            <input class="parameter-input" name="havetitle" type="text" value="Есть" readonly>
+                        </div>
                     </div>
                 </div>
                 {{ if ne .ErrorCommentParameters "" }}
@@ -143,6 +154,7 @@
                         <p><strong>Интервал после абзаца:</strong> 3.0</p>
                         <p><strong>Отступ первой строки:</strong> 1.75</p>
                         <p><strong>Табуляция в списках:</strong> 3.75</p>
+                        <p><strong>Наличие титульного листа:</strong> Есть</p>
                     </div>
                     <div class="slider-download-text">Загрузка...</div>
                     <div class="slider-item-dummy">

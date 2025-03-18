@@ -53,7 +53,7 @@ func CheckDataJSON() error {
 		data     domain.Data
 	)
 
-	currentDate := time.Now().Format("2006-01-02")
+	currentDate := time.Now().Add(3 * time.Hour).Format("2006-01-02")
 
 	data, err := ReadFileJSON(filename)
 	if err != nil {

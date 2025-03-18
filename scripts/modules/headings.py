@@ -6,57 +6,12 @@ from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.style import WD_STYLE_TYPE
 
-def getDefaultFontSize(doc, fontsize):
-    """Определяет самый часто встречающийся размер шрифта в документе по количеству символов."""
-    font_sizes = Counter()
-
-    for paragraph in doc.paragraphs:
-        for run in paragraph.runs:
-            text = run.text.strip()  # Игнорируем пустые строки (например, изображения)
-            if text:  
-                size = run.font.size
-                if size is None:
-                    if paragraph.style.font.size:
-                        size = paragraph.style.font.size  # Используем стиль абзаца, если размер не задан
-                    else:
-                        size = Pt(11)
-                if size:
-                    font_sizes[size.pt] += len(text)  # Взвешиваем размер шрифта по количеству символов
-
-    return font_sizes.most_common(1)[0][0] if font_sizes else fontsize
-
-def isBeforePageBreak(doc, index):
-    """Проверяет, есть ли перед данным абзацем разрыв страницы.
-       Если сам абзац пустой, возвращает False.
-       Но если между абзацем и разрывом есть пустые строки, то у этого абзаца будет True.
-    """
-    ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
-
-    # Если сам абзац пустой, сразу возвращаем False.
-    if not doc.paragraphs[index].text.strip():
-        return False
-
-    # Идем назад по абзацам от текущего до начала документа.
-    for i in range(index - 1, -1, -1):
-        paragraph = doc.paragraphs[i]
-        # Проходим по каждому run в абзаце
-        for run in paragraph.runs:
-            # Ищем элемент <w:br> с атрибутом w:type="page"
-            brs = run._element.findall(".//w:br", namespaces=ns)
-            for br in brs:
-                if br.get(qn("w:type")) == "page":
-                    return True
-        # Если встретили абзац с каким-либо текстом, считаем, что разрыва страницы перед нужным абзацем нет.
-        if paragraph.text.strip():
-            return False
-    return False
-
 def headingLevel(text):
     """ Определяет уровень заголовка."""
     match = re.match(r"^\d+(\.\d+){0,3}", text)
     return min(len(match.group().split(".")), 4) if match else False
 
-def isHeading(paragraph, index, doc, defaultFontSize):
+def isHeading(paragraph):
     """ Проверяет, является ли абзац заголовком. """
     text = paragraph.text.strip()
     
@@ -69,17 +24,14 @@ def isHeading(paragraph, index, doc, defaultFontSize):
         return False
 
     bold_count = 0
-    large_font_count = 0
     total_chars = 0
 
     # Получаем стиль параграфа (если есть)
     paragraph_style = paragraph.style
     style_is_bold = False
-    style_font_size = None
 
     if paragraph_style and paragraph_style.font:
         style_is_bold = paragraph_style.font.bold
-        style_font_size = paragraph_style.font.size.pt if paragraph_style.font.size else None
 
     # Проходимся по всем run'ам в абзаце
     for run in paragraph.runs:
@@ -94,26 +46,17 @@ def isHeading(paragraph, index, doc, defaultFontSize):
         if run_is_bold:
             bold_count += len(run_text)
 
-        # Определяем размер шрифта с учётом стиля параграфа
-        run_font_size = run.font.size.pt if run.font.size else style_font_size
-        if run_font_size and run_font_size > defaultFontSize:
-            large_font_count += len(run_text)
-
     # Если нет текста (например, все run'ы пустые), то это не заголовок
     if total_chars == 0:
         return False
 
     # Проверяем процентное соотношение
     bold_percentage = (bold_count / total_chars) * 100
-    large_font_percentage = (large_font_count / total_chars) * 100
 
     # Условия определения заголовка
-    if (bold_percentage >= 90 or 
-        large_font_percentage >= 90 or 
-        total_chars - bold_count <= 3 or 
-        total_chars - large_font_count <= 3):
+    if (bold_percentage >= 90 or total_chars - bold_count <= 3):
         return True
-    return isBeforePageBreak(doc, index)
+    return False
 
 def removeEmptyLinesAndPageBreaks(doc, index):
     """Удаляет пустые строки, пустые абзацы и разрывы страниц перед и после параграфа, не затрагивая контент (картинки, таблицы)."""
@@ -165,6 +108,7 @@ def removeEmptyLinesAndPageBreaks(doc, index):
         i -= 1
 
     # Удаляем пустые абзацы и разрывы страниц после целевого абзаца
+    removed_after = 0
     i = index + 1
     while i < len(doc.paragraphs):
         paragraph = doc.paragraphs[i]
@@ -174,8 +118,11 @@ def removeEmptyLinesAndPageBreaks(doc, index):
             remove_page_breaks(paragraph)  # Удаляем разрыв страницы, но не весь параграф
         elif is_empty_paragraph(paragraph):
             remove_paragraph(paragraph)
+            removed_after += 1
         else:
             break
+    return removed_after
+    
 
 
 def addPageBreak(paragraph):
@@ -290,7 +237,7 @@ def ensureHeadingStyle(doc, level, font, fontsize):
     
     return style_name  # Возвращаем имя стиля
 
-def cycle_removeEmptyLinesAndPageBreaks(doc, defaultFontsize):
+def cycle_removeEmptyLinesAndPageBreaks(doc):
     """
     Вызывает функцию removeEmptyLinesAndPageBreaks(doc, index) до тех пор,
     пока документ не перестанет изменяться. Для проверки изменений сравниваются
@@ -298,6 +245,7 @@ def cycle_removeEmptyLinesAndPageBreaks(doc, defaultFontsize):
     """
     prev_xml = doc._element.xml
     prev_par_count = len(doc.paragraphs)
+    total_removed_after = 0
 
     while True:
         for index, paragraph in enumerate(doc.paragraphs):
@@ -310,8 +258,9 @@ def cycle_removeEmptyLinesAndPageBreaks(doc, defaultFontsize):
                 if drawing is not None or pict is not None:
                     isDraw = True
                     break
-            if not paragraph._element.xpath(".//w:numPr") and not isDraw and isHeading(paragraph, index, doc, defaultFontsize) and level != False:
-                removeEmptyLinesAndPageBreaks(doc, index)
+            if not paragraph._element.xpath(".//w:numPr") and not isDraw and isHeading(paragraph) and level != False:
+                removed_after = removeEmptyLinesAndPageBreaks(doc, index)
+                total_removed_after += removed_after
                 if level == 1:
                     addPageBreak(paragraph)
                     addEmptyParagraphAfter(paragraph)
@@ -328,6 +277,8 @@ def cycle_removeEmptyLinesAndPageBreaks(doc, defaultFontsize):
 
         prev_xml = current_xml
         prev_par_count = current_par_count
+
+    return total_removed_after
 
 def changeNormalStyle(doc, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation):
     """

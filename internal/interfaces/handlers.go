@@ -71,6 +71,8 @@ func ShowOptions(w http.ResponseWriter, r *http.Request) {
 		options = domain.FirstIndentation
 	case "listtabulation":
 		options = domain.ListTabulation
+	case "havetitle":
+		options = domain.HaveTitle
 	default:
 		options = []string{}
 	}

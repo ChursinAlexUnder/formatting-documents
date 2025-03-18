@@ -19,7 +19,7 @@ func RunPythonScript(documentName string, params domain.Parameters) ([][]bool, e
 	)
 
 	// запуск скрипта
-	cmd = exec.Command("python", scriptPath, documentName, params.Font, params.Fontsize, params.Alignment, params.Spacing, params.BeforeSpacing, params.AfterSpacing, params.FirstIndentation, params.ListTabulation)
+	cmd = exec.Command("python", scriptPath, documentName, params.Font, params.Fontsize, params.Alignment, params.Spacing, params.BeforeSpacing, params.AfterSpacing, params.FirstIndentation, params.ListTabulation, params.HaveTitle)
 	cmd.Dir = directoryPath
 
 	// вывод ошибок от скрипта

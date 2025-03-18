@@ -68,6 +68,7 @@ const updateSlider = (items) => {
             <p><strong>Интервал после абзаца:</strong> 3.0</p>
             <p><strong>Отступ первой строки:</strong> 1.75</p>
             <p><strong>Табуляция в списках:</strong> 3.75</p>
+            <p><strong>Наличие титульного листа:</strong> Есть</p>
         </div>
     `;
     // Формируем HTML для реальных слайдов
@@ -89,6 +90,7 @@ const updateSlider = (items) => {
                     <p><strong>Интервал после абзаца:</strong> ${item.afterSpacing}</p>
                     <p><strong>Отступ первой строки:</strong> ${item.firstIndentation}</p>
                     <p><strong>Табуляция в списках:</strong> ${item.listTabulation}</p>
+                    <p><strong>Наличие титульного листа:</strong> ${item.haveTitle}</p>
                 </div>
             `;
         }).join('');

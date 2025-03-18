@@ -21,10 +21,8 @@
         </div>
         <div class="main-window">
             <h2 class="download-title">Скачивание документа</h2>
-            <div class="download-text">
-                Ваш отформатированный документ <strong>{{ .InterfaceName }}</strong> вы 
-                можете скачать по кнопке ниже
-            </div>
+            <div class="download-text">✅ Ваш отформатированный документ <strong>{{ .InterfaceName }}</strong> готов</div>
+            <div class="download-text"><strong>Информация о тексте документа</strong> расположена ниже</div>
             <form enctype="multipart/form-data" method="post" action="/download?documentname={{ .Data.DocumentData.Filename }}">
                 <div class="edit-button-container">
                     <button type="submit" id="edit-button-download" class="edit-button" onclick="handleClick()">Скачать документ</button>
