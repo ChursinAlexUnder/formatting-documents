@@ -5,6 +5,26 @@
     margin: 0;
     padding: 0 3%;
 }
+
+.instruction-container-href {
+    text-align: center;
+    font-family: "Arial";
+    font-size: 1.7vw;
+    font-weight: bold;
+    margin-top: 4%;
+    padding: 0 4%;
+}
+
+.instruction-href {
+    text-decoration: none;
+    color: rgb(0, 113, 187);
+    transition: color 0.3s ease-in-out;
+}
+
+.instruction-href:hover {
+    color: rgb(36, 167, 255);
+}
+
 .document-input-container-shell {
     display: block;
     padding: 0 5%;
@@ -98,6 +118,10 @@
     .form-title {
         font-size: 30px;
     }
+    .instruction-container-href {
+        font-size: 2.8vw;
+        margin-top: 6%;
+    }
     .document-input-container {
         margin: 6% 0;
     }
@@ -144,6 +168,10 @@
 @media screen and (max-width: 480px) {
     .form-title {
         font-size: 21px;
+    }
+    .instruction-container-href {
+        font-size: 3.7vw;
+        margin-top: 8%;
     }
     .document-input-container {
         margin: 8% 0;

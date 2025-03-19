@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{ define "links" }}
+        <link rel="stylesheet" href="../static/css/header.css">
+        <link rel="stylesheet" href="../static/css/form.css">
+        <link rel="stylesheet" href="../static/css/info.css">
+    {{ end }}
+    <title>{{ define "title" }}Работа сайта{{ end }}</title>
+</head>
+<body>
+    {{ define "content" }}
+        <div class="info-header">
+            <h1 class="title">
+                <span class="word">Работа сайта</span>
+            </h1>
+        </div>
+        <div class="main-window">
+            <h2 class="info-title">Обработка заголовков</h2>
+            <div class="info-text">
+                Для того, чтобы программа обнаружила и оформила заголовок необходимо 
+                <strong>выделить его полужирным начертанием</strong> и 
+                <strong>в начале его названия обозначить номер главы</strong>, которому будет соответствовать 
+                уровень заголовка.
+            </div>
+            <div class="info-text">
+                Пример заголовка 1-го уровня: <strong>1 Способы приготовления гречневой каши</strong>
+            </div>
+            <div class="info-text">
+                Пример заголовка 2-го уровня: <strong>2.4 Методы нахождения минимума функции</strong>
+            </div>
+            <div class="info-text">
+                Пример заголовка 3-го уровня: <strong>4.1.8 Биография Александра III</strong>
+            </div>
+            <div class="info-text">
+                Пример заголовка 4-го уровня: <strong>12.4.1.9 Популярные языки программирования в 2025 году</strong>
+            </div>
+            <div class="edit-button-container">
+                <a href="/" class="edit-button-link">Вернуться на гравную</a>
+            </div>
+        </div>
+    {{ end }}
+</body>
+</html>

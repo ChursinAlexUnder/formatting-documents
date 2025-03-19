@@ -18,4 +18,5 @@ func HandlerPages() {
 	http.HandleFunc("/error", interfaces.ErrorPage)
 	http.HandleFunc("/errortime", interfaces.ErrorTimePage)
 	http.HandleFunc("/events", interfaces.SSEChannel)
+	http.HandleFunc("/info", interfaces.InfoPage)
 }

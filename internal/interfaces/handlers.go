@@ -199,3 +199,16 @@ func ErrorTimePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func InfoPage(w http.ResponseWriter, r *http.Request) {
+	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/info.html")
+	if err != nil {
+		fmt.Fprintf(w, "Error parsing info.html: %v", err)
+		return
+	}
+	err = tmplt.ExecuteTemplate(w, "index", nil)
+	if err != nil {
+		fmt.Fprintf(w, "Error displaying index.html and info.html: %v", err)
+		return
+	}
+}

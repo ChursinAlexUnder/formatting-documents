@@ -1,4 +1,4 @@
-.main-header, .download-header, .error-header {
+.main-header, .download-header, .error-header, .info-header {
     display: flex;
     width: 100%;
     text-align: left;
@@ -10,7 +10,7 @@
     background: linear-gradient(to bottom, #87CEFA, #ffffff);
 }
 
-.download-header {
+.download-header, .info-header {
     min-height: 50vh;
     background: linear-gradient(to bottom, #87CEFA, #ffffff);
 }
@@ -69,7 +69,7 @@
     .main-header {
         min-height: 60vh;
     }
-    .download-header {
+    .download-header, .info-header {
         min-height: 30vh;
     }
 }
@@ -83,7 +83,7 @@
         min-height: 35vh;
         text-align: center;
     }
-    .download-header {
+    .download-header, .info-header {
         min-height: 18vh;
         text-align: center;
     }
