@@ -59,8 +59,8 @@ const updateSlider = (items) => {
     // Фиктивный слайд (левый)
     const dummyLeft = `
         <div class="slider-item-dummy">
-            <p><strong>Наличие титульного листа:</strong> Есть</p>
             <p><strong>Время форматирования:</strong> 00:00</p>
+            <p><strong>Наличие титульного листа:</strong> Есть</p>
             <p><strong>Шрифт:</strong> Times New Roman</p>
             <p><strong>Размер шрифта:</strong> 20</p>
             <p><strong>Выравнивание:</strong> По правому краю</p>
@@ -81,8 +81,8 @@ const updateSlider = (items) => {
             const animationClass = isInit === false && highlightClass === "" ? " slider-item-animation" : "";
             return `
                 <div class="slider-item${highlightClass}${animationClass}" style="--index: ${index}">
-                    <p><strong>Наличие титульного листа:</strong> ${item.haveTitle}</p>
                     <p><strong>Время форматирования:</strong> ${item.time}</p>
+                    <p><strong>Наличие титульного листа:</strong> ${item.haveTitle}</p>
                     <p><strong>Шрифт:</strong> ${item.font}</p>
                     <p><strong>Размер шрифта:</strong> ${item.fontsize}</p>
                     <p><strong>Выравнивание:</strong> ${item.alignment}</p>
