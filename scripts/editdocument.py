@@ -216,7 +216,7 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
                             continue
 
         # Выравнивание текста
-        if isDraw == True or (isDrawTitle == True and paragraph.text.strip().lower().startswith("рисун")) or paragraphText == "содержание" or paragraphText == "введение" or paragraphText == "заключение" or paragraphText.startswith("список") and ("источников" in paragraphText or "литературы" in paragraphText):
+        if isDraw == True or (isDrawTitle == True and paragraph.text.strip().lower().startswith("рисун")) or paragraphText == "содержание" or paragraphText == "введение" or paragraphText == "заключение" or paragraphText.startswith("список") and ("источников" in paragraphText or "литературы" in paragraphText) or paragraphText == "реферат" or paragraphText == "приложение":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         elif isHead == True or alignment == "По левому краю":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT

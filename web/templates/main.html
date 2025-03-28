@@ -67,6 +67,13 @@
                 </div>
                 <div class="two-windows-container">
                     <div class="window-one">
+                        <a class="window-one-button tooltip-container" href="/menu?parameter=havetitle">Титульный лист
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">
+                                Если указать наличие титульного листа, то первая страница не будет форматироваться.
+                                <strong>Важно, чтобы в конце титульного листа стоял разрыв страницы!</strong>
+                            </span>
+                        </a>
                         <a class="window-one-button" href="/menu?parameter=font">Шрифт</a>
                         <a class="window-one-button" href="/menu?parameter=fontsize">Размер шрифта</a>
                         <a class="window-one-button" href="/menu?parameter=alignment">Выравнивание текста</a>
@@ -78,13 +85,6 @@
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-text">Табуляция – это расстояние от начала строки до начала текста.</span>
                         </a>
-                        <a class="window-one-button tooltip-container" href="/menu?parameter=havetitle">Титульный лист
-                            <span class="tooltip-icon">?</span>
-                            <span class="tooltip-text">
-                                Если указать наличие титульного листа, то первая страница не будет форматироваться.
-                                <strong>Важно, чтобы в конце титульного листа стоял разрыв страницы!</strong>
-                            </span>
-                        </a>
                     </div>
                     <div class="window-two">
                         <img id="window-preloader" class="window-preloader" src="../static/pictures/gear-darkblue.svg">
@@ -92,6 +92,10 @@
                 </div>
                 <div class="parameters-container">
                     <div class="parameters{{ .ErrorDecorationParameters }}">
+                        <div class="parameter">
+                            <p class="parameter-text">Наличие титульного листа:</p>
+                            <input class="parameter-input" name="havetitle" type="text" value="Есть" readonly>
+                        </div>
                         <div class="parameter">
                             <p class="parameter-text">Шрифт:</p>
                             <input class="parameter-input" name="font" type="text" value="Times New Roman" readonly>
@@ -124,10 +128,6 @@
                             <p class="parameter-text">Табуляция в списках:</p>
                             <input class="parameter-input" name="listtabulation" type="text" value="2.0" readonly>
                         </div>
-                        <div class="parameter">
-                            <p class="parameter-text">Наличие титульного листа:</p>
-                            <input class="parameter-input" name="havetitle" type="text" value="Есть" readonly>
-                        </div>
                     </div>
                 </div>
                 {{ if ne .ErrorCommentParameters "" }}
@@ -146,6 +146,7 @@
                 <button class="slider-arrow slider-prev slider-prev-next-off">&lt;</button>
                 <div id="slider" class="slider">
                     <div class="slider-item-dummy">
+                        <p><strong>Наличие титульного листа:</strong> Есть</p>
                         <p><strong>Время форматирования:</strong> 00:00</p>
                         <p><strong>Шрифт:</strong> Times New Roman</p>
                         <p><strong>Размер шрифта:</strong> 20</p>
@@ -155,7 +156,6 @@
                         <p><strong>Интервал после абзаца:</strong> 3.0</p>
                         <p><strong>Отступ первой строки:</strong> 1.75</p>
                         <p><strong>Табуляция в списках:</strong> 3.75</p>
-                        <p><strong>Наличие титульного листа:</strong> Есть</p>
                     </div>
                     <div class="slider-download-text">Загрузка...</div>
                     <div class="slider-item-dummy">
