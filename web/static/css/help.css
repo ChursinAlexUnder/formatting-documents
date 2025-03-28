@@ -29,7 +29,7 @@
 .tooltip-text {
     font-family: "Arial";
     position: absolute;
-    top: -4vw;
+    top: -0.5vw;
     right: 2.5vw;
     width: max-content;
     max-width: 20vw;
@@ -62,7 +62,6 @@
     }
     .tooltip-text {
         font-size: 1.5vw;
-        top: -6.5vw;
         right: 3vw;
     }
 }
@@ -74,7 +73,6 @@
     }
     .tooltip-text {
         font-size: 1.7vw;
-        top: -8.5vw;
         right: 4vw;
     }
 }
