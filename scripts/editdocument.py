@@ -248,23 +248,32 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
 
         updateParagraphDefaultFont(paragraph, font)
         
-        # для уверенности
+        # Для пустых строк
         paragraph.style.font.name = font
         paragraph.style.font.size = Pt(float(fontsize))
-        
+
         for run in paragraph.runs:
-            # Шрифт
-            run.font.name = font
-            # Размер шрифта
-            run.font.size = Pt(float(fontsize))
+            if run.font.name != "Consolas":
+                # Шрифт
+                run.font.name = font
+                # Размер шрифта
+                run.font.size = Pt(float(fontsize))
+            else:
+                codeFontsize = run.font.size
             # цвет текста
-            run.font.color.rgb = RGBColor(0, 0, 0)  # Чёрный цвет (RGB: 0, 0, 0)
+            run.font.color.rgb = RGBColor(0, 0, 0)  # Чёрный цвет (RGB: 0, 0, 0)         
 
         # Заголовок изображения закончился
         if isDrawTitle == True and isDraw == False:
             isDrawTitle = False
 
         index += 1
+    
+    # Для кода в тексте документа
+    for paragraph in doc.paragraphs:
+        for run in paragraph.runs:
+            if run.font.name == "Consolas":
+                run.font.size = codeFontsize
 
     # Добавление списка рисунков
     answer.append(drawList)
