@@ -92,18 +92,22 @@ def modifyList(doc, font, fontsize):
                 rPr.append(sz)
             sz.set(qn("w:val"), str(fontsize * 2))
 
-def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation, havetitle):
+def formatDocument(bufferPath, documentName, font, fontsize, alignment,
+                   spacing, beforespacing, afterspacing,
+                   firstindentation, listtabulation, havetitle):
     # Открываем документ
-    doc = Document(bufferPath + '/' + documentName)
+    doc = Document(f"{bufferPath}/{documentName}")
 
     haveList = False
     isDrawTitle = False
 
     answer = []
-
     drawList = []
     drawCount = 0
-    drawPattern = re.compile(r"(?:\(\s*)?рисун\w*\s+((?:\d+(?:\s*[-,–—]\s*)?)+)(?:\s*\))?", re.IGNORECASE)
+    drawPattern = re.compile(
+        r"(?:\(\s*)?рисун\w*\s+((?:\d+(?:\s*[-,–—]\s*)?)+)(?:\s*\))?",
+        re.IGNORECASE
+    )
 
     bibliographyList = findBibliographyList(doc)
     bibliographyPattern = re.compile(r"\[\s*([\d,\-–—\s]+?)\s*\]")
@@ -115,140 +119,122 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
         section.top_margin = Cm(2)
         section.bottom_margin = Cm(2)
 
-    # задание настроек для обычного стандартного стиля Normal (в основном, для создаваемых отступов и разрывов страниц)
+    # Настройка стиля Normal, если нет титульного листа
     if havetitle == "Нет":
-        changeNormalStyle(doc, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation)
+        changeNormalStyle(doc, font, fontsize, alignment,
+                          spacing, beforespacing,
+                          afterspacing, firstindentation)
 
     isFirstPageBreak = False
-
     isBibliographyList = False
 
-    index = 0
-    
-    # обработка всего документа (по всем paragraphs и всем runs)
-    for paragraph in doc.paragraphs:
-        
-        if havetitle == "Есть" and isFirstPageBreak == False:
+    # Основной цикл: перебираем все абзацы с помощью enumerate
+    for abs_index, paragraph in enumerate(doc.paragraphs):
+        # Пропускаем титульный лист, но не теряем синхронизацию индекса
+        if havetitle == "Есть" and not isFirstPageBreak:
             isFirstPageBreak = paragraphHasPageBreak(paragraph)
-            if isFirstPageBreak == True:
+            if isFirstPageBreak:
                 havetitle = "Нет"
             continue
 
         isHead = False
         isDraw = False
 
-        cleanParagraphText(paragraph)  # Убираем пробелы перед проверкой
+        cleanParagraphText(paragraph)
         level = headingLevel(paragraph.text)
 
-        # Проверяем наличие элемента <w:drawing> или <w:pict>
+        # Поиск рисунка: XML-элементы w:drawing, w:pict, wp:inline, wp:anchor
         for run in paragraph.runs:
-            drawing = run._element.find(qn("w:drawing"))
-            pict = run._element.find(qn("w:pict"))
-            if drawing is not None or pict is not None:
+            elem = run._element
+            if (elem.find(qn("w:drawing")) is not None or
+                elem.find(qn("w:pict")) is not None or
+                paragraph._element.xpath(".//wp:inline") or
+                paragraph._element.xpath(".//wp:anchor")):
                 isDraw = True
                 isDrawTitle = True
                 drawCount += 1
-                hasRef = hasReference(doc, index, drawCount, drawPattern)
+                # Проверяем наличие ссылки на рисунок до этой позиции
+                hasRef = hasReference(doc, abs_index, drawCount, drawPattern)
                 drawList.append(hasRef)
                 break
 
+        # Обработка списков
         if paragraph._element.xpath(".//w:numPr"):
-            removeTabs(paragraph)  # Удаляем табуляции перед добавлением новой
+            removeTabs(paragraph)
             addTab(paragraph, listtabulation)
             if not haveList:
                 haveList = True
                 modifyList(doc, font, int(fontsize))
-        elif not isDraw and not isDrawTitle and isHeading(paragraph) and level != False:
+
+        # Обработка заголовков
+        elif not isDraw and not isDrawTitle and isHeading(paragraph) and level:
             style_name = ensureHeadingStyle(doc, level, font, fontsize)
             paragraph.style = style_name
             isHead = True
 
-            removed_paragraphs = cycle_removeEmptyLinesAndPageBreaks(doc)
-            if index - removed_paragraphs >= 0:
-                index = index - removed_paragraphs
-            
+            removed = cycle_removeEmptyLinesAndPageBreaks(doc)
+            # нет нужды корректировать abs_index вручную
+
             if level == 1:
                 addPageBreak(paragraph)
                 addEmptyParagraphAfter(paragraph)
             else:
-                if index > 0:
+                if abs_index > 0:
                     addEmptyParagraphBefore(paragraph)
                 addEmptyParagraphAfter(paragraph)
 
-        # Доступ к низкоуровневому XML-элементу параграфа
-        p = paragraph._element
-
-        # Удаляем все элементы w:spacing, которые могут содержать интервалы
-        for spacing_elem in p.xpath('.//w:spacing'):
-            # Удаляем сам элемент
+        # Убираем все элементы w:spacing у абзаца
+        for spacing_elem in paragraph._element.xpath('.//w:spacing'):
             spacing_elem.getparent().remove(spacing_elem)
-        
-        
-        # Если абзац является заголовком списка литературы, прекращаем поиск ссылок
-        paragraphText = paragraph.text.strip().lower()
-        if paragraphText.startswith("список") and ("источников" in paragraphText or "литературы" in paragraphText):
+
+        text_lower = paragraph.text.strip().lower()
+        if text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower):
             isBibliographyList = True
 
-        if isBibliographyList == False:
-            # Поиск ссылок на список источников
-            matches = bibliographyPattern.findall(paragraph.text)
-            for match in matches:
-                tokens = match.split(',')
-                for token in tokens:
+        # Поиск ссылок на литературу до секции списка
+        if not isBibliographyList:
+            for match in bibliographyPattern.findall(paragraph.text):
+                for token in re.split(r",", match):
                     token = token.strip()
-                    if any(dash in token for dash in ["-", "–", "—"]):
+                    # диапазоны и одиночные номера
+                    if any(d in token for d in ["-", "–", "—"]):
                         try:
-                            dash_split = re.split(r"\s*[-–—]\s*", token)
-                            if len(dash_split) == 2:
-                                start, end = map(int, dash_split)
-                                # Обрабатываем диапазон: отмечаем все номера источников от start до end
-                                for i in range(start, end + 1):
-                                    if 1 <= i <= len(bibliographyList):
-                                        bibliographyList[i - 1] = True
+                            start, end = map(int, re.split(r"\s*[-–—]\s*", token))
+                            for i in range(start, end+1):
+                                if 1 <= i <= len(bibliographyList):
+                                    bibliographyList[i-1] = True
                         except ValueError:
-                            continue
+                            pass
                     else:
                         try:
                             num = int(token)
                             if 1 <= num <= len(bibliographyList):
-                                bibliographyList[num - 1] = True
+                                bibliographyList[num-1] = True
                         except ValueError:
-                            continue
+                            pass
 
-        # Выравнивание текста
-        if isDraw == True or (isDrawTitle == True and paragraph.text.strip().lower().startswith("рисун")) or paragraphText == "содержание" or paragraphText == "введение" or paragraphText == "заключение" or paragraphText.startswith("список") and ("источников" in paragraphText or "литературы" in paragraphText) or paragraphText == "реферат" or paragraphText == "приложение":
+        # Выравнивание и форматирование абзаца
+        if (isDraw or (isDrawTitle and text_lower.startswith("рисун"))
+            or text_lower in ("содержание", "введение", "заключение", "реферат", "приложение")
+            or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower))):
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        elif isHead == True or alignment == "По левому краю":
+        elif isHead or alignment == "По левому краю":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
         elif alignment == "По центру":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         elif alignment == "По правому краю":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
-        elif alignment == "По ширине":
+        else:
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
 
-        # Междустрочный интервал
         paragraph.paragraph_format.line_spacing = float(spacing)
-
-        # интервал перед абзацем
         paragraph.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
-        
-        # интервал после абзаца
         paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
-        
-        # сбрасываем отступ всего абзаца
         paragraph.paragraph_format.left_indent = 0
         paragraph.paragraph_format.right_indent = 0
-        
-        # отступ первой строки
-        if isDraw == True or isDrawTitle == True:
-            paragraph.paragraph_format.first_line_indent = Cm(0)
-        else:
-            paragraph.paragraph_format.first_line_indent = Cm(float(firstindentation))
+        paragraph.paragraph_format.first_line_indent = Cm(0) if isDraw or isDrawTitle else Cm(float(firstindentation))
 
         updateParagraphDefaultFont(paragraph, font)
-        
-        # Для пустых строк
         paragraph.style.font.size = Pt(float(fontsize))
         paragraph.style.font.name = font
 
@@ -257,29 +243,23 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing,
                 run.font.name = font
                 run.font.size = Pt(float(fontsize))
             else:
-                run.font.size = Pt(float("11"))
-            run.font.color.rgb = RGBColor(0, 0, 0)  # Чёрный цвет
+                run.font.size = Pt(11)
+            run.font.color.rgb = RGBColor(0, 0, 0)
 
-        # Заголовок изображения закончился
-        if isDrawTitle == True and isDraw == False:
+        # Сброс флага заголовка рисунка после первого текстового абзаца
+        if isDrawTitle and not isDraw:
             isDrawTitle = False
 
-        index += 1
-
-    # Добавление списка рисунков
+    # Добавление списка рисунков и таблиц, библиографии
     answer.append(drawList)
-
-    # Создание списка таблиц и их форматирование
     answer.append(findAndFormatTables(doc))
-
     answer.append(bibliographyList)
 
-    # Работа с именем отформатированного документа
-    formattedDocumentName = 'formatted_' + documentName
-    formattedDocumentPath = bufferPath + '/' + formattedDocumentName
-    doc.save(formattedDocumentPath)
-    
-    return formattedDocumentPath, answer
+    # Сохранение
+    formattedName = f"formatted_{documentName}"
+    formattedPath = f"{bufferPath}/{formattedName}"
+    doc.save(formattedPath)
+    return formattedPath, answer
 
 documentName = sys.argv[1]
 bufferPath = '../buffer'
