@@ -38,9 +38,9 @@
             {{ $drawFlag := index .Data.IsAllGood 0 }}
             {{ if $drawInfo }}
                 {{ if $drawFlag }}
-                    <div class="download-text">✅ В вашем документе на все рисунки есть ссылки в тексте</div>
+                    <div class="download-text">✅ В Вашем документе на все рисунки есть ссылки в тексте</div>
                 {{ else }}
-                    <div class="download-text">‼️ В вашем документе нет ссылок в тексте на следующие номера рисунков: 
+                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера рисунков: 
                         {{ range $index, $element := $drawInfo }}
                             {{ if not $element }}
                                 {{ add $index 1 }}
@@ -49,15 +49,15 @@
                     </div>
                 {{ end }}
             {{ else }}
-                <div class="download-text">❕ В вашем документе нет рисунков</div>
+                <div class="download-text">❕ В Вашем документе нет рисунков</div>
             {{ end }}
             {{ $tableInfo := index .Data.DocumentInformation 1 }}
             {{ $tableFlag := index .Data.IsAllGood 1 }}
             {{ if $tableInfo }}
                 {{ if $tableFlag }}
-                    <div class="download-text">✅ В вашем документе на все таблицы есть ссылки в тексте</div>
+                    <div class="download-text">✅ В Вашем документе на все таблицы есть ссылки в тексте</div>
                 {{ else }}
-                    <div class="download-text">‼️ В вашем документе нет ссылок в тексте на следующие номера таблиц: 
+                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера таблиц: 
                         {{ range $index, $element := $tableInfo }}
                             {{ if not $element }}
                                 {{ add $index 1 }}
@@ -66,15 +66,15 @@
                     </div>
                 {{ end }}
             {{ else }}
-                <div class="download-text">❕ В вашем документе нет таблиц</div>
+                <div class="download-text">❕ В Вашем документе нет таблиц</div>
             {{ end }}
             {{ $sourceInfo := index .Data.DocumentInformation 2 }}
             {{ $sourceFlag := index .Data.IsAllGood 2 }}
             {{ if $sourceInfo }}
                 {{ if $sourceFlag }}
-                    <div class="download-text">✅ В вашем документе на все источники есть ссылки в тексте</div>
+                    <div class="download-text">✅ В Вашем документе на все источники есть ссылки в тексте</div>
                 {{ else }}
-                    <div class="download-text">‼️ В вашем документе нет ссылок в тексте на следующие номера источников: 
+                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера источников: 
                         {{ range $index, $element := $sourceInfo }}
                             {{ if not $element }}
                                 {{ add $index 1 }}
@@ -83,7 +83,7 @@
                     </div>
                 {{ end }}
             {{ else }}
-                <div class="download-text">❕ В вашем документе нет списка используемых источников</div>
+                <div class="download-text">❕ В Вашем документе нет списка используемых источников</div>
             {{ end }}
         </div>
     {{ end }}
