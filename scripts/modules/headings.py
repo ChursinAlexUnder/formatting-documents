@@ -8,16 +8,25 @@ from docx.enum.style import WD_STYLE_TYPE
 
 def headingLevel(text):
     """ Определяет уровень заголовка."""
+    text_lower = text.lower()
+    if (text_lower in ("содержание", "введение", "заключение", "реферат", "приложение")
+        or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower))):
+        return 1
     match = re.match(r"^\d+(\.\d+){0,3}", text)
     return min(len(match.group().split(".")), 4) if match else False
 
 def isHeading(paragraph):
     """ Проверяет, является ли абзац заголовком. """
     text = paragraph.text.strip()
+    text_lower = text.lower()
     
     # Проверка на пустой текст или слишком длинный абзац
     if not text or len(text) > 150:
         return False
+    
+    if (text_lower in ("содержание", "введение", "заключение", "реферат", "приложение")
+        or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower))):
+        return True
 
     # Проверка, если абзац содержит только картинку/формулу
     if not paragraph.runs:  # Если нет run'ов, значит, текст отсутствует (например, изображение)
