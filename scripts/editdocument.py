@@ -234,7 +234,7 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
         paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
         paragraph.paragraph_format.left_indent = 0
         paragraph.paragraph_format.right_indent = 0
-        paragraph.paragraph_format.first_line_indent = Cm(0) if isDraw or isDrawTitle else Cm(float(firstindentation))
+        paragraph.paragraph_format.first_line_indent = Cm(0) if isDraw or isDrawTitle or text_lower in ("содержание", "введение", "заключение", "реферат", "приложение") or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower)) else Cm(float(firstindentation))
 
         updateParagraphDefaultFont(paragraph, font)
         paragraph.style.font.size = Pt(float(fontsize))
