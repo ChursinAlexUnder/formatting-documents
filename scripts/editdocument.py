@@ -218,7 +218,9 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
             or text_lower in ("содержание", "введение", "заключение", "реферат", "приложение")
             or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower))):
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        elif isHead or alignment == "По левому краю":
+        elif isHead:
+            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+        elif alignment == "По левому краю":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
         elif alignment == "По центру":
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
