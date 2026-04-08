@@ -9,7 +9,7 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 from modules.tabs import removeTabs, addTab
-from modules.headings import headingLevel, isHeading, cycle_removeEmptyLinesAndPageBreaks, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle, changeNormalStyle
+from modules.headings import headingLevel, isHeading, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle, changeNormalStyle
 from modules.usednumbers import findAndFormatTables, findBibliographyList, hasReference
 from modules.title import paragraphHasPageBreak
 
@@ -171,9 +171,6 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
             style_name = ensureHeadingStyle(doc, level, font, fontsize)
             paragraph.style = style_name
             isHead = True
-
-            removed = cycle_removeEmptyLinesAndPageBreaks(doc)
-            # нет нужды корректировать abs_index вручную
 
             if level == 1:
                 addPageBreak(paragraph)

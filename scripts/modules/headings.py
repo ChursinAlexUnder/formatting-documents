@@ -1,7 +1,6 @@
 import re
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from collections import Counter
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.style import WD_STYLE_TYPE
@@ -66,73 +65,6 @@ def isHeading(paragraph):
     if (bold_percentage >= 90 or total_chars - bold_count <= 3):
         return True
     return False
-
-def removeEmptyLinesAndPageBreaks(doc, index):
-    """Удаляет пустые строки, пустые абзацы и разрывы страниц перед и после параграфа, не затрагивая контент (картинки, таблицы)."""
-    ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
-
-    def is_empty_paragraph(paragraph):
-        """
-        Проверяет, является ли абзац пустым.
-        Абзац считается непустым, если:
-          - содержит текст (даже если `paragraph.text` пуст),
-          - содержит встроенные объекты (например, картинки).
-        """
-        # Если есть текст, отличающийся от пробелов, считаем абзац не пустым.
-        if paragraph.text and paragraph.text.strip():
-            return False
-
-        if paragraph._element.find('.//w:drawing', namespaces=ns) is not None or paragraph._element.find('.//w:pict', namespaces=ns) is not None:
-            return False  # В абзаце есть объект (например, картинка)
-
-        return True  # Если ничего нет, считаем абзац пустым
-
-    def remove_paragraph(paragraph):
-        """Удаляет абзац из документа."""
-        parent = paragraph._element.getparent()
-        if parent is not None:
-            parent.remove(paragraph._element)
-
-    def remove_page_breaks(paragraph):
-        """Удаляет только разрывы страниц внутри параграфа, оставляя остальной текст нетронутым."""
-        for br in paragraph._element.findall(".//w:br[@w:type='page']", namespaces=ns):
-            br.getparent().remove(br)
-
-     # Удаление пустых абзацев и разрывов страниц перед указанным индексом
-    i = index - 1
-    while i >= 0:
-        if i >= len(doc.paragraphs):
-            break
-
-        paragraph = doc.paragraphs[i]
-        page_break = paragraph._element.find(".//w:br[@w:type='page']", namespaces=ns)
-
-        if page_break is not None:
-            remove_page_breaks(paragraph)  # Удаляем разрыв страницы, но не весь параграф
-        elif is_empty_paragraph(paragraph):
-            remove_paragraph(paragraph)
-            index -= 1  # Так как удаляется абзац, индекс смещается
-        else:
-            break
-        i -= 1
-
-    # Удаляем пустые абзацы и разрывы страниц после целевого абзаца
-    removed_after = 0
-    i = index + 1
-    while i < len(doc.paragraphs):
-        paragraph = doc.paragraphs[i]
-        page_break = paragraph._element.find(".//w:br[@w:type='page']", namespaces=ns)
-
-        if page_break is not None:
-            remove_page_breaks(paragraph)  # Удаляем разрыв страницы, но не весь параграф
-        elif is_empty_paragraph(paragraph):
-            remove_paragraph(paragraph)
-            removed_after += 1
-        else:
-            break
-    return removed_after
-    
-
 
 def addPageBreak(paragraph):
     """
@@ -245,49 +177,6 @@ def ensureHeadingStyle(doc, level, font, fontsize):
     style.quick_style = True  # Включает отображение в меню стилей
     
     return style_name  # Возвращаем имя стиля
-
-def cycle_removeEmptyLinesAndPageBreaks(doc):
-    """
-    Вызывает функцию removeEmptyLinesAndPageBreaks(doc, index) до тех пор,
-    пока документ не перестанет изменяться. Для проверки изменений сравниваются
-    XML-представление документа и количество параграфов.
-    """
-    prev_xml = doc._element.xml
-    prev_par_count = len(doc.paragraphs)
-    total_removed_after = 0
-
-    while True:
-        for index, paragraph in enumerate(doc.paragraphs):
-            isDraw = False
-            level = headingLevel(paragraph.text)
-            # Проверяем наличие элемента <w:drawing> или <w:pict>
-            for run in paragraph.runs:
-                drawing = run._element.find(qn("w:drawing"))
-                pict = run._element.find(qn("w:pict"))
-                if drawing is not None or pict is not None:
-                    isDraw = True
-                    break
-            if not paragraph._element.xpath(".//w:numPr") and not isDraw and isHeading(paragraph) and level != False:
-                removed_after = removeEmptyLinesAndPageBreaks(doc, index)
-                total_removed_after += removed_after
-                if level == 1:
-                    addPageBreak(paragraph)
-                    addEmptyParagraphAfter(paragraph)
-                else:
-                    if index > 0:
-                        addEmptyParagraphBefore(paragraph)
-                    addEmptyParagraphAfter(paragraph)
-        current_xml = doc._element.xml
-        current_par_count = len(doc.paragraphs)
-
-        # Если документ не изменился ни по структуре, ни по количеству параграфов – завершаем цикл
-        if current_xml == prev_xml and current_par_count == prev_par_count:
-            break
-
-        prev_xml = current_xml
-        prev_par_count = current_par_count
-
-    return total_removed_after
 
 def changeNormalStyle(doc, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation):
     """

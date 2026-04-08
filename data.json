@@ -1,12 +1,12 @@
 {
-    "count": 23,
-    "date": "2025-04-01",
+    "count": 3,
+    "date": "2026-04-08",
     "last_formatting": [
         {
-            "time": "21:05",
+            "time": "23:19",
             "font": "Times New Roman",
             "fontsize": "14",
-            "alignment": "По ширине",
+            "alignment": "По правому краю",
             "spacing": "1.5",
             "beforeSpacing": "0",
             "afterSpacing": "0",
@@ -15,10 +15,10 @@
             "haveTitle": "Нет"
         },
         {
-            "time": "21:03",
+            "time": "23:16",
             "font": "Times New Roman",
             "fontsize": "14",
-            "alignment": "По ширине",
+            "alignment": "По правому краю",
             "spacing": "1.5",
             "beforeSpacing": "0",
             "afterSpacing": "0",
@@ -27,40 +27,16 @@
             "haveTitle": "Есть"
         },
         {
-            "time": "21:02",
+            "time": "23:13",
             "font": "Times New Roman",
             "fontsize": "14",
-            "alignment": "По ширине",
+            "alignment": "По правому краю",
             "spacing": "1.5",
             "beforeSpacing": "0",
             "afterSpacing": "0",
             "firstIndentation": "1.25",
             "listTabulation": "2.0",
-            "haveTitle": "Нет"
-        },
-        {
-            "time": "20:59",
-            "font": "Times New Roman",
-            "fontsize": "14",
-            "alignment": "По ширине",
-            "spacing": "1.5",
-            "beforeSpacing": "0",
-            "afterSpacing": "0",
-            "firstIndentation": "1.25",
-            "listTabulation": "2.0",
-            "haveTitle": "Нет"
-        },
-        {
-            "time": "20:29",
-            "font": "Times New Roman",
-            "fontsize": "14",
-            "alignment": "По ширине",
-            "spacing": "1.5",
-            "beforeSpacing": "0",
-            "afterSpacing": "0",
-            "firstIndentation": "1.25",
-            "listTabulation": "2.0",
-            "haveTitle": "Нет"
+            "haveTitle": "Есть"
         }
     ]
 }
