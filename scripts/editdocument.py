@@ -249,6 +249,23 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
         if isDrawTitle and not isDraw:
             isDrawTitle = False
 
+    # Изменение размера шрифта у гиперссылок
+    target_half_points = int(float(fontsize) * 2)
+    
+    for hyperlink in doc.element.body.iter(qn('w:hyperlink')):
+        for r in hyperlink.iter(qn('w:r')):
+            rPr = r.find(qn('w:rPr'))
+            if rPr is None:
+                rPr = OxmlElement('w:rPr')
+                r.insert(0, rPr)
+
+            # Устанавливаем основной размер
+            sz = rPr.find(qn('w:sz'))
+            if sz is None:
+                sz = OxmlElement('w:sz')
+                rPr.append(sz)
+            sz.set(qn('w:val'), str(target_half_points))
+
     # Добавление списка рисунков и таблиц, библиографии
     answer.append(drawList)
     answer.append(findAndFormatTables(doc))

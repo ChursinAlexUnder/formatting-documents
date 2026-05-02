@@ -1,7 +1,7 @@
 # Используем базовый образ Debian и добавим сюда Go и Python
 FROM debian:bullseye-slim
 
-# Установите необходимые пакеты
+# Установить необходимые пакеты
 RUN apt-get update && apt-get install -y \
     golang \
     python3 \
@@ -9,22 +9,22 @@ RUN apt-get update && apt-get install -y \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
 
-# Установите библиотеку python-docx через pip
+# Установить библиотеку python-docx через pip
 RUN pip install python-docx
 
-# Установите рабочую директорию
+# Установить рабочую директорию
 WORKDIR /
 
-# Копируем go.mod для загрузки зависимостей
+# Копировать go.mod для загрузки зависимостей
 COPY go.mod /
 
-# Загрузите зависимости
+# Загрузить зависимости
 RUN go mod download
 
-# Скопируйте все файлы в рабочую директорию
+# Скопировать все файлы в рабочую директорию
 COPY . /
 
-# Скомпилируйте Go приложение
+# Скомпилировать Go приложение
 RUN go build -o main ./cmd/main.go
 
 # Expose port 8080 to the outside world
