@@ -44,22 +44,17 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, doma
 	}
 
 	// запуск python скрипта
-	data.DocumentInformation, err = services.RunPythonScript(data.DocumentData.Filename, data.Params)
+	info, err := services.RunPythonScript(data.DocumentData.Filename, data.Params)
 	if err != nil {
 		return data, wrongData, fmt.Errorf("error formatting the document on the server: %v", err)
 	}
+	data.Information = info
 
-	// задание флагов каждому из массивов с помощью вспомогательного массива
+	// задание флагов каждому из массивов
 	data.IsAllGood = make([]bool, 3)
-	for ind, mas := range data.DocumentInformation {
-		data.IsAllGood[ind] = true
-		for _, value := range mas {
-			if !value {
-				data.IsAllGood[ind] = false
-				break
-			}
-		}
-	}
+	data.IsAllGood[0] = services.AllTrue(info.Draw)
+	data.IsAllGood[1] = services.AllTrue(info.Table)
+	data.IsAllGood[2] = services.AllTrue(info.Biblio)
 
 	// обновление счетчика и данных для слайдера
 	err = services.UpdateDataJSON(data.Params)

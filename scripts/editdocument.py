@@ -95,7 +95,6 @@ def modifyList(doc, font, fontsize):
 def formatDocument(bufferPath, documentName, font, fontsize, alignment,
                    spacing, beforespacing, afterspacing,
                    firstindentation, listtabulation, havetitle):
-    # Открываем документ
     doc = Document(f"{bufferPath}/{documentName}")
 
     haveList = False
@@ -108,18 +107,18 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
         r"(?:\(\s*)?рисун\w*\s+((?:\d+(?:\s*[-,–—]\s*)?)+)(?:\s*\))?",
         re.IGNORECASE
     )
+    excluded_indices = set()
 
-    bibliographyList = findBibliographyList(doc)
+    bibliographyList, bibliographyStartIdx = findBibliographyList(doc)
     bibliographyPattern = re.compile(r"\[\s*([\d,\-–—\s]+?)\s*\]")
 
-    # Настройка полей для основного раздела
+    # Поля
     for section in doc.sections:
         section.left_margin = Cm(3)
         section.right_margin = Cm(1.5)
         section.top_margin = Cm(2)
         section.bottom_margin = Cm(2)
 
-    # Настройка стиля Normal, если нет титульного листа
     if havetitle == "Нет":
         changeNormalStyle(doc, font, fontsize, alignment,
                           spacing, beforespacing,
@@ -128,13 +127,12 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
     isFirstPageBreak = False
     isBibliographyList = False
 
-    # Основной цикл: перебираем все абзацы с помощью enumerate
     for abs_index, paragraph in enumerate(doc.paragraphs):
-        # Пропускаем титульный лист, но не теряем синхронизацию индекса
         if havetitle == "Есть" and not isFirstPageBreak:
             isFirstPageBreak = paragraphHasPageBreak(paragraph)
             if isFirstPageBreak:
                 havetitle = "Нет"
+            excluded_indices.add(abs_index)
             continue
 
         isHead = False
@@ -143,7 +141,11 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
         cleanParagraphText(paragraph)
         level = headingLevel(paragraph.text)
 
-        # Поиск рисунка: XML-элементы w:drawing, w:pict, wp:inline, wp:anchor
+        # Исключаем абзацы внутри таблиц
+        if paragraph._element.getparent() is not None and paragraph._element.getparent().tag == qn('w:tc'):
+            excluded_indices.add(abs_index)
+
+        # Поиск рисунков
         for run in paragraph.runs:
             elem = run._element
             if (elem.find(qn("w:drawing")) is not None or
@@ -151,14 +153,14 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
                 paragraph._element.xpath(".//wp:inline") or
                 paragraph._element.xpath(".//wp:anchor")):
                 isDraw = True
+                excluded_indices.add(abs_index)
                 isDrawTitle = True
                 drawCount += 1
-                # Проверяем наличие ссылки на рисунок до этой позиции
                 hasRef = hasReference(doc, abs_index, drawCount, drawPattern)
                 drawList.append(hasRef)
                 break
 
-        # Обработка списков
+        # Списки – форматируем, но не исключаем
         if paragraph._element.xpath(".//w:numPr"):
             removeTabs(paragraph)
             addTab(paragraph, listtabulation)
@@ -166,21 +168,26 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
                 haveList = True
                 modifyList(doc, font, int(fontsize))
 
-        # Обработка заголовков
-        elif not isDraw and not isDrawTitle and isHeading(paragraph) and level:
-            style_name = ensureHeadingStyle(doc, level, font, fontsize)
-            paragraph.style = style_name
-            isHead = True
+        # Заголовки
+        elif not isDraw and not isDrawTitle and isHeading(paragraph):
+            if level:
+                # Нумерованный заголовок с уровнем
+                style_name = ensureHeadingStyle(doc, level, font, fontsize)
+                paragraph.style = style_name
+                isHead = True
+                excluded_indices.add(abs_index)
 
-            if level == 1:
-                addPageBreak(paragraph)
-                addEmptyParagraphAfter(paragraph)
+                if level == 1:
+                    addPageBreak(paragraph)
+                    addEmptyParagraphAfter(paragraph)
+                else:
+                    if abs_index > 0:
+                        addEmptyParagraphBefore(paragraph)
+                    addEmptyParagraphAfter(paragraph)
             else:
-                if abs_index > 0:
-                    addEmptyParagraphBefore(paragraph)
-                addEmptyParagraphAfter(paragraph)
+                # Ненумерованный заголовок (например, "Список используемых источников", "ПРИЛОЖЕНИЕ" и т.п.)
+                excluded_indices.add(abs_index)
 
-        # Убираем все элементы w:spacing у абзаца
         for spacing_elem in paragraph._element.xpath('.//w:spacing'):
             spacing_elem.getparent().remove(spacing_elem)
 
@@ -188,12 +195,10 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
         if text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower):
             isBibliographyList = True
 
-        # Поиск ссылок на литературу до секции списка
         if not isBibliographyList:
             for match in bibliographyPattern.findall(paragraph.text):
                 for token in re.split(r",", match):
                     token = token.strip()
-                    # диапазоны и одиночные номера
                     if any(d in token for d in ["-", "–", "—"]):
                         try:
                             start, end = map(int, re.split(r"\s*[-–—]\s*", token))
@@ -210,11 +215,14 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
                         except ValueError:
                             pass
 
-        # Выравнивание и форматирование абзаца
+        # Выравнивание и пометка специальных абзацев
         if (isDraw or (isDrawTitle and text_lower.startswith("рисун"))
-            or text_lower in ("содержание", "введение", "заключение", "реферат", "приложение")
+            or text_lower in ("содержание", "введение", "заключение", "реферат")
+            or text_lower.startswith("приложение")
+            or text_lower.startswith("таблиц")
             or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower))):
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            excluded_indices.add(abs_index)
         elif isHead:
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
         elif alignment == "По левому краю":
@@ -231,7 +239,7 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
         paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
         paragraph.paragraph_format.left_indent = 0
         paragraph.paragraph_format.right_indent = 0
-        paragraph.paragraph_format.first_line_indent = Cm(0) if isDraw or isDrawTitle or text_lower in ("содержание", "введение", "заключение", "реферат", "приложение") or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower)) else Cm(float(firstindentation))
+        paragraph.paragraph_format.first_line_indent = Cm(0) if isDraw or isDrawTitle or text_lower in ("содержание", "введение", "заключение", "реферат") or text_lower.startswith("приложение") or text_lower.startswith("таблиц") or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower)) else Cm(float(firstindentation))
 
         updateParagraphDefaultFont(paragraph, font)
         paragraph.style.font.size = Pt(float(fontsize))
@@ -243,35 +251,50 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
                 run.font.size = Pt(float(fontsize))
             else:
                 run.font.size = Pt(11)
+                excluded_indices.add(abs_index)   # код исключаем
             run.font.color.rgb = RGBColor(0, 0, 0)
 
-        # Сброс флага заголовка рисунка после первого текстового абзаца
         if isDrawTitle and not isDraw:
             isDrawTitle = False
 
-    # Изменение размера шрифта у гиперссылок
+    # Размер шрифта гиперссылок
     target_half_points = int(float(fontsize) * 2)
-    
     for hyperlink in doc.element.body.iter(qn('w:hyperlink')):
         for r in hyperlink.iter(qn('w:r')):
             rPr = r.find(qn('w:rPr'))
             if rPr is None:
                 rPr = OxmlElement('w:rPr')
                 r.insert(0, rPr)
-
-            # Устанавливаем основной размер
             sz = rPr.find(qn('w:sz'))
             if sz is None:
                 sz = OxmlElement('w:sz')
                 rPr.append(sz)
             sz.set(qn('w:val'), str(target_half_points))
 
-    # Добавление списка рисунков и таблиц, библиографии
+    # Подсчет абзацев текста
+    paragraph_count = 0
+    for i, para in enumerate(doc.paragraphs):
+        if i in excluded_indices:
+            continue
+        text = para.text.strip()
+        text_lower = text.lower()
+
+        # Явно исключаем подписи к рисункам, таблицам, приложения и заголовок литературы
+        if (text_lower.startswith("рисун") or
+            text_lower.startswith("таблиц") or
+            text_lower.startswith("приложение") or
+            (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower))):
+            continue
+
+        # Считаем абзац, только если он содержит хотя бы одну букву или цифру
+        if re.search(r'[a-zA-Zа-яА-ЯёЁ0-9]', text):
+            paragraph_count += 1
+
     answer.append(drawList)
     answer.append(findAndFormatTables(doc))
     answer.append(bibliographyList)
+    answer.append(paragraph_count)
 
-    # Сохранение
     formattedName = f"formatted_{documentName}"
     formattedPath = f"{bufferPath}/{formattedName}"
     doc.save(formattedPath)

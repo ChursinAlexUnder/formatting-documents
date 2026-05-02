@@ -45,7 +45,7 @@ def findBibliographyList(doc):
                 bibliographyLength += 1
 
     bibliographyList = [False] * bibliographyLength
-    return bibliographyList
+    return bibliographyList, bibliographyStart
 
 def hasReference(doc, start_index, number, pattern):
     """

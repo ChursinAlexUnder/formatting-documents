@@ -34,7 +34,7 @@
         </div>
         <div class="main-window">
             <h2 class="download-title">Информация о тексте документа</h2>
-            {{ $drawInfo := index .Data.DocumentInformation 0 }}
+<div class="download-text">ℹ️ Количество абзацев текста: <strong>{{ .Data.Information.ParagraphCount }}</strong></div>            {{ $drawInfo := .Data.Information.Draw }}
             {{ $drawFlag := index .Data.IsAllGood 0 }}
             {{ if $drawInfo }}
                 {{ if $drawFlag }}
@@ -51,7 +51,7 @@
             {{ else }}
                 <div class="download-text">❕ В Вашем документе нет рисунков</div>
             {{ end }}
-            {{ $tableInfo := index .Data.DocumentInformation 1 }}
+            {{ $tableInfo := .Data.Information.Table }}
             {{ $tableFlag := index .Data.IsAllGood 1 }}
             {{ if $tableInfo }}
                 {{ if $tableFlag }}
@@ -68,7 +68,7 @@
             {{ else }}
                 <div class="download-text">❕ В Вашем документе нет таблиц</div>
             {{ end }}
-            {{ $sourceInfo := index .Data.DocumentInformation 2 }}
+            {{ $sourceInfo := .Data.Information.Biblio }}
             {{ $sourceFlag := index .Data.IsAllGood 2 }}
             {{ if $sourceInfo }}
                 {{ if $sourceFlag }}
