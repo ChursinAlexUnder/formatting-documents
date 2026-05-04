@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: formatting_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: formatting_documents
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - formatting_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: formatting_app
+    environment:
+      DATABASE_URL: "user=postgres password=postgres dbname=formatting_documents host=postgres port=5432 sslmode=disable"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - formatting_network
+    volumes:
+      - ./web:/app/web
+      - ./buffer:/app/buffer
+      - ./scripts:/app/scripts
+
+volumes:
+  postgres_data:
+
+networks:
+  formatting_network:
+    driver: bridge

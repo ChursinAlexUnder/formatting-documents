@@ -16,7 +16,7 @@ RUN pip install python-docx
 WORKDIR /
 
 # Копировать go.mod для загрузки зависимостей
-COPY go.mod /
+COPY go.mod go.sum /
 
 # Загрузить зависимости
 RUN go mod download

@@ -3,6 +3,7 @@ package interfaces
 import (
 	"encoding/json"
 	"fmt"
+	"formatting-documents/database"
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
@@ -12,7 +13,30 @@ import (
 	"os"
 	"strconv"
 	"text/template"
+	"time"
 )
+
+func getUserIDFromCookie(r *http.Request) (int64, error) {
+	cookie, err := r.Cookie("user_id")
+	if err != nil || cookie.Value == "" {
+		return 0, fmt.Errorf("not authenticated")
+	}
+
+	var userID int64
+	if _, err := fmt.Sscanf(cookie.Value, "%d", &userID); err != nil || userID <= 0 {
+		return 0, fmt.Errorf("invalid session")
+	}
+
+	return userID, nil
+}
+
+func databaseUnavailableJSON(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": false,
+		"message": "Database is unavailable",
+	})
+}
 
 func MainPage(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -211,4 +235,467 @@ func InfoPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error displaying index.html and info.html: %v", err)
 		return
 	}
+}
+
+// Profile page handler
+func ProfilePage(w http.ResponseWriter, r *http.Request) {
+	if !database.IsAvailable() {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	_, err := getUserIDFromCookie(r)
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/profile.html")
+	if err != nil {
+		fmt.Fprintf(w, "Error parsing profile.html: %v", err)
+		return
+	}
+	err = tmplt.ExecuteTemplate(w, "index", nil)
+	if err != nil {
+		fmt.Fprintf(w, "Error displaying index.html and profile.html: %v", err)
+		return
+	}
+}
+
+// API: Register handler
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if !database.IsAvailable() {
+		databaseUnavailableJSON(w)
+		return
+	}
+
+	var req domain.LoginRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Invalid request",
+		})
+		return
+	}
+
+	if len(req.Login) == 0 || len(req.Password) == 0 {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+		})
+		return
+	}
+
+	user, err := database.CreateUser(req.Login, req.Password)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Set session cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "user_id",
+		Value:    fmt.Sprintf("%d", user.ID),
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   86400 * 7, // 7 days
+	})
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Registration successful",
+		"user_id": user.ID,
+	})
+}
+
+// API: Login handler
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if !database.IsAvailable() {
+		databaseUnavailableJSON(w)
+		return
+	}
+
+	var req domain.LoginRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Invalid request",
+		})
+		return
+	}
+
+	userID, err := database.VerifyPassword(req.Login, req.Password)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Set session cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "user_id",
+		Value:    fmt.Sprintf("%d", userID),
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   86400 * 7, // 7 days
+	})
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Login successful",
+		"user_id": userID,
+	})
+}
+
+// API: Logout handler
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "user_id",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "selected_template",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{
+		"success": true,
+	})
+}
+
+// API: Get user profile with templates
+func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+
+	if !database.IsAvailable() {
+		databaseUnavailableJSON(w)
+		return
+	}
+
+	userID, err := getUserIDFromCookie(r)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Not authenticated",
+		})
+		return
+	}
+
+	user, err := database.GetUserByID(userID)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "User not found",
+		})
+		return
+	}
+
+	templates, err := database.GetTemplatesByUserID(userID)
+	if err != nil {
+		templates = []domain.FormattingTemplate{}
+	}
+
+	// Get selected template ID from cookie
+	selectedCookie, _ := r.Cookie("selected_template")
+	selectedID := int64(0)
+	if selectedCookie != nil {
+		fmt.Sscanf(selectedCookie.Value, "%d", &selectedID)
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":              true,
+		"user_id":              user.ID,
+		"login":                user.Login,
+		"templates":            templates,
+		"selected_template_id": selectedID,
+	})
+}
+
+// API: Create template
+func CreateTemplateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if !database.IsAvailable() {
+		databaseUnavailableJSON(w)
+		return
+	}
+
+	userID, err := getUserIDFromCookie(r)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Not authenticated",
+		})
+		return
+	}
+
+	var template domain.FormattingTemplate
+	err = json.NewDecoder(r.Body).Decode(&template)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Invalid request",
+		})
+		return
+	}
+
+	template.ProfileID = userID
+
+	createdTemplate, err := database.CreateTemplate(&template)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":  true,
+		"template": createdTemplate,
+	})
+}
+
+// API: Get template
+func GetTemplateHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if !database.IsAvailable() {
+		databaseUnavailableJSON(w)
+		return
+	}
+
+	userID, err := getUserIDFromCookie(r)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Not authenticated",
+		})
+		return
+	}
+
+	templateIDStr := r.URL.Query().Get("id")
+	var templateID int64
+	fmt.Sscanf(templateIDStr, "%d", &templateID)
+
+	template, err := database.GetTemplateByID(templateID)
+	if err != nil || template.ProfileID != userID {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Template not found",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":  true,
+		"template": template,
+	})
+}
+
+// API: Update template
+func UpdateTemplateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if !database.IsAvailable() {
+		databaseUnavailableJSON(w)
+		return
+	}
+
+	userID, err := getUserIDFromCookie(r)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Not authenticated",
+		})
+		return
+	}
+
+	var template domain.FormattingTemplate
+	err = json.NewDecoder(r.Body).Decode(&template)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Invalid request",
+		})
+		return
+	}
+
+	template.ProfileID = userID
+
+	updatedTemplate, err := database.UpdateTemplate(&template)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":  true,
+		"template": updatedTemplate,
+	})
+}
+
+// API: Delete template
+func DeleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if !database.IsAvailable() {
+		databaseUnavailableJSON(w)
+		return
+	}
+
+	userID, err := getUserIDFromCookie(r)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Not authenticated",
+		})
+		return
+	}
+
+	templateIDStr := r.URL.Query().Get("id")
+	var templateID int64
+	fmt.Sscanf(templateIDStr, "%d", &templateID)
+
+	err = database.DeleteTemplate(templateID, userID)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]bool{
+		"success": true,
+	})
+}
+
+// API: Select template
+func SelectTemplateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if !database.IsAvailable() {
+		databaseUnavailableJSON(w)
+		return
+	}
+
+	userID, err := getUserIDFromCookie(r)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Not authenticated",
+		})
+		return
+	}
+
+	templateIDStr := r.URL.Query().Get("id")
+	var templateID int64
+	fmt.Sscanf(templateIDStr, "%d", &templateID)
+
+	// Verify template belongs to user
+	template, err := database.GetTemplateByID(templateID)
+	if err != nil || template.ProfileID != userID {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Template not found",
+		})
+		return
+	}
+
+	// Set cookie with selected template
+	http.SetCookie(w, &http.Cookie{
+		Name:     "selected_template",
+		Value:    fmt.Sprintf("%d", templateID),
+		Path:     "/",
+		HttpOnly: false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   86400 * 30, // 30 days
+	})
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":  true,
+		"template": template,
+		"message":  "Template selected",
+	})
+}
+
+// API: Reset template selection
+func ResetTemplateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "selected_template",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	json.NewEncoder(w).Encode(map[string]bool{
+		"success": true,
+	})
 }

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{ define "links" }}
         <link rel="stylesheet" href="../static/css/header.css">
+        <link rel="stylesheet" href="../static/css/auth.css">
+        <link rel="stylesheet" href="../static/css/notification.css">
         <link rel="stylesheet" href="../static/css/instruction.css">
         <link rel="stylesheet" href="../static/css/form.css">
         <link rel="stylesheet" href="../static/css/preloader.css">
@@ -18,6 +20,8 @@
         <script defer src="../static/js/preloader.js"></script>
         <script defer src="../static/js/menu.js"></script>
         <script defer src="../static/js/SSE.js"></script>
+        <script defer src="../static/js/auth.js"></script>
+        <script defer src="../static/js/notification.js"></script>
         {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentParameters "") }}
             <script defer>
                 // Заменяем текущее состояние на URL без отправки POST
@@ -29,6 +33,70 @@
 </head>
 <body>
     {{ define "content" }}
+        <!-- Header -->
+        <header class="sticky-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button type="button" class="reset-template-btn" id="headerResetTemplateBtn" title="Сбросить текущий шаблон" onclick="resetTemplate()">Сбросить шаблон</button>
+                    <div class="template-selector" id="templateSelector" style="display: none;">
+                        <span class="template-label">Текущий шаблон:</span>
+                        <span class="template-name" id="templateName"></span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="profile-login-label" id="headerProfileLogin" style="display: none;" title=""></div>
+                    <div class="auth-buttons" id="authButtons">
+                        <button type="button" class="auth-btn register-btn" onclick="openRegisterModal()">Зарегистрироваться</button>
+                        <button type="button" class="auth-btn login-btn" onclick="openLoginModal()">Войти</button>
+                    </div>
+                    <div class="profile-buttons" id="profileButtons" style="display: none;">
+                        <button type="button" class="auth-btn profile-btn" onclick="goToProfile()">В профиль</button>
+                        <button type="button" class="auth-btn logout-btn" onclick="logout()">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Auth Modals -->
+        <div id="registerModal" class="auth-modal-overlay" onclick="closeRegisterModal(event)">
+            <div class="auth-modal-content" onclick="event.stopPropagation()">
+                <button type="button" class="modal-close-btn" onclick="closeRegisterModal()">&times;</button>
+                <h2 class="modal-title">Регистрация</h2>
+                <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="registerLogin">Логин:</label>
+                        <input type="text" id="registerLogin" name="login" required maxlength="100" placeholder="Введите логин">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Пароль:</label>
+                        <input type="password" id="registerPassword" name="password" required maxlength="100" placeholder="Введите пароль">
+                    </div>
+                    <button type="submit" class="modal-submit-btn">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="loginModal" class="auth-modal-overlay" onclick="closeLoginModal(event)">
+            <div class="auth-modal-content" onclick="event.stopPropagation()">
+                <button type="button" class="modal-close-btn" onclick="closeLoginModal()">&times;</button>
+                <h2 class="modal-title">Вход</h2>
+                <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginLogin">Логин:</label>
+                        <input type="text" id="loginLogin" name="login" required placeholder="Введите логин">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Пароль:</label>
+                        <input type="password" id="loginPassword" name="password" required placeholder="Введите пароль">
+                    </div>
+                    <button type="submit" class="modal-submit-btn">Войти</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notification Container -->
+        <div id="notificationContainer" class="notification-container"></div>
+
         <div class="main-header">
             <h1 class="title">
                 <span class="word">Форматирование</span><br>

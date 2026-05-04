@@ -68,3 +68,53 @@ var (
 	ListTabulation   []string = []string{"0", "0.25", "0.5", "0.75", "1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0", "3.25", "3.5", "3.75", "4.0"}
 	HaveTitle        []string = []string{"Есть", "Нет"}
 )
+
+// User profile structure
+type User struct {
+	ID       int64  `json:"id"`
+	Login    string `json:"login"`
+	Password string `json:"password,omitempty"`
+}
+
+// FormattingTemplate structure
+type FormattingTemplate struct {
+	ID               int64   `json:"id"`
+	ProfileID        int64   `json:"profile_id"`
+	Name             string  `json:"name"`
+	Font             string  `json:"font"`
+	Fontsize         int     `json:"fontsize"`
+	Alignment        string  `json:"alignment"`
+	Spacing          float64 `json:"spacing"`
+	BeforeSpacing    float64 `json:"beforeSpacing"`
+	AfterSpacing     float64 `json:"afterSpacing"`
+	FirstIndentation float64 `json:"firstIndentation"`
+	ListTabulation   float64 `json:"listTabulation"`
+	HaveTitle        string  `json:"haveTitle"`
+}
+
+// API Request/Response structures
+type LoginRequest struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
+
+type AuthResponse struct {
+	Success bool         `json:"success"`
+	Message string       `json:"message"`
+	User    *User        `json:"user,omitempty"`
+	Profile *UserProfile `json:"profile,omitempty"`
+}
+
+type TemplateResponse struct {
+	Success   bool                 `json:"success"`
+	Message   string               `json:"message"`
+	Template  *FormattingTemplate  `json:"template,omitempty"`
+	Templates []FormattingTemplate `json:"templates,omitempty"`
+}
+
+type UserProfile struct {
+	UserID             int64                `json:"user_id"`
+	Login              string               `json:"login"`
+	Templates          []FormattingTemplate `json:"templates"`
+	SelectedTemplateID int64                `json:"selected_template_id,omitempty"`
+}

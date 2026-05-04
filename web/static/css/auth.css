@@ -1,0 +1,330 @@
+/* Auth Modal Styles */
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: linear-gradient(135deg, #53a9ff 0%, #3a91ff 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    border-bottom: 1px solid white;
+}
+
+body,
+.header-content,
+.template-selector,
+.profile-login-label,
+.auth-btn,
+.auth-modal-content,
+.modal-title,
+.form-group label,
+.form-group input,
+.modal-submit-btn {
+    font-family: Arial, sans-serif;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.header-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.template-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.template-label {
+    font-weight: 500;
+}
+
+.template-name {
+    font-weight: 700;
+    color: #fff;
+}
+
+.reset-template-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0, 113, 187);
+    border: none;
+    color: white;
+    border-radius: 10px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    font-size: 0.98rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+    font-family: Arial, sans-serif;
+}
+
+.reset-template-btn:hover {
+    background: rgb(36, 167, 255);
+    border-color: white;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.profile-login-label {
+    max-width: 260px;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.auth-buttons,
+.profile-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.auth-btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    background: rgb(0, 113, 187);
+    color: white;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    font-size: 0.98rem;
+    font-family: Arial, sans-serif;
+}
+
+.register-btn:hover,
+.profile-btn:hover,
+.login-btn:hover,
+.logout-btn:hover {
+    background: rgb(36, 167, 255);
+    border-color: white;
+}
+
+.logo-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.logo-link:hover {
+    opacity: 0.8;
+}
+
+/* Auth Modal Overlay */
+
+.auth-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.auth-modal-overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.auth-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 430px;
+    animation: slideUp 0.3s ease;
+    position: relative;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    color: #000;
+}
+
+.modal-title {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.6rem;
+    color: #333;
+    text-align: center;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.12rem;
+}
+
+.form-group input {
+    padding: 0.85rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1.08rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #2e86de;
+    box-shadow: 0 0 0 3px rgba(46, 134, 222, 0.14);
+}
+
+.modal-submit-btn {
+    padding: 0.85rem;
+    background: rgb(0, 113, 187);
+    color: white;
+    border: 1px solid white;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    font-family: Arial, sans-serif;
+}
+
+.modal-submit-btn:hover {
+    background: rgb(36, 167, 255);
+    border-color: white;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .header-left,
+    .header-right {
+        width: 100%;
+    }
+
+    .auth-buttons,
+    .profile-buttons {
+        width: 100%;
+    }
+
+    .profile-login-label {
+        max-width: 100%;
+        width: 100%;
+        text-align: center;
+    }
+
+    .auth-btn {
+        flex: 1;
+        padding: 0.7rem 0.5rem;
+    }
+
+    .template-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .auth-modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+
+    .modal-title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .template-selector {
+        font-size: 0.8rem;
+    }
+
+    .reset-template-btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
+    }
+
+    .auth-btn {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.8rem;
+    }
+}

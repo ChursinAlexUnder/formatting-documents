@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{ define "links" }}
+        <link rel="stylesheet" href="../static/css/header.css">
+        <link rel="stylesheet" href="../static/css/auth.css">
+        <link rel="stylesheet" href="../static/css/notification.css">
+        <link rel="stylesheet" href="../static/css/profile.css">
+        <link rel="stylesheet" href="../static/css/modal.css">
+
+        <script defer src="../static/js/auth.js"></script>
+        <script defer src="../static/js/notification.js"></script>
+        <script defer src="../static/js/profile.js"></script>
+    {{ end }}
+    <title>{{ define "title" }}Профиль - Форматирование документов{{ end }}</title>
+</head>
+<body>
+    {{ define "content" }}
+        <!-- Header -->
+        <header class="sticky-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="/" class="logo-link">← Назад на главную</a>
+                </div>
+                <div class="header-right">
+                    <div class="profile-buttons">
+                        <button type="button" class="auth-btn logout-btn" onclick="logout()">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Notification Container -->
+        <div id="notificationContainer" class="notification-container"></div>
+
+        <!-- Profile Container -->
+        <div class="profile-container">
+            <h1 class="profile-title">Мои шаблоны форматирования</h1>
+            
+            <div id="templatesGrid" class="templates-grid">
+                <!-- Templates will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Template Form Modal -->
+        <div id="templateModal" class="modal-overlay" onclick="closeTemplateModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <button type="button" class="modal-close-btn" onclick="closeTemplateModal()">&times;</button>
+                <h2 class="modal-title" id="formTitle">Новый шаблон</h2>
+                <form id="templateForm" class="template-form" onsubmit="handleSaveTemplate(event)">
+                    <div class="form-group">
+                        <label for="templateName">Название шаблона:</label>
+                        <input type="text" id="templateName" required maxlength="100" placeholder="Введите название">
+                    </div>
+
+                    <div class="template-params-grid">
+                        <div class="form-group">
+                            <label for="templateFont">Шрифт:</label>
+                            <select id="templateFont" required>
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Calibri">Calibri</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Tahoma">Tahoma</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateFontsize">Размер шрифта:</label>
+                            <select id="templateFontsize" required>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14" selected>14</option>
+                                <option value="16">16</option>
+                                <option value="18">18</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateAlignment">Выравнивание:</label>
+                            <select id="templateAlignment" required>
+                                <option value="По левому краю">По левому краю</option>
+                                <option value="По центру">По центру</option>
+                                <option value="По правому краю">По правому краю</option>
+                                <option value="По ширине" selected>По ширине</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateSpacing">Междустрочный интервал:</label>
+                            <select id="templateSpacing" required>
+                                <option value="1.0">1.0</option>
+                                <option value="1.5" selected>1.5</option>
+                                <option value="2.0">2.0</option>
+                                <option value="2.5">2.5</option>
+                                <option value="3.0">3.0</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateBeforeSpacing">Интервал перед абзацем:</label>
+                            <select id="templateBeforeSpacing" required>
+                                <option value="0" selected>0</option>
+                                <option value="1.0">1.0</option>
+                                <option value="1.5">1.5</option>
+                                <option value="2.0">2.0</option>
+                                <option value="2.5">2.5</option>
+                                <option value="3.0">3.0</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateAfterSpacing">Интервал после абзаца:</label>
+                            <select id="templateAfterSpacing" required>
+                                <option value="0" selected>0</option>
+                                <option value="1.0">1.0</option>
+                                <option value="1.5">1.5</option>
+                                <option value="2.0">2.0</option>
+                                <option value="2.5">2.5</option>
+                                <option value="3.0">3.0</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateFirstIndentation">Отступ первой строки:</label>
+                            <select id="templateFirstIndentation" required>
+                                <option value="0">0</option>
+                                <option value="0.5">0.5</option>
+                                <option value="1.0">1.0</option>
+                                <option value="1.25" selected>1.25</option>
+                                <option value="1.5">1.5</option>
+                                <option value="1.75">1.75</option>
+                                <option value="2.0">2.0</option>
+                                <option value="2.5">2.5</option>
+                                <option value="3.0">3.0</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateListTabulation">Табуляция в списках:</label>
+                            <select id="templateListTabulation" required>
+                                <option value="0">0</option>
+                                <option value="0.25">0.25</option>
+                                <option value="0.5">0.5</option>
+                                <option value="0.75">0.75</option>
+                                <option value="1.0">1.0</option>
+                                <option value="1.25">1.25</option>
+                                <option value="1.5">1.5</option>
+                                <option value="1.75">1.75</option>
+                                <option value="2.0" selected>2.0</option>
+                                <option value="2.25">2.25</option>
+                                <option value="2.5">2.5</option>
+                                <option value="2.75">2.75</option>
+                                <option value="3.0">3.0</option>
+                                <option value="3.25">3.25</option>
+                                <option value="3.5">3.5</option>
+                                <option value="3.75">3.75</option>
+                                <option value="4.0">4.0</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateHaveTitle">Титульный лист:</label>
+                            <select id="templateHaveTitle" required>
+                                <option value="Есть" selected>Есть</option>
+                                <option value="Нет">Нет</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="submit" class="form-btn submit-btn">Сохранить</button>
+                        <button type="button" class="form-btn cancel-btn" onclick="closeTemplateModal()">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- View Template Modal -->
+        <div id="viewModal" class="modal-overlay" onclick="closeViewModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <button type="button" class="modal-close-btn" onclick="closeViewModal()">&times;</button>
+                <h2 class="modal-title" id="viewTitle">Параметры шаблона</h2>
+                <div id="templateViewContent" class="template-view">
+                    <!-- Content will be loaded here -->
+                </div>
+                <button type="button" class="form-btn submit-btn view-close-btn" onclick="closeViewModal()">Закрыть</button>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="modal-overlay" onclick="closeDeleteModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <h2 class="modal-title">Подтверждение удаления</h2>
+                <p class="delete-message">Вы действительно хотите удалить шаблон "<span id="deleteTemplateName"></span>"?</p>
+                <div class="form-buttons">
+                    <button type="button" class="form-btn submit-btn" onclick="confirmDelete()">Удалить</button>
+                    <button type="button" class="form-btn cancel-btn" onclick="closeDeleteModal()">Отмена</button>
+                </div>
+            </div>
+        </div>
+    {{ end }}
+</body>
+</html>
