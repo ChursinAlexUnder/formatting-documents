@@ -16,6 +16,7 @@ type DocumentInfo struct {
 	Table          []bool
 	Biblio         []bool
 	ParagraphCount int
+	Annotation     string
 }
 
 type Data struct {

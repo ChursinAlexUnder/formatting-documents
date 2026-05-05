@@ -97,9 +97,15 @@
                 <a href="/" class="edit-button-link">Вернуться на главную</a>
             </div>
         </div>
-        <div class="main-window">
+        <div class="main-window"> 
             <h2 class="download-title">Информация о тексте документа</h2>
-<div class="download-text">ℹ️ Количество абзацев текста: <strong>{{ .Data.Information.ParagraphCount }}</strong></div>            {{ $drawInfo := .Data.Information.Draw }}
+            {{ if .Data.Information.Annotation }}
+            <div class="annotation-box">
+                <h3 class="annotation-title">Аннотация документа</h3>
+                <p class="annotation-text">{{ .Data.Information.Annotation }}</p>
+            </div>
+            {{ end }}
+            <div class="download-text">ℹ️ Количество абзацев текста: <strong>{{ .Data.Information.ParagraphCount }}</strong></div> {{ $drawInfo := .Data.Information.Draw }}
             {{ $drawFlag := index .Data.IsAllGood 0 }}
             {{ if $drawInfo }}
                 {{ if $drawFlag }}

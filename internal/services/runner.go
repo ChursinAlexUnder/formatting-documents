@@ -17,8 +17,11 @@ func RunPythonScript(documentName string, params domain.Parameters) (domain.Docu
 		cmd                   *exec.Cmd
 	)
 
+	// Получаем API ключ OpenRouter из переменной окружения
+	openrouterApiKey := os.Getenv("OPENROUTER_API_KEY")
+
 	// запуск скрипта
-	cmd = exec.Command("python", scriptPath, documentName, params.Font, params.Fontsize, params.Alignment, params.Spacing, params.BeforeSpacing, params.AfterSpacing, params.FirstIndentation, params.ListTabulation, params.HaveTitle)
+	cmd = exec.Command("python", scriptPath, documentName, params.Font, params.Fontsize, params.Alignment, params.Spacing, params.BeforeSpacing, params.AfterSpacing, params.FirstIndentation, params.ListTabulation, params.HaveTitle, openrouterApiKey)
 	cmd.Dir = directoryPath
 
 	// вывод ошибок от скрипта
@@ -31,14 +34,14 @@ func RunPythonScript(documentName string, params domain.Parameters) (domain.Docu
 		return domain.DocumentInfo{}, fmt.Errorf("error creating formatted document: %v", err)
 	}
 
-	// Парсим JSON-массив из 4 элементов
+	// Парсим JSON-массив из 5 элементов
 	var raw []interface{}
 	err = json.Unmarshal(output, &raw)
 	if err != nil {
 		return domain.DocumentInfo{}, fmt.Errorf("error parsing json output: %v", err)
 	}
-	if len(raw) != 4 {
-		return domain.DocumentInfo{}, fmt.Errorf("expected 4 elements in json array, got %d", len(raw))
+	if len(raw) != 5 {
+		return domain.DocumentInfo{}, fmt.Errorf("expected 5 elements in json array, got %d", len(raw))
 	}
 
 	drawList := convertToBoolSlice(raw[0])
@@ -48,12 +51,17 @@ func RunPythonScript(documentName string, params domain.Parameters) (domain.Docu
 	if val, ok := raw[3].(float64); ok {
 		paragraphCount = int(val)
 	}
+	annotation := ""
+	if val, ok := raw[4].(string); ok {
+		annotation = val
+	}
 
 	return domain.DocumentInfo{
 		Draw:           drawList,
 		Table:          tableList,
 		Biblio:         biblioList,
 		ParagraphCount: paragraphCount,
+		Annotation:     annotation,
 	}, nil
 }
 

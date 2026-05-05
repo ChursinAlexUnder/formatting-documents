@@ -2,6 +2,8 @@ import sys
 import os
 import json
 import re
+import requests
+import time
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -30,6 +32,83 @@ def updateParagraphDefaultFont(paragraph, font):
                 rFonts.set(qn("w:ascii"), font)
                 rFonts.set(qn("w:hAnsi"), font)
 
+def generate_annotation(document_path, api_key):
+    """Генерирует аннотацию документа с использованием OpenRouter API."""
+    doc = Document(document_path)
+    text_content = []
+
+    for paragraph in doc.paragraphs:
+        text = paragraph.text.strip()
+        if text:
+            text_content.append(text)
+
+    content_preview = " ".join(text_content)[:5000]
+
+    if not content_preview.strip():
+        return "Не удалось извлечь содержимое документа для генерации аннотации."
+
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://formatting-documents.app",
+        "X-Title": "Document Formatting Service"
+    }
+
+    prompt = (
+        "Составь краткую аннотацию на русском языке по следующему тексту. "
+        "Не акцентируй внимание на конкретных вещах, не используй перечисления через запятую. "
+        "Аннотация должна быть одним абзацем, без заголовков, "
+        "без пояснений и без списков. Длина — строго до 600 символов.\n\n"
+        f"{content_preview}"
+    )
+
+    data = {
+        "model": "openrouter/owl-alpha",
+        "messages": [
+            {
+                "role": "system",
+                "content": "Ты пишешь краткие и точные аннотации к научным и учебным текстам на русском языке."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        "temperature": 0.2,
+        "max_tokens": 300
+    }
+
+    response = requests.post(url, headers=headers, json=data, timeout=30)
+    response.raise_for_status()
+
+    result = response.json()
+    choices = result.get("choices", [])
+    if not choices:
+        return "Не удалось сгенерировать аннотацию документа."
+
+    content = choices[0].get("message", {}).get("content", "")
+    annotation = content.strip()
+
+    if not annotation:
+        return "Модель вернула пустой ответ."
+
+    if annotation.startswith("Аннотация"):
+        annotation = annotation.split("\n", 1)[-1].strip()
+
+    if len(annotation) > 600:
+        # Обрезаем до ближайшего конца предложения
+        truncated = annotation[:600]
+        # Ищем последний конец предложения в обрезанной части
+        last_period = max(
+            truncated.rfind('.'),
+            truncated.rfind('!'),
+            truncated.rfind('?')
+        )
+        annotation = truncated[:last_period + 1]
+
+    return annotation
+    
 def cleanParagraphText(paragraph):
     """Удаляет пробелы в начале и в конце текста параграфа, 
     сохраняя изображения, гиперссылки и другие элементы."""
@@ -94,7 +173,7 @@ def modifyList(doc, font, fontsize):
 
 def formatDocument(bufferPath, documentName, font, fontsize, alignment,
                    spacing, beforespacing, afterspacing,
-                   firstindentation, listtabulation, havetitle):
+                   firstindentation, listtabulation, havetitle, openrouter_api_key=None):
     doc = Document(f"{bufferPath}/{documentName}")
 
     haveList = False
@@ -295,6 +374,12 @@ def formatDocument(bufferPath, documentName, font, fontsize, alignment,
     answer.append(bibliographyList)
     answer.append(paragraph_count)
 
+    # Генерация аннотации
+    annotation = ""
+    if openrouter_api_key:
+        annotation = generate_annotation(f"{bufferPath}/{documentName}", openrouter_api_key)
+    answer.append(annotation)
+
     formattedName = f"formatted_{documentName}"
     formattedPath = f"{bufferPath}/{formattedName}"
     doc.save(formattedPath)
@@ -312,13 +397,14 @@ afterspacing = sys.argv[7]
 firstindentation = sys.argv[8]
 listtabulation = sys.argv[9]
 havetitle = sys.argv[10]
+openrouter_api_key = sys.argv[11] if len(sys.argv) > 11 else os.getenv('OPENROUTER_API_KEY')
 
 if not os.path.exists(documentPath):
     print(f"Document not found: {documentPath}")
     sys.exit(1)
 
 try:
-    formattedDocumentPath, result = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation, havetitle)
+    formattedDocumentPath, result = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation, havetitle, openrouter_api_key)
     print(json.dumps(result))
 except Exception as e:
     print(f"Error formatting document: {e}")

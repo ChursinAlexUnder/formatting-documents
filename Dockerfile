@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     apt-get clean
 
 # Установить библиотеку python-docx через pip
-RUN pip install python-docx
+RUN pip install python-docx requests
 
 # Установить рабочую директорию
 WORKDIR /

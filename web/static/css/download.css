@@ -1,3 +1,38 @@
+.annotation-box {
+    border: 2px solid #0056b3;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 70px 6%;
+    background-color: #f8f9fa;
+    transition: border-color 0.3s ease;
+}
+
+.annotation-box:hover {
+    border-color: #0099ff;
+}
+
+.annotation-title {
+    font-family: "Arial";
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0 0 20px 0;
+    color: #0056b3;
+    text-align: center;
+    transition: color 0.3s ease;
+}
+
+.annotation-box:hover .annotation-title {
+    color: #0099ff;
+}
+
+.annotation-text {
+    font-family: "Arial";
+    font-size: 20px;
+    line-height: 1.6;
+    margin: 0;
+    text-align: justify;
+}
+
 .download-title {
     font-family: "Arial";
     text-align: center;
@@ -15,6 +50,15 @@
 }
 
 @media screen and (max-width: 768px) {
+    .annotation-box {
+        margin: 55px 4%;
+    }
+    .annotation-title {
+        font-size: 24px;
+    }
+    .annotation-text {
+        font-size: 18px;
+    }
     .download-title {
         font-size: 30px;
     }
@@ -25,6 +69,17 @@
 }
 
 @media screen and (max-width: 480px) {
+    .annotation-box {
+        padding: 15px;
+        margin: 40px 2%;
+    }
+    .annotation-title {
+        margin: 0 0 15px 0;
+        font-size: 20px;
+    }
+    .annotation-text {
+        font-size: 16px;
+    }
     .download-title {
         font-size: 21px;
     }

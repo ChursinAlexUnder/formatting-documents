@@ -26,8 +26,11 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: formatting_app
+    env_file:
+      - .env
     environment:
       DATABASE_URL: "user=postgres password=postgres dbname=formatting_documents host=postgres port=5432 sslmode=disable"
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
     ports:
       - "8080:8080"
     depends_on:
