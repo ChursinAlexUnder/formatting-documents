@@ -79,8 +79,22 @@ def generate_annotation(document_path, api_key):
         "max_tokens": 300
     }
 
-    response = requests.post(url, headers=headers, json=data, timeout=30)
-    response.raise_for_status()
+    response = None
+    for attempt in range(10):
+        try:
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+            if response.status_code == 429:
+                if attempt == 9:
+                    break
+                time.sleep(3)
+                continue
+            response.raise_for_status()
+            break
+        except requests.exceptions.RequestException:
+            return "Не удалось подключиться к нейросети для создания аннотации. Попробуйте ещё раз."
+
+    if response is None or response.status_code == 429:
+        return "Не удалось подключиться к нейросети для создания аннотации. Попробуйте ещё раз."
 
     result = response.json()
     choices = result.get("choices", [])
@@ -97,9 +111,7 @@ def generate_annotation(document_path, api_key):
         annotation = annotation.split("\n", 1)[-1].strip()
 
     if len(annotation) > 600:
-        # Обрезаем до ближайшего конца предложения
         truncated = annotation[:600]
-        # Ищем последний конец предложения в обрезанной части
         last_period = max(
             truncated.rfind('.'),
             truncated.rfind('!'),
