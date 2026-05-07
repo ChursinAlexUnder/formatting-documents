@@ -1,25 +1,79 @@
 // Auth Modal Functions
 
+let registerTurnstileWidgetId = null;
+let loginTurnstileWidgetId = null;
+
+let registerTurnstileToken = '';
+let loginTurnstileToken = '';
+
+const TURNSTILE_SITE_KEY = '0x4AAAAAADKanRmVT3YLtQZ9';
+
+function renderRegisterTurnstile() {
+    if (registerTurnstileWidgetId !== null) return;
+
+    registerTurnstileWidgetId = turnstile.render('#registerTurnstile', {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: function(token) {
+            registerTurnstileToken = token;
+        },
+        'expired-callback': function() {
+            registerTurnstileToken = '';
+        },
+        'error-callback': function() {
+            registerTurnstileToken = '';
+        }
+    });
+}
+
+function renderLoginTurnstile() {
+    if (loginTurnstileWidgetId !== null) return;
+
+    loginTurnstileWidgetId = turnstile.render('#loginTurnstile', {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: function(token) {
+            loginTurnstileToken = token;
+        },
+        'expired-callback': function() {
+            loginTurnstileToken = '';
+        },
+        'error-callback': function() {
+            loginTurnstileToken = '';
+        }
+    });
+}
+
 function openRegisterModal() {
     const modal = document.getElementById('registerModal');
     modal.classList.add('active');
+    renderRegisterTurnstile();
 }
 
 function closeRegisterModal(event) {
     if (event && event.target.id !== 'registerModal') return;
     const modal = document.getElementById('registerModal');
     modal.classList.remove('active');
+
+    registerTurnstileToken = '';
+    if (registerTurnstileWidgetId !== null) {
+        turnstile.reset(registerTurnstileWidgetId);
+    }
 }
 
 function openLoginModal() {
     const modal = document.getElementById('loginModal');
     modal.classList.add('active');
+    renderLoginTurnstile();
 }
 
 function closeLoginModal(event) {
     if (event && event.target.id !== 'loginModal') return;
     const modal = document.getElementById('loginModal');
     modal.classList.remove('active');
+
+    loginTurnstileToken = '';
+    if (loginTurnstileWidgetId !== null) {
+        turnstile.reset(loginTurnstileWidgetId);
+    }
 }
 
 function handleRegister(event) {
@@ -28,13 +82,22 @@ function handleRegister(event) {
     const login = document.getElementById('registerLogin').value;
     const password = document.getElementById('registerPassword').value;
 
+    if (!registerTurnstileToken) {
+        showNotification('Подтвердите капчу', 'error');
+        return;
+    }
+
     fetch('/api/auth/register', {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ login, password })
+        body: JSON.stringify({
+            login,
+            password,
+            'cf-turnstile-response': registerTurnstileToken
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -42,6 +105,12 @@ function handleRegister(event) {
             showNotification('Профиль успешно создан!', 'success');
             closeRegisterModal();
             document.getElementById('registerForm').reset();
+            registerTurnstileToken = '';
+
+            if (registerTurnstileWidgetId !== null) {
+                turnstile.reset(registerTurnstileWidgetId);
+            }
+
             updateAuthUI();
             loadSelectedTemplate();
             setTimeout(() => {
@@ -49,11 +118,21 @@ function handleRegister(event) {
             }, 1000);
         } else {
             showNotification(data.message || 'Ошибка регистрации', 'error');
+
+            registerTurnstileToken = '';
+            if (registerTurnstileWidgetId !== null) {
+                turnstile.reset(registerTurnstileWidgetId);
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
         showNotification('Ошибка при регистрации', 'error');
+
+        registerTurnstileToken = '';
+        if (registerTurnstileWidgetId !== null) {
+            turnstile.reset(registerTurnstileWidgetId);
+        }
     });
 }
 
@@ -63,13 +142,22 @@ function handleLogin(event) {
     const login = document.getElementById('loginLogin').value;
     const password = document.getElementById('loginPassword').value;
 
+    if (!loginTurnstileToken) {
+        showNotification('Подтвердите капчу', 'error');
+        return;
+    }
+
     fetch('/api/auth/login', {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ login, password })
+        body: JSON.stringify({
+            login,
+            password,
+            'cf-turnstile-response': loginTurnstileToken
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -77,6 +165,12 @@ function handleLogin(event) {
             showNotification('Вход выполнен успешно!', 'success');
             closeLoginModal();
             document.getElementById('loginForm').reset();
+            loginTurnstileToken = '';
+
+            if (loginTurnstileWidgetId !== null) {
+                turnstile.reset(loginTurnstileWidgetId);
+            }
+
             updateAuthUI();
             loadSelectedTemplate();
             setTimeout(() => {
@@ -84,11 +178,21 @@ function handleLogin(event) {
             }, 1000);
         } else {
             showNotification(data.message || 'Ошибка входа', 'error');
+
+            loginTurnstileToken = '';
+            if (loginTurnstileWidgetId !== null) {
+                turnstile.reset(loginTurnstileWidgetId);
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
         showNotification('Ошибка при входе', 'error');
+
+        loginTurnstileToken = '';
+        if (loginTurnstileWidgetId !== null) {
+            turnstile.reset(loginTurnstileWidgetId);
+        }
     });
 }
 

@@ -95,8 +95,9 @@ type FormattingTemplate struct {
 
 // API Request/Response structures
 type LoginRequest struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
+	Login          string `json:"login"`
+	Password       string `json:"password"`
+	TurnstileToken string `json:"cf-turnstile-response"`
 }
 
 type AuthResponse struct {

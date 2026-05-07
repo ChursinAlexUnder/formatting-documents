@@ -8,6 +8,7 @@ import (
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -292,6 +293,17 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ip := ClientIP(r)
+	validation, err := Validate(r.Context(), req.TurnstileToken, ip)
+	if err != nil || validation == nil || !validation.Success {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Captcha verification failed",
+		})
+		return
+	}
+	log.Println("Turnstile success:", validation.Hostname, validation.Action)
+
 	user, err := database.CreateUser(req.Login, req.Password)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -301,7 +313,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set session cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "user_id",
 		Value:    fmt.Sprintf("%d", user.ID),
@@ -341,6 +352,17 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ip := ClientIP(r)
+	validation, err := Validate(r.Context(), req.TurnstileToken, ip)
+	if err != nil || validation == nil || !validation.Success {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Captcha verification failed",
+		})
+		return
+	}
+	log.Println("Turnstile success:", validation.Hostname, validation.Action)
+
 	userID, err := database.VerifyPassword(req.Login, req.Password)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -350,7 +372,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set session cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "user_id",
 		Value:    fmt.Sprintf("%d", userID),

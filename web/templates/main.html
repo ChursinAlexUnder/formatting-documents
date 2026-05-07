@@ -22,6 +22,9 @@
         <script defer src="../static/js/SSE.js"></script>
         <script defer src="../static/js/auth.js"></script>
         <script defer src="../static/js/notification.js"></script>
+
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+
         {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentParameters "") }}
             <script defer>
                 // Заменяем текущее состояние на URL без отправки POST
@@ -71,6 +74,9 @@
                         <label for="registerPassword">Пароль:</label>
                         <input type="password" id="registerPassword" name="password" required maxlength="100" placeholder="Введите пароль">
                     </div>
+                    <div
+                        id="registerTurnstile"
+                    ></div>
                     <button type="submit" class="modal-submit-btn">Зарегистрироваться</button>
                 </form>
             </div>
@@ -89,6 +95,9 @@
                         <label for="loginPassword">Пароль:</label>
                         <input type="password" id="loginPassword" name="password" required placeholder="Введите пароль">
                     </div>
+                    <div
+                        id="loginTurnstile"
+                    ></div>
                     <button type="submit" class="modal-submit-btn">Войти</button>
                 </form>
             </div>
