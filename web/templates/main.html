@@ -27,7 +27,7 @@
 
         {{ if or (ne .ErrorDecorationButton "") (ne .ErrorCommentParameters "") }}
             <script defer>
-                // Заменяем текущее состояние на URL без отправки POST
+
                 history.replaceState(null, "", "/#form");
             </script>
         {{ end }}
@@ -36,31 +36,7 @@
 </head>
 <body>
     {{ define "content" }}
-        <!-- Header -->
-        <header class="sticky-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <button type="button" class="reset-template-btn" id="headerResetTemplateBtn" title="Сбросить текущий шаблон" onclick="resetTemplate()">Сбросить шаблон</button>
-                    <div class="template-selector" id="templateSelector" style="display: none;">
-                        <span class="template-label">Текущий шаблон:</span>
-                        <span class="template-name" id="templateName"></span>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="profile-login-label" id="headerProfileLogin" style="display: none;" title=""></div>
-                    <div class="auth-buttons" id="authButtons">
-                        <button type="button" class="auth-btn register-btn" onclick="openRegisterModal()">Зарегистрироваться</button>
-                        <button type="button" class="auth-btn login-btn" onclick="openLoginModal()">Войти</button>
-                    </div>
-                    <div class="profile-buttons" id="profileButtons" style="display: none;">
-                        <button type="button" class="auth-btn profile-btn" onclick="goToProfile()">В профиль</button>
-                        <button type="button" class="auth-btn logout-btn" onclick="logout()">Выйти</button>
-                    </div>
-                </div>
-            </div>
-        </header>
 
-        <!-- Auth Modals -->
         <div id="registerModal" class="auth-modal-overlay" onclick="closeRegisterModal(event)">
             <div class="auth-modal-content" onclick="event.stopPropagation()">
                 <button type="button" class="modal-close-btn" onclick="closeRegisterModal()">&times;</button>
@@ -103,10 +79,32 @@
             </div>
         </div>
 
-        <!-- Notification Container -->
+
         <div id="notificationContainer" class="notification-container"></div>
 
         <div class="main-header">
+            <header class="sticky-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <button type="button" class="reset-template-btn" id="headerResetTemplateBtn" title="Сбросить текущий шаблон" onclick="resetTemplate()">Сбросить шаблон</button>
+                        <div class="template-selector" id="templateSelector" style="display: none;">
+                            <span class="template-label">Текущий шаблон:</span>
+                            <span class="template-name" id="templateName"></span>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <div class="profile-login-label" id="headerProfileLogin" style="display: none;" title=""></div>
+                        <div class="auth-buttons" id="authButtons">
+                            <button type="button" class="auth-btn register-btn" onclick="openRegisterModal()">Зарегистрироваться</button>
+                            <button type="button" class="auth-btn login-btn" onclick="openLoginModal()">Войти</button>
+                        </div>
+                        <div class="profile-buttons" id="profileButtons" style="display: none;">
+                            <button type="button" class="auth-btn profile-btn" onclick="goToProfile()">В профиль</button>
+                            <button type="button" class="auth-btn logout-btn" onclick="logout()">Выйти</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
             <h1 class="title">
                 <span class="word">Форматирование</span><br>
                 <span class="word">документов</span><br>

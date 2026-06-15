@@ -1,43 +1,45 @@
-/* Profile Page Styles */
+
 
 body {
-    background: rgb(207, 229, 247);
-    background-image: none !important;
     font-family: Arial, sans-serif;
+}
+
+.profile-hero-title {
+    letter-spacing: 0;
 }
 
 .profile-container {
     width: 100%;
     max-width: none;
-    margin: 0;
-    padding: 0;
-    min-height: calc(100vh - 300px);
+    margin: 0 0 8% 0;
+    padding: 0 0 70px 0;
     background: rgb(207, 229, 247);
-    border-radius: 0;
-    box-shadow: none;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
 }
 
 .profile-title {
-    font-size: 2.1rem;
-    color: #1c5d99;
-    margin: 0 0 2rem 0;
-    padding: 2rem 18px 0 18px;
+    font-size: 36px;
+    color: #000;
+    margin: 0;
+    padding: 70px 3%;
     text-align: center;
     font-family: Arial, sans-serif;
+    letter-spacing: 0;
 }
 
 .templates-grid {
+    --template-grid-gap: 24px;
+    --template-card-height: 320px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.2rem;
-    margin-bottom: 2rem;
-    padding: 0 18px;
+    grid-auto-rows: var(--template-card-height);
+    gap: var(--template-grid-gap);
+    padding: 0 var(--template-grid-gap);
     box-sizing: border-box;
 }
 
-/* Template Card */
+
 
 .template-card {
     background: white;
@@ -49,9 +51,11 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    min-height: 220px;
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
     font-family: Arial, sans-serif;
+    box-sizing: border-box;
 }
 
 .template-card:hover {
@@ -63,7 +67,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 220px;
+    min-height: 0;
     cursor: pointer;
     background: linear-gradient(135deg, rgba(46, 134, 222, 0.06) 0%, rgba(84, 160, 255, 0.06) 100%);
     border: 2px dashed #2e86de;
@@ -82,7 +86,7 @@ body {
 }
 
 .add-card-plus {
-    font-size: 3rem;
+    font-size: 3.5vw;
     color: #2e86de;
     font-weight: 300;
 }
@@ -90,7 +94,7 @@ body {
 .add-card-text {
     color: #2e86de;
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 1.2vw;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -99,7 +103,7 @@ body {
     opacity: 1;
 }
 
-/* Template Card Header */
+
 
 .template-card-header {
     display: flex;
@@ -111,14 +115,26 @@ body {
 
 .template-card-title {
     font-size: 1.42rem;
+    line-height: 1.3;
     font-weight: 700;
     color: #1d2c3b;
-    word-break: break-word;
+    overflow: hidden;
+    overflow-wrap: anywhere;
     flex: 1;
     text-align: center;
     margin: 0;
-    padding: 3rem 2.4rem;
+    padding: 2.75rem 1.35rem 2rem;
     transition: color 0.2s ease;
+}
+
+.template-card-title-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    min-height: 7.4rem;
 }
 
 .template-card:hover .template-card-title {
@@ -159,7 +175,7 @@ body {
     border-color: #54a0ff;
 }
 
-/* Template Card Buttons */
+
 
 .template-card-buttons {
     display: flex;
@@ -204,7 +220,7 @@ body {
     box-shadow: 0 8px 24px rgba(46, 134, 222, 0.16);
 }
 
-/* Modal Overlay */
+
 
 .modal-overlay {
     display: none;
@@ -239,7 +255,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     width: 90%;
-    max-width: 600px;
+    max-width: 720px;
     animation: slideUp 0.3s ease;
     position: relative;
     max-height: 90vh;
@@ -281,12 +297,16 @@ body {
     text-align: center;
 }
 
-/* Template Form */
+
 
 .template-form {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+.full-width-field {
+    width: 100%;
 }
 
 .template-params-grid {
@@ -315,9 +335,10 @@ body {
     border-radius: 8px;
     font-size: 1.08rem;
     transition: all 0.2s ease;
-    font-family: inherit;
     background: white;
     font-family: Arial, sans-serif;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .form-group input:focus,
@@ -373,14 +394,39 @@ body {
     border-color: white;
 }
 
-/* Template View */
+
 
 .template-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.25rem 0;
+}
+
+.field-meta {
+    min-height: 1rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: #666;
+    font-size: 0.82rem;
+    line-height: 1.2;
+}
+
+.field-meta .limit-reached {
+    color: #0056b3;
+    font-weight: 700;
+}
+
+.form-group input.input-invalid {
+    border-color: #c62828;
+    box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.12);
+}
+
+.template-view-grid {
     display: grid;
-    grid-template-columns: minmax(220px, 460px);
-    justify-content: center;
-    gap: 0.9rem;
-    padding: 1rem 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
 }
 
 .view-param {
@@ -390,64 +436,118 @@ body {
 }
 
 .view-param-label {
-    font-size: 0.8rem;
-    color: #999;
-    text-transform: uppercase;
+    font-size: 1rem;
+    color: #333;
     font-weight: 600;
-    letter-spacing: 0.5px;
+    letter-spacing: 0;
 }
 
 .view-param-value {
-    font-size: 1rem;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.02rem;
     color: #333;
     font-weight: 500;
-    padding: 0.5rem 1rem;
-    background: #f5f5f5;
-    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 8px;
     text-align: center;
-    border: 1px solid #bfd6ee;
+    border: 2px solid #e0e0e0;
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
-/* Delete Confirmation */
+.view-template-name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    width: 100%;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.view-param:hover .view-param-value {
+    color: rgb(0, 113, 187);
+    background: #f4faff;
+    border-color: #54a0ff;
+    box-shadow: 0 0 0 3px rgba(84, 160, 255, 0.14);
+}
+
+#viewModal .modal-content {
+    max-width: 620px;
+}
+
+#deleteModal .modal-content {
+    max-width: 480px;
+}
+
+
 
 .delete-message {
-    color: #666;
+    color: #000;
     margin: 1.5rem 0;
-    font-size: 0.95rem;
+    font-size: 1.12rem;
+    line-height: 1.5;
     text-align: center;
+    font-family: Arial, sans-serif;
 }
 
-/* Responsive */
+.delete-message strong {
+    font-weight: 700;
+    color: #000;
+}
 
-@media (max-width: 1024px) {
+
+
+@media (max-width: 640px) {
     .template-params-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .template-view-grid {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 768px) {
+    .profile-header {
+        min-height: 45vh;
+        padding-top: 96px;
+        box-sizing: border-box;
+    }
+
+    .profile-hero-title {
+        margin-top: 0;
+    }
+
     .profile-container {
-        padding: 0;
+        padding-bottom: 55px;
     }
 
     .profile-title {
-        font-size: 1.7rem;
-        margin-bottom: 1.5rem;
-        padding: 1.2rem 14px 0 14px;
+        font-size: 27px;
+        padding: 55px 3%;
     }
 
     .templates-grid {
+        --template-grid-gap: 18px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        padding: 0 14px;
     }
 
     .modal-content {
         width: 95%;
         padding: 1.5rem;
-    }
-
-    .template-view {
-        grid-template-columns: minmax(200px, 1fr);
     }
 
     .template-card-buttons {
@@ -456,9 +556,28 @@ body {
 }
 
 @media (max-width: 480px) {
+    .profile-header {
+        min-height: 35vh;
+        padding-top: 76px;
+        text-align: center;
+    }
+
+    .profile-hero-title {
+        margin: 0 auto;
+    }
+
+    .profile-container {
+        padding-bottom: 40px;
+    }
+
+    .profile-title {
+        font-size: 19px;
+        padding: 40px 3%;
+    }
+
     .templates-grid {
+        --template-grid-gap: 12px;
         grid-template-columns: 1fr;
-        padding: 0 10px;
     }
 
     .template-params-grid {

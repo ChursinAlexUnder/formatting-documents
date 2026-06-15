@@ -1,4 +1,3 @@
-// Notification System
 
 function showNotification(message, type = 'info') {
     const container = document.getElementById('notificationContainer');
@@ -20,8 +19,6 @@ function showNotification(message, type = 'info') {
     `;
 
     container.appendChild(notification);
-
-    // Auto-remove after 4 seconds
     setTimeout(() => {
         if (notification.parentElement) {
             notification.classList.add('removing');

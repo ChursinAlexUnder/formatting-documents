@@ -1,11 +1,13 @@
 package interfaces
 
 import (
+	"errors"
 	"fmt"
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"unicode/utf8"
 )
@@ -15,56 +17,42 @@ func ManagementData(w http.ResponseWriter, r *http.Request) (domain.Answer, doma
 		data      domain.Answer    = domain.Answer{}
 		wrongData domain.WrongData = domain.WrongData{}
 	)
-	// удаление старых документов (которым больше 10 минут)
 	err := infrastructure.DeleteOldDocuments()
 	if err != nil {
-		return data, wrongData, fmt.Errorf("error deleting old documents: %v", err)
+		return data, wrongData, fmt.Errorf("не удалось удалить старые документы: %v", err)
 	}
-	// проверка на переполнение папки buffer
 	err = services.IsOverflow()
 	if err != nil {
-		if err.Error() == "error: 6 iterations" {
+		if errors.Is(err, services.ErrBufferBusy) {
 			http.Redirect(w, r, "/errortime", http.StatusSeeOther)
 		}
-		return data, wrongData, fmt.Errorf("error overflow: %v", err)
+		return data, wrongData, fmt.Errorf("ошибка проверки временного хранилища: %v", err)
 	}
-
-	// валидация полей
 	data, wrongData = Validation(r)
 	if wrongData.ErrorDecorationButton != "" || wrongData.ErrorDecorationParameters != "" {
-		return data, wrongData, fmt.Errorf("error validation")
+		return data, wrongData, fmt.Errorf("ошибка валидации")
 	}
 
 	data = services.AddRandomNumber(data)
-
-	// сохранение документа
 	err = infrastructure.SaveDocument(data)
 	if err != nil {
-		return data, wrongData, fmt.Errorf("error saving the document on the server: %v", err)
+		return data, wrongData, fmt.Errorf("не удалось сохранить документ на сервере: %v", err)
 	}
-
-	// запуск python скрипта
 	info, err := services.RunPythonScript(data.DocumentData.Filename, data.Params)
 	if err != nil {
-		return data, wrongData, fmt.Errorf("error formatting the document on the server: %v", err)
+		return data, wrongData, fmt.Errorf("не удалось отформатировать документ: %v", err)
 	}
 	data.Information = info
-
-	// задание флагов каждому из массивов
 	data.IsAllGood = make([]bool, 3)
 	data.IsAllGood[0] = services.AllTrue(info.Draw)
 	data.IsAllGood[1] = services.AllTrue(info.Table)
 	data.IsAllGood[2] = services.AllTrue(info.Biblio)
-
-	// обновление счетчика и данных для слайдера
 	err = services.UpdateDataJSON(data.Params)
 	if err != nil {
-		return data, wrongData, fmt.Errorf("error update counter in JSON file: %v", err)
+		return data, wrongData, fmt.Errorf("не удалось обновить статистику: %v", err)
 	}
 	return data, wrongData, nil
 }
-
-// проверка данных из формы
 func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 	const (
 		maxDocumentSize int = 20 * 1024 * 1024
@@ -74,9 +62,10 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 		wrongData domain.WrongData  = domain.WrongData{}
 		params    domain.Parameters = domain.Parameters{}
 	)
-	// получение данных из формы и валидация
-	// документ
 	document, documentHeader, err := r.FormFile("document-file")
+	if err == nil && documentHeader != nil {
+		documentHeader.Filename = sanitizeDocumentFilename(documentHeader.Filename)
+	}
 	if err != nil || documentHeader.Filename == "" || document == nil {
 		wrongData.ErrorDecorationButton = "-error"
 		wrongData.ErrorCommentButton += "Документ обязательно необходимо загрузить."
@@ -96,8 +85,6 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 	if err == nil && document != nil {
 		defer document.Close()
 	}
-
-	// параметры
 	params.Font = r.FormValue("font")
 	params.Fontsize = r.FormValue("fontsize")
 	params.Alignment = r.FormValue("alignment")
@@ -136,10 +123,13 @@ func Validation(r *http.Request) (domain.Answer, domain.WrongData) {
 		wrongData.ErrorDecorationParameters = "-error"
 		wrongData.ErrorCommentParameters = "С обозначением наличия титульного листа что-то не так."
 	}
-
-	// если данные валидны, то сохраняем их в структуре
 	if wrongData.ErrorDecorationButton == "" && wrongData.ErrorDecorationParameters == "" {
 		data = domain.Answer{Document: document, DocumentData: documentHeader, Params: params}
 	}
 	return data, wrongData
+}
+
+func sanitizeDocumentFilename(filename string) string {
+	filename = strings.ReplaceAll(filename, "\\", "/")
+	return filepath.Base(filename)
 }

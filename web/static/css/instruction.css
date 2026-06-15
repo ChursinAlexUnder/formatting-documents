@@ -1,7 +1,7 @@
 .instruction-title {
     font-family: "Arial";
     text-align: center;
-    font-size: 40px;
+    font-size: 36px;
     background: rgb(207, 229, 247);
     margin: 0;
     padding: 70px 3%;
@@ -40,7 +40,7 @@
     font-family: "Arial";
     font-size: 24px;
     margin-bottom: 9%;
-    
+
 }
 
 @media screen and (max-width: 768px) {
@@ -54,7 +54,7 @@
         margin: 0;
     }
     .instruction-title {
-        font-size: 30px;
+        font-size: 27px;
         padding: 55px 3%;
     }
     .instruction-text {
@@ -67,7 +67,7 @@
         padding-bottom: 40px;
     }
     .instruction-title {
-        font-size: 21px;
+        font-size: 19px;
         padding: 40px 3%;
     }
     .instruction-text {

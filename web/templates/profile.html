@@ -18,33 +18,40 @@
 </head>
 <body>
     {{ define "content" }}
-        <!-- Header -->
-        <header class="sticky-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <a href="/" class="logo-link">← Назад на главную</a>
-                </div>
-                <div class="header-right">
-                    <div class="profile-buttons">
-                        <button type="button" class="auth-btn logout-btn" onclick="logout()">Выйти</button>
+        <div class="profile-header">
+            <header class="sticky-header profile-menu-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <a href="/" class="logo-link">← Назад на главную</a>
+                    </div>
+                    <div class="header-right">
+                        <div class="profile-login-label" id="headerProfileLogin" style="display: none;" title=""></div>
+                        <div class="profile-buttons">
+                            <button type="button" class="auth-btn logout-btn" onclick="logout()">Выйти</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </header>
-
-        <!-- Notification Container -->
-        <div id="notificationContainer" class="notification-container"></div>
-
-        <!-- Profile Container -->
-        <div class="profile-container">
-            <h1 class="profile-title">Мои шаблоны форматирования</h1>
-            
-            <div id="templatesGrid" class="templates-grid">
-                <!-- Templates will be loaded here -->
-            </div>
+            </header>
+            <h1 class="title profile-hero-title">
+                {{ if .IsFirstVisit }}
+                    <span class="word">Добро</span><br>
+                    <span class="word">пожаловать</span>
+                {{ else }}
+                    <span class="word">С возвращением</span>
+                {{ end }}
+            </h1>
         </div>
 
-        <!-- Template Form Modal -->
+        <div id="notificationContainer" class="notification-container"></div>
+
+        <section class="profile-container">
+            <h2 class="profile-title">Шаблоны форматирования</h2>
+            <div id="templatesGrid" class="templates-grid">
+
+            </div>
+        </section>
+
+
         <div id="templateModal" class="modal-overlay" onclick="closeTemplateModal(event)">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <button type="button" class="modal-close-btn" onclick="closeTemplateModal()">&times;</button>
@@ -52,7 +59,19 @@
                 <form id="templateForm" class="template-form" onsubmit="handleSaveTemplate(event)">
                     <div class="form-group">
                         <label for="templateName">Название шаблона:</label>
-                        <input type="text" id="templateName" required maxlength="100" placeholder="Введите название">
+                        <input type="text" id="templateName" required maxlength="60" aria-describedby="templateNameMeta" placeholder="Введите название">
+                        <div class="field-meta" id="templateNameMeta">
+                            <span>Не более 60 символов</span>
+                            <span id="templateNameCounter">0/60</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width-field">
+                        <label for="templateHaveTitle">Титульный лист:</label>
+                        <select id="templateHaveTitle" required>
+                            <option value="Есть" selected>Есть</option>
+                            <option value="Нет">Нет</option>
+                        </select>
                     </div>
 
                     <div class="template-params-grid">
@@ -168,13 +187,6 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label for="templateHaveTitle">Титульный лист:</label>
-                            <select id="templateHaveTitle" required>
-                                <option value="Есть" selected>Есть</option>
-                                <option value="Нет">Нет</option>
-                            </select>
-                        </div>
                     </div>
 
                     <div class="form-buttons">
@@ -185,23 +197,23 @@
             </div>
         </div>
 
-        <!-- View Template Modal -->
+
         <div id="viewModal" class="modal-overlay" onclick="closeViewModal(event)">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <button type="button" class="modal-close-btn" onclick="closeViewModal()">&times;</button>
                 <h2 class="modal-title" id="viewTitle">Параметры шаблона</h2>
-                <div id="templateViewContent" class="template-view">
-                    <!-- Content will be loaded here -->
+                <div id="templateViewContent">
+
                 </div>
                 <button type="button" class="form-btn submit-btn view-close-btn" onclick="closeViewModal()">Закрыть</button>
             </div>
         </div>
 
-        <!-- Delete Confirmation Modal -->
+
         <div id="deleteModal" class="modal-overlay" onclick="closeDeleteModal(event)">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <h2 class="modal-title">Подтверждение удаления</h2>
-                <p class="delete-message">Вы действительно хотите удалить шаблон "<span id="deleteTemplateName"></span>"?</p>
+                <p class="delete-message">Вы действительно хотите удалить шаблон «<strong id="deleteTemplateName"></strong>»?</p>
                 <div class="form-buttons">
                     <button type="button" class="form-btn submit-btn" onclick="confirmDelete()">Удалить</button>
                     <button type="button" class="form-btn cancel-btn" onclick="closeDeleteModal()">Отмена</button>

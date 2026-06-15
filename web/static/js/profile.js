@@ -1,10 +1,13 @@
-// Profile Management
 
 let currentEditingTemplateId = null;
 let currentDeletingTemplateId = null;
-
-// Load profile and templates on page load
+const TEMPLATE_NAME_MAX_LENGTH = 60;
 document.addEventListener('DOMContentLoaded', function() {
+    const templateNameInput = document.getElementById('templateName');
+    if (templateNameInput) {
+        templateNameInput.addEventListener('input', updateTemplateNameCounter);
+        updateTemplateNameCounter();
+    }
     loadProfile();
 });
 
@@ -22,7 +25,7 @@ function loadProfile() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Ошибка:', error);
             showNotification('Ошибка при загрузке профиля', 'error');
         });
 }
@@ -30,8 +33,6 @@ function loadProfile() {
 function renderTemplates(templates, selectedId) {
     const grid = document.getElementById('templatesGrid');
     grid.innerHTML = '';
-
-    // Add existing templates
     if (templates.length > 0) {
         templates.forEach((template) => {
             const card = document.createElement('div');
@@ -46,7 +47,9 @@ function renderTemplates(templates, selectedId) {
 
             card.innerHTML = `
                 <div class="template-card-header">
-                    <h3 class="template-card-title">${escapeHtml(template.name)}</h3>
+                    <h3 class="template-card-title" title="${escapeHtmlAttribute(template.name)}">
+                        <span class="template-card-title-text">${escapeHtml(template.name)}</span>
+                    </h3>
                     <div class="template-card-actions">
                         <button class="icon-btn" title="Редактировать" onclick="editTemplate(${template.id})">✎</button>
                         <button class="icon-btn delete" title="Удалить" onclick="deleteTemplate(${template.id})">🗑</button>
@@ -54,12 +57,10 @@ function renderTemplates(templates, selectedId) {
                 </div>
                 ${buttonsHtml}
             `;
-            
+
             grid.appendChild(card);
         });
     }
-
-    // Add new template card at the end
     const addCard = document.createElement('div');
     addCard.className = 'template-card add-card';
     addCard.onclick = openNewTemplateForm;
@@ -76,9 +77,6 @@ function openNewTemplateForm() {
     currentEditingTemplateId = null;
     document.getElementById('formTitle').textContent = 'Новый шаблон';
     document.getElementById('templateForm').reset();
-    document.getElementById('templateName').focus();
-    
-    // Set default values
     document.getElementById('templateFont').value = 'Times New Roman';
     document.getElementById('templateFontsize').value = '14';
     document.getElementById('templateAlignment').value = 'По ширине';
@@ -88,8 +86,10 @@ function openNewTemplateForm() {
     document.getElementById('templateFirstIndentation').value = '1.25';
     document.getElementById('templateListTabulation').value = '2.0';
     document.getElementById('templateHaveTitle').value = 'Есть';
-    
+    updateTemplateNameCounter();
+
     openTemplateModal();
+    setTimeout(() => document.getElementById('templateName').focus(), 0);
 }
 
 function editTemplate(templateId) {
@@ -102,9 +102,10 @@ function editTemplate(templateId) {
             if (data.success && data.template) {
                 const template = data.template;
                 currentEditingTemplateId = templateId;
-                
+
                 document.getElementById('formTitle').textContent = 'Редактировать шаблон';
                 document.getElementById('templateName').value = template.name;
+                updateTemplateNameCounter();
                 document.getElementById('templateFont').value = template.font;
                 document.getElementById('templateFontsize').value = template.fontsize;
                 document.getElementById('templateAlignment').value = template.alignment;
@@ -114,12 +115,12 @@ function editTemplate(templateId) {
                 document.getElementById('templateFirstIndentation').value = normalizeSelectValue(template.firstIndentation, ['0', '0.5', '1.0', '1.25', '1.5', '1.75', '2.0', '2.5', '3.0']);
                 document.getElementById('templateListTabulation').value = normalizeSelectValue(template.listTabulation, ['0', '0.25', '0.5', '0.75', '1.0', '1.25', '1.5', '1.75', '2.0', '2.25', '2.5', '2.75', '3.0', '3.25', '3.5', '3.75', '4.0']);
                 document.getElementById('templateHaveTitle').value = template.haveTitle;
-                
+
                 openTemplateModal();
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Ошибка:', error);
             showNotification('Ошибка при загрузке шаблона', 'error');
         });
 }
@@ -134,67 +135,85 @@ function viewTemplate(templateId) {
             if (data.success && data.template) {
                 const template = data.template;
                 const content = document.getElementById('templateViewContent');
-                
+
                 content.innerHTML = `
                     <div class="template-view">
-                        <div class="view-param">
+                        <div class="view-param view-param-full">
                             <span class="view-param-label">Название</span>
-                            <span class="view-param-value">${escapeHtml(template.name)}</span>
+                            <span class="view-param-value">
+                                <span class="view-template-name" title="${escapeHtmlAttribute(template.name)}">${escapeHtml(template.name)}</span>
+                            </span>
                         </div>
-                        <div class="view-param">
-                            <span class="view-param-label">Шрифт</span>
-                            <span class="view-param-value">${template.font}</span>
-                        </div>
-                        <div class="view-param">
-                            <span class="view-param-label">Размер шрифта</span>
-                            <span class="view-param-value">${template.fontsize}</span>
-                        </div>
-                        <div class="view-param">
-                            <span class="view-param-label">Выравнивание</span>
-                            <span class="view-param-value">${template.alignment}</span>
-                        </div>
-                        <div class="view-param">
-                            <span class="view-param-label">Междустрочный интервал</span>
-                            <span class="view-param-value">${normalizeSelectValue(template.spacing, ['1.0', '1.5', '2.0', '2.5', '3.0'])}</span>
-                        </div>
-                        <div class="view-param">
-                            <span class="view-param-label">Интервал перед абзацем</span>
-                            <span class="view-param-value">${normalizeSelectValue(template.beforeSpacing, ['0', '1.0', '1.5', '2.0', '2.5', '3.0'])}</span>
-                        </div>
-                        <div class="view-param">
-                            <span class="view-param-label">Интервал после абзаца</span>
-                            <span class="view-param-value">${normalizeSelectValue(template.afterSpacing, ['0', '1.0', '1.5', '2.0', '2.5', '3.0'])}</span>
-                        </div>
-                        <div class="view-param">
-                            <span class="view-param-label">Отступ первой строки</span>
-                            <span class="view-param-value">${normalizeSelectValue(template.firstIndentation, ['0', '0.5', '1.0', '1.25', '1.5', '1.75', '2.0', '2.5', '3.0'])}</span>
-                        </div>
-                        <div class="view-param">
-                            <span class="view-param-label">Табуляция в списках</span>
-                            <span class="view-param-value">${normalizeSelectValue(template.listTabulation, ['0', '0.25', '0.5', '0.75', '1.0', '1.25', '1.5', '1.75', '2.0', '2.25', '2.5', '2.75', '3.0', '3.25', '3.5', '3.75', '4.0'])}</span>
-                        </div>
-                        <div class="view-param">
+                        <div class="view-param view-param-full">
                             <span class="view-param-label">Титульный лист</span>
-                            <span class="view-param-value">${template.haveTitle}</span>
+                            <span class="view-param-value">${escapeHtml(template.haveTitle)}</span>
+                        </div>
+                        <div class="template-view-grid">
+                            <div class="view-param">
+                                <span class="view-param-label">Шрифт</span>
+                                <span class="view-param-value">${escapeHtml(template.font)}</span>
+                            </div>
+                            <div class="view-param">
+                                <span class="view-param-label">Размер шрифта</span>
+                                <span class="view-param-value">${template.fontsize}</span>
+                            </div>
+                            <div class="view-param">
+                                <span class="view-param-label">Выравнивание</span>
+                                <span class="view-param-value">${escapeHtml(template.alignment)}</span>
+                            </div>
+                            <div class="view-param">
+                                <span class="view-param-label">Междустрочный интервал</span>
+                                <span class="view-param-value">${normalizeSelectValue(template.spacing, ['1.0', '1.5', '2.0', '2.5', '3.0'])}</span>
+                            </div>
+                            <div class="view-param">
+                                <span class="view-param-label">Интервал перед абзацем</span>
+                                <span class="view-param-value">${normalizeSelectValue(template.beforeSpacing, ['0', '1.0', '1.5', '2.0', '2.5', '3.0'])}</span>
+                            </div>
+                            <div class="view-param">
+                                <span class="view-param-label">Интервал после абзаца</span>
+                                <span class="view-param-value">${normalizeSelectValue(template.afterSpacing, ['0', '1.0', '1.5', '2.0', '2.5', '3.0'])}</span>
+                            </div>
+                            <div class="view-param">
+                                <span class="view-param-label">Отступ первой строки</span>
+                                <span class="view-param-value">${normalizeSelectValue(template.firstIndentation, ['0', '0.5', '1.0', '1.25', '1.5', '1.75', '2.0', '2.5', '3.0'])}</span>
+                            </div>
+                            <div class="view-param">
+                                <span class="view-param-label">Табуляция в списках</span>
+                                <span class="view-param-value">${normalizeSelectValue(template.listTabulation, ['0', '0.25', '0.5', '0.75', '1.0', '1.25', '1.5', '1.75', '2.0', '2.25', '2.5', '2.75', '3.0', '3.25', '3.5', '3.75', '4.0'])}</span>
+                            </div>
                         </div>
                     </div>
                 `;
-                
+
                 openViewModal();
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Ошибка:', error);
             showNotification('Ошибка при загрузке шаблона', 'error');
         });
 }
 
 function handleSaveTemplate(event) {
     event.preventDefault();
-    
+
+    const templateNameInput = document.getElementById('templateName');
+    const templateName = templateNameInput.value.trim();
+    const templateNameLength = Array.from(templateName).length;
+    if (templateNameLength === 0 || templateNameLength > TEMPLATE_NAME_MAX_LENGTH) {
+        const message = templateNameLength === 0
+            ? 'Введите название шаблона'
+            : `Название шаблона не должно превышать ${TEMPLATE_NAME_MAX_LENGTH} символов`;
+        templateNameInput.classList.add('input-invalid');
+        templateNameInput.focus();
+        showNotification(message, 'error');
+        return;
+    }
+    templateNameInput.classList.remove('input-invalid');
+
     const templateData = {
         id: currentEditingTemplateId,
-        name: document.getElementById('templateName').value,
+        name: templateName,
         font: document.getElementById('templateFont').value,
         fontsize: parseInt(document.getElementById('templateFontsize').value),
         alignment: document.getElementById('templateAlignment').value,
@@ -206,8 +225,8 @@ function handleSaveTemplate(event) {
         haveTitle: document.getElementById('templateHaveTitle').value
     };
 
-    const endpoint = currentEditingTemplateId 
-        ? '/api/templates/update' 
+    const endpoint = currentEditingTemplateId
+        ? '/api/templates/update'
         : '/api/templates/create';
 
     fetch(endpoint, {
@@ -221,8 +240,8 @@ function handleSaveTemplate(event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const message = currentEditingTemplateId 
-                ? 'Шаблон обновлен' 
+            const message = currentEditingTemplateId
+                ? 'Шаблон обновлен'
                 : 'Шаблон создан';
             showNotification(message, 'success');
             closeTemplateModal();
@@ -232,7 +251,7 @@ function handleSaveTemplate(event) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         showNotification('Ошибка при сохранении шаблона', 'error');
     });
 }
@@ -246,12 +265,12 @@ function deleteTemplate(templateId) {
         .then(data => {
             if (data.success && data.template) {
                 currentDeletingTemplateId = templateId;
-                document.getElementById('deleteTemplateName').textContent = escapeHtml(data.template.name);
+                document.getElementById('deleteTemplateName').textContent = data.template.name;
                 openDeleteModal();
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Ошибка:', error);
             showNotification('Ошибка при загрузке шаблона', 'error');
         });
 }
@@ -274,7 +293,7 @@ function confirmDelete() {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         showNotification('Ошибка при удалении шаблона', 'error');
     });
 }
@@ -296,56 +315,74 @@ function selectTemplate(templateId) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         showNotification('Ошибка при выборе шаблона', 'error');
     });
 }
 
-// Modal Management
-
 function openTemplateModal() {
     const modal = document.getElementById('templateModal');
-    modal.classList.add('active');
+    openAnimatedModal(modal);
 }
 
 function closeTemplateModal(event) {
     if (event && event.target.id !== 'templateModal') return;
     const modal = document.getElementById('templateModal');
-    modal.classList.remove('active');
+    closeAnimatedModal(modal);
 }
 
 function openViewModal() {
     const modal = document.getElementById('viewModal');
-    modal.classList.add('active');
+    openAnimatedModal(modal);
 }
 
 function closeViewModal(event) {
     if (event && event.target.id !== 'viewModal') return;
     const modal = document.getElementById('viewModal');
-    modal.classList.remove('active');
+    closeAnimatedModal(modal);
 }
 
 function openDeleteModal() {
     const modal = document.getElementById('deleteModal');
-    modal.classList.add('active');
+    openAnimatedModal(modal);
 }
 
 function closeDeleteModal(event) {
     if (event && event.target.id !== 'deleteModal') return;
     const modal = document.getElementById('deleteModal');
-    modal.classList.remove('active');
-    currentDeletingTemplateId = null;
+    closeAnimatedModal(modal, () => {
+        currentDeletingTemplateId = null;
+    });
 }
-
-// Utility function
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
+function escapeHtmlAttribute(text) {
+    return String(text).replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+}
+
 function normalizeSelectValue(rawValue, allowedValues) {
     const numericValue = Number(rawValue);
     const match = allowedValues.find((value) => Math.abs(Number(value) - numericValue) < 0.00001);
     return match || String(rawValue);
+}
+
+function updateTemplateNameCounter() {
+    const input = document.getElementById('templateName');
+    const counter = document.getElementById('templateNameCounter');
+    if (!input || !counter) return;
+
+    const length = Array.from(input.value).length;
+    counter.textContent = `${length}/${TEMPLATE_NAME_MAX_LENGTH}`;
+    counter.classList.toggle('limit-reached', length >= TEMPLATE_NAME_MAX_LENGTH);
+    input.classList.toggle('input-invalid', length > TEMPLATE_NAME_MAX_LENGTH);
 }

@@ -2,7 +2,6 @@ package domain
 
 import "mime/multipart"
 
-// структура для передачи данных на сервере
 type Answer struct {
 	Document     multipart.File
 	DocumentData *multipart.FileHeader
@@ -42,14 +41,10 @@ type Parameters struct {
 	ListTabulation   string `json:"listTabulation"`
 	HaveTitle        string `json:"haveTitle"`
 }
-
-// структура для отправки на страницу пользователю перез скачиванием
 type AnswerWithInterfaceName struct {
 	Data          Answer
 	InterfaceName string
 }
-
-//  структура для валидации полей
 type WrongData struct {
 	ErrorDecorationButton     string
 	ErrorCommentButton        string
@@ -57,7 +52,6 @@ type WrongData struct {
 	ErrorCommentParameters    string
 }
 
-// неизменяемые массивы!
 var (
 	Font             []string = []string{"Arial", "Times New Roman", "Calibri", "Courier New", "Verdana", "Georgia", "Tahoma"}
 	Fontsize         []string = []string{"8", "9", "10", "11", "12", "13", "14", "16", "18", "20"}
@@ -70,14 +64,11 @@ var (
 	HaveTitle        []string = []string{"Есть", "Нет"}
 )
 
-// User profile structure
 type User struct {
 	ID       int64  `json:"id"`
 	Login    string `json:"login"`
 	Password string `json:"password,omitempty"`
 }
-
-// FormattingTemplate structure
 type FormattingTemplate struct {
 	ID               int64   `json:"id"`
 	ProfileID        int64   `json:"profile_id"`
@@ -92,8 +83,6 @@ type FormattingTemplate struct {
 	ListTabulation   float64 `json:"listTabulation"`
 	HaveTitle        string  `json:"haveTitle"`
 }
-
-// API Request/Response structures
 type LoginRequest struct {
 	Login          string `json:"login"`
 	Password       string `json:"password"`

@@ -14,7 +14,7 @@
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* Полупрозрачный затемненный фон */
+    background-color: rgba(0, 0, 0, 0.6);
 }
 
 .overlay-loader .loader-icon {
@@ -23,18 +23,18 @@
     height: 10vw;
     top: 50%;
     left: 50%;
-    margin: -5vw 0 0 -5vw; /* Положение шестеренки по центру */
+    margin: -5vw 0 0 -5vw;
     color: #FFF;
 }
 
-/* Анимация вращения шестеренки */
+
 .overlay-loader .loader-icon.spinning-cog {
-    animation: spinning-cog 2.0s infinite linear; /* Постоянная скорость вращения */
+    animation: spinning-cog 2.0s infinite linear;
 }
 
-/*  */
-/* Прелоадер в правом окне */
-/*  */
+
+
+
 
 .window-preloader {
     display: none;
@@ -43,8 +43,8 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    margin: -5vw 0 0 -5vw; /* Положение шестеренки по центру */
-    animation: spinning-cog 2.0s infinite linear; /* Анимация вращения */
+    margin: -5vw 0 0 -5vw;
+    animation: spinning-cog 2.0s infinite linear;
 }
 
 @keyframes spinning-cog {
@@ -60,7 +60,7 @@
     .overlay-loader .loader-icon {
         width: 14vw;
         height: 14vw;
-        margin: -7vw 0 0 -7vw; /* Положение шестеренки по центру */
+        margin: -7vw 0 0 -7vw;
     }
 }
 
@@ -68,6 +68,6 @@
     .overlay-loader .loader-icon {
         width: 20vw;
         height: 20vw;
-        margin: -10vw 0 0 -10vw; /* Положение шестеренки по центру */
+        margin: -10vw 0 0 -10vw;
     }
 }

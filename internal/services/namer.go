@@ -1,13 +1,14 @@
 package services
 
 import (
+	"formatting-documents/internal/config"
 	"formatting-documents/internal/domain"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
-// добавление случайного кода к названию документа для уникальности
 func AddRandomNumber(data domain.Answer) domain.Answer {
 	var (
 		randomNumber int
@@ -17,7 +18,7 @@ func AddRandomNumber(data domain.Answer) domain.Answer {
 	for !flag {
 		randomNumber = rand.Intn(9000) + 1000
 		data.DocumentData.Filename = strconv.Itoa(randomNumber) + "_" + data.DocumentData.Filename
-		path = "../buffer/" + data.DocumentData.Filename
+		path = filepath.Join(config.BufferDir(), data.DocumentData.Filename)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			flag = true
 		}

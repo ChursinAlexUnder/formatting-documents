@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{ define "links" }}
         <link rel="stylesheet" href="../static/css/header.css">
+        <link rel="stylesheet" href="../static/css/auth.css">
+        <link rel="stylesheet" href="../static/css/notification.css">
         <link rel="stylesheet" href="../static/css/form.css">
+        <script defer src="../static/js/auth.js"></script>
+        <script defer src="../static/js/notification.js"></script>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     {{ end }}
     <title>{{ define "title" }}Ой{{ end }}</title>
 </head>
 <body>
     {{ define "content" }}
+        {{ template "auth-modals" . }}
         <div class="error-header">
+            {{ template "auth-menu" . }}
             <h1 class="title">
                 <span class="word">Ошибка</span>
             </h1>

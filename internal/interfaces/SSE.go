@@ -3,6 +3,7 @@ package interfaces
 import (
 	"encoding/json"
 	"fmt"
+	"formatting-documents/internal/config"
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/services"
 	"net/http"
@@ -16,22 +17,20 @@ func SSEChannel(w http.ResponseWriter, r *http.Request) {
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
-		fmt.Fprint(w, "Error: streaming unsupported")
+		fmt.Fprint(w, "Потоковая передача не поддерживается")
 		return
 	}
 
 	var prevResponse string
-
-	// Создаем канал для отслеживания закрытия соединения
 	closeClient := r.Context().Done()
 
 	for {
 		select {
 		case <-closeClient:
-			fmt.Fprint(w, "Client disconnected")
+			fmt.Fprint(w, "Клиент отключился")
 			return
 		default:
-			data, err := services.ReadFileJSON("../data.json")
+			data, err := services.ReadFileJSON(config.DataFile())
 			if err != nil {
 				fmt.Fprintf(w, "event: error\ndata: %s\n\n", err.Error())
 				return

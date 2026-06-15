@@ -1,0 +1,15 @@
+.git
+.env
+buffer/*
+volumes/*
+**/__pycache__/
+**/*.pyc
+*.log
+main
+formatting-documents
+.gocache/
+.venv
+.vscode
+.pytest_cache
+.coverage
+.DS_Store

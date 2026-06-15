@@ -1,34 +1,38 @@
 package services
 
 import (
+	"errors"
 	"fmt"
+	"formatting-documents/internal/config"
 	"formatting-documents/internal/infrastructure"
-	"io/ioutil"
+	"os"
 	"time"
 )
 
-// считает размер папки buffer для предотвращения переполнения
+var ErrBufferBusy = errors.New("хранилище временных документов занято")
+
 func GetBufferSize() (int, error) {
 	var (
 		bufferSize int64
-		bufferPath string = "../buffer"
+		bufferPath string = config.BufferDir()
 	)
 
-	// Читаем все файлы в папке
-	documents, err := ioutil.ReadDir(bufferPath)
+	documents, err := os.ReadDir(bufferPath)
 	if err != nil {
 		return -1, err
 	}
 
 	for _, document := range documents {
-		// Добавляем размер файла к общему размеру
-		bufferSize += document.Size()
+		info, err := document.Info()
+		if err != nil {
+			return -1, err
+		}
+		bufferSize += info.Size()
 	}
 
 	return int(bufferSize), nil
 }
 
-// вычисление размера папки buffer и её ограничение на 200 Мегабайт
 func IsOverflow() error {
 	const (
 		maxBufferSize int = 200 * 1024 * 1024
@@ -44,7 +48,6 @@ func IsOverflow() error {
 	}
 	for bufferSize >= maxBufferSize {
 		time.Sleep(3 * time.Second)
-		// удаление старых документов (которым больше 10 минут)
 		err := infrastructure.DeleteOldDocuments()
 		if err != nil {
 			return err
@@ -55,7 +58,7 @@ func IsOverflow() error {
 		}
 		iterations++
 		if iterations >= 6 {
-			return fmt.Errorf("error: 6 iterations")
+			return fmt.Errorf("%w после шести попыток очистки", ErrBufferBusy)
 		}
 	}
 	return nil

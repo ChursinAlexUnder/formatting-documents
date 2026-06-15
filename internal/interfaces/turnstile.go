@@ -4,14 +4,27 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
-const siteverifyURL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+const (
+	siteverifyURL           = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+	turnstileTestSiteKey    = "1x00000000000000000000AA"
+	turnstileTestSecretKey  = "1x0000000000000000000000000000000AA"
+	maxTurnstileTokenLength = 2048
+)
+
+var (
+	turnstileVerifyURL = siteverifyURL
+	turnstileClient    = &http.Client{Timeout: 10 * time.Second}
+)
 
 type VerificationResult struct {
 	Success     bool     `json:"success"`
@@ -22,15 +35,30 @@ type VerificationResult struct {
 	CData       string   `json:"cdata"`
 }
 
-func Validate(ctx context.Context, token, remoteIP string) (*VerificationResult, error) {
-	token = strings.TrimSpace(token)
-	if token == "" {
-		return nil, errors.New("empty turnstile token")
+func TurnstileSiteKey() (string, error) {
+	if isDevelopmentEnvironment() {
+		return turnstileTestSiteKey, nil
 	}
 
-	secret := os.Getenv("TURNSTILE_SECRET_KEY")
-	if secret == "" {
-		return nil, errors.New("TURNSTILE_SECRET_KEY is not set")
+	siteKey := strings.TrimSpace(os.Getenv("TURNSTILE_SITE_KEY"))
+	if siteKey == "" {
+		return "", errors.New("переменная TURNSTILE_SITE_KEY не задана")
+	}
+	return siteKey, nil
+}
+
+func Validate(ctx context.Context, token, remoteIP, expectedAction string) (*VerificationResult, error) {
+	token = strings.TrimSpace(token)
+	if token == "" {
+		return nil, errors.New("токен Turnstile отсутствует")
+	}
+	if len(token) > maxTurnstileTokenLength {
+		return nil, errors.New("токен Turnstile слишком длинный")
+	}
+
+	secret, err := turnstileSecretKey()
+	if err != nil {
+		return nil, err
 	}
 
 	form := url.Values{}
@@ -40,22 +68,25 @@ func Validate(ctx context.Context, token, remoteIP string) (*VerificationResult,
 		form.Set("remoteip", remoteIP)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, siteverifyURL, strings.NewReader(form.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, turnstileVerifyURL, strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := turnstileClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("Turnstile вернул HTTP %d", resp.StatusCode)
+	}
+
 	var result VerificationResult
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 64*1024)).Decode(&result); err != nil {
 		return nil, err
 	}
 
@@ -63,10 +94,38 @@ func Validate(ctx context.Context, token, remoteIP string) (*VerificationResult,
 		if len(result.ErrorCodes) > 0 {
 			return &result, errors.New(strings.Join(result.ErrorCodes, ", "))
 		}
-		return &result, errors.New("turnstile validation failed")
+		return &result, errors.New("проверка Turnstile не пройдена")
+	}
+	if !isDevelopmentEnvironment() && expectedAction != "" && result.Action != expectedAction {
+		return &result, fmt.Errorf(
+			"получено действие Turnstile %q, ожидалось %q",
+			result.Action,
+			expectedAction,
+		)
 	}
 
 	return &result, nil
+}
+
+func turnstileSecretKey() (string, error) {
+	if isDevelopmentEnvironment() {
+		return turnstileTestSecretKey, nil
+	}
+
+	secret := strings.TrimSpace(os.Getenv("TURNSTILE_SECRET_KEY"))
+	if secret == "" {
+		return "", errors.New("переменная TURNSTILE_SECRET_KEY не задана")
+	}
+	return secret, nil
+}
+
+func isDevelopmentEnvironment() bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv("APP_ENV"))) {
+	case "development", "dev", "local", "test":
+		return true
+	default:
+		return false
+	}
 }
 
 func ClientIP(r *http.Request) string {

@@ -1,4 +1,4 @@
-/* Modal Styles */
+
 
 .modal-overlay {
     display: none;
@@ -16,6 +16,17 @@
     display: flex !important;
     align-items: center;
     justify-content: center;
+}
+
+.modal-overlay.closing {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeOut 0.25s ease forwards;
+}
+
+.modal-overlay.closing .modal-content {
+    animation: modalSlideDown 0.25s ease forwards;
 }
 
 @keyframes fadeIn {
@@ -38,6 +49,26 @@
     }
 }
 
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes modalSlideDown {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+}
+
 .modal-content {
     background: white;
     padding: 2rem;
@@ -49,6 +80,11 @@
     position: relative;
     max-height: 90vh;
     overflow-y: auto;
+}
+
+.modal-content,
+.modal-content * {
+    font-family: Arial, sans-serif;
 }
 
 .modal-close-btn {

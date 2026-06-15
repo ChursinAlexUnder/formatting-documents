@@ -1,48 +1,50 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
     container_name: formatting_db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: formatting_documents
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-formatting_documents}
     volumes:
-      - ./volumes/postgres:/var/lib/postgresql/data/
-      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     networks:
       - formatting_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   app:
+    image: ${APP_IMAGE:-formatting-documents:local}
     build:
       context: .
       dockerfile: Dockerfile
     container_name: formatting_app
+    restart: unless-stopped
     env_file:
       - .env
     environment:
-      DATABASE_URL: "user=postgres password=postgres dbname=formatting_documents host=postgres port=5432 sslmode=disable"
-      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
-      TURNSTILE_SECRET_KEY: "${TURNSTILE_SECRET_KEY}"
+      APP_ENV: ${APP_ENV:-production}
+      APP_ROOT: /app
+      APP_BUFFER_DIR: /app/buffer
+      APP_DATA_FILE: /app/data.json
+      PYTHON_BIN: python3
+      DATABASE_URL: "user=${POSTGRES_USER:-postgres} password=${POSTGRES_PASSWORD:-postgres} dbname=${POSTGRES_DB:-formatting_documents} host=postgres port=5432 sslmode=disable"
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
     ports:
-      - "8080:8080"
+      - "${APP_PORT:-8080}:8080"
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - formatting_network
-    volumes:
-      - ./web:/app/web
-      - ./buffer:/app/buffer
-      - ./scripts:/app/scripts
 
 volumes:
   postgres_data:

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"formatting-documents/database"
+	"formatting-documents/internal/config"
 	"formatting-documents/internal/domain"
 	"formatting-documents/internal/infrastructure"
 	"formatting-documents/internal/services"
@@ -12,20 +13,25 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"text/template"
 	"time"
+	"unicode/utf8"
 )
+
+const maxTemplateNameLength = 60
 
 func getUserIDFromCookie(r *http.Request) (int64, error) {
 	cookie, err := r.Cookie("user_id")
 	if err != nil || cookie.Value == "" {
-		return 0, fmt.Errorf("not authenticated")
+		return 0, fmt.Errorf("пользователь не авторизован")
 	}
 
 	var userID int64
 	if _, err := fmt.Sscanf(cookie.Value, "%d", &userID); err != nil || userID <= 0 {
-		return 0, fmt.Errorf("invalid session")
+		return 0, fmt.Errorf("недействительная сессия")
 	}
 
 	return userID, nil
@@ -35,11 +41,43 @@ func databaseUnavailableJSON(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": false,
-		"message": "Database is unavailable",
+		"message": "База данных недоступна",
+	})
+}
+
+func TurnstileConfigHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+
+	siteKey, err := TurnstileSiteKey()
+	if err != nil {
+		log.Printf("Ошибка настройки Turnstile: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Капча не настроена",
+		})
+		return
+	}
+
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":  true,
+		"site_key": siteKey,
 	})
 }
 
 func MainPage(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/" {
+		if cookie, err := r.Cookie("profile_welcome"); err == nil && cookie.Value == "1" {
+			clearProfileWelcomeCookie(w)
+		}
+	}
+
 	var (
 		wrongData domain.WrongData = domain.WrongData{}
 		data      domain.Answer
@@ -47,29 +85,30 @@ func MainPage(w http.ResponseWriter, r *http.Request) {
 	)
 	err = services.CheckDataJSON()
 	if err != nil {
-		fmt.Fprintf(w, "Error checking JSON data: %v", err)
+		fmt.Fprintf(w, "Ошибка проверки данных JSON: %v", err)
 		return
 	}
 	if r.Method == http.MethodPost {
 		data, wrongData, err = ManagementData(w, r)
-		if err != nil && err.Error() != "error validation" {
-			fmt.Fprintf(w, "Error managementing: %v", err)
+		if err != nil && err.Error() != "ошибка валидации" {
+			fmt.Fprintf(w, "Ошибка обработки документа: %v", err)
 			return
 		} else if err == nil {
 			SendDocumentPage(w, r, data)
 			return
 		}
 	}
-	// путь откуда вызываю эту функцию, а не от её расположения
-	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/main.html")
+	tmplt, err := template.ParseFiles(
+		config.RootPath("web", "templates", "index.html"),
+		config.RootPath("web", "templates", "main.html"),
+	)
 	if err != nil {
-		fmt.Fprintf(w, "Error parsing index.html and main.html: %v", err)
+		fmt.Fprintf(w, "Ошибка загрузки шаблонов главной страницы: %v", err)
 		return
 	}
-	// отображение страницы в заготовленном каркасе с footer
 	err = tmplt.ExecuteTemplate(w, "index", wrongData)
 	if err != nil {
-		fmt.Fprintf(w, "Error displaying index.html and main.html: %v", err)
+		fmt.Fprintf(w, "Ошибка отображения главной страницы: %v", err)
 		return
 	}
 }
@@ -101,14 +140,12 @@ func ShowOptions(w http.ResponseWriter, r *http.Request) {
 	default:
 		options = []string{}
 	}
-
-	// Возвращаем данные в формате JSON
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"options": options,
 	})
 	if err != nil {
-		fmt.Fprintf(w, "Error sending json response: %v", err)
+		fmt.Fprintf(w, "Ошибка отправки JSON-ответа: %v", err)
 		return
 	}
 }
@@ -118,24 +155,24 @@ func SendDocumentPage(w http.ResponseWriter, r *http.Request, data domain.Answer
 		fullData      domain.AnswerWithInterfaceName
 		interfaceName string
 	)
-
-	// Загружаем и парсим шаблоны, добавляя пользовательскую функцию add
 	tmplt, err := template.New("index.html").Funcs(template.FuncMap{
 		"add": services.Add,
-	}).ParseFiles("../web/templates/index.html", "../web/templates/download.html")
+	}).ParseFiles(
+		config.RootPath("web", "templates", "index.html"),
+		config.RootPath("web", "templates", "download.html"),
+	)
 	if err != nil {
-		fmt.Fprintf(w, "Error parsing download.html: %v", err)
+		fmt.Fprintf(w, "Ошибка загрузки страницы скачивания: %v", err)
 		return
 	}
 
 	data.DocumentData.Filename = "formatted_" + data.DocumentData.Filename
 	interfaceName = data.DocumentData.Filename[:10] + data.DocumentData.Filename[15:]
-	// кодирование для URL
 	data.DocumentData.Filename = url.QueryEscape(data.DocumentData.Filename)
 	fullData = domain.AnswerWithInterfaceName{Data: data, InterfaceName: interfaceName}
 	err = tmplt.ExecuteTemplate(w, "index", fullData)
 	if err != nil {
-		fmt.Fprintf(w, "Error displaying index.html and download.html: %v", err)
+		fmt.Fprintf(w, "Ошибка отображения страницы скачивания: %v", err)
 		return
 	}
 }
@@ -149,96 +186,101 @@ func SendDocument(w http.ResponseWriter, r *http.Request) {
 	)
 	formattedDocumentName = r.URL.Query().Get("documentname")
 	if formattedDocumentName == "" {
-		fmt.Fprint(w, "Error getting the name of a new document from the page")
+		fmt.Fprint(w, "Не удалось получить имя документа")
 		return
 	}
-	// декодируем
 	formattedDocumentName, err := url.QueryUnescape(formattedDocumentName)
 	if err != nil {
-		fmt.Fprintf(w, "Error decoding the name of a new document: %v", err)
+		fmt.Fprintf(w, "Не удалось декодировать имя документа: %v", err)
 		return
 	}
-	formattedDocumentPath = "../buffer/" + formattedDocumentName
-
-	// проверка на наличие документа
+	formattedDocumentName = filepath.Base(strings.ReplaceAll(formattedDocumentName, "\\", "/"))
+	if !strings.HasPrefix(formattedDocumentName, "formatted_") {
+		http.Redirect(w, r, "/error", http.StatusSeeOther)
+		return
+	}
+	formattedDocumentPath = filepath.Join(config.BufferDir(), formattedDocumentName)
 	if _, err := os.Stat(formattedDocumentPath); err != nil {
-		// перенаправление на страницу с ошибкой
 		http.Redirect(w, r, "/error", http.StatusSeeOther)
 		return
 	}
 
 	formattedDocument, err = os.Open(formattedDocumentPath)
 	if err != nil {
-		fmt.Fprintf(w, "Error opening the new document: %v", err)
+		fmt.Fprintf(w, "Не удалось открыть документ: %v", err)
 		return
 	}
 	defer func() {
 		formattedDocument.Close()
 		infrastructure.DeleteBothDocuments(formattedDocumentName)
 	}()
-
-	// проверка на проблемы в файле
 	formattedDocumentInfo, err := formattedDocument.Stat()
 	if err != nil {
-		fmt.Fprintf(w, "Error: problem in the document: %v", err)
+		fmt.Fprintf(w, "Ошибка чтения документа: %v", err)
 		return
 	}
 
 	interfaceName = formattedDocumentName[:10] + formattedDocumentName[15:]
-
-	// установка заголовков
 	w.Header().Set("Content-Disposition", "attachment; filename="+interfaceName)
 	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 	w.Header().Set("Content-Length", strconv.Itoa(int(formattedDocumentInfo.Size())))
-
-	// отдача файла пользователю
 	_, err = io.Copy(w, formattedDocument)
 	if err != nil {
-		fmt.Fprintf(w, "Error sending new document: %v", err)
+		fmt.Fprintf(w, "Ошибка отправки документа: %v", err)
 		return
 	}
 }
 
 func ErrorPage(w http.ResponseWriter, r *http.Request) {
-	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/error.html")
+	tmplt, err := template.ParseFiles(
+		config.RootPath("web", "templates", "index.html"),
+		config.RootPath("web", "templates", "error.html"),
+		config.RootPath("web", "templates", "auth-menu.html"),
+	)
 	if err != nil {
-		fmt.Fprintf(w, "Error parsing error.html: %v", err)
+		fmt.Fprintf(w, "Ошибка загрузки страницы ошибки: %v", err)
 		return
 	}
 	err = tmplt.ExecuteTemplate(w, "index", nil)
 	if err != nil {
-		fmt.Fprintf(w, "Error displaying index.html and error.html: %v", err)
+		fmt.Fprintf(w, "Ошибка отображения страницы ошибки: %v", err)
 		return
 	}
 }
 
 func ErrorTimePage(w http.ResponseWriter, r *http.Request) {
-	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/errortime.html")
+	tmplt, err := template.ParseFiles(
+		config.RootPath("web", "templates", "index.html"),
+		config.RootPath("web", "templates", "errortime.html"),
+		config.RootPath("web", "templates", "auth-menu.html"),
+	)
 	if err != nil {
-		fmt.Fprintf(w, "Error parsing errortime.html: %v", err)
+		fmt.Fprintf(w, "Ошибка загрузки страницы ожидания: %v", err)
 		return
 	}
 	err = tmplt.ExecuteTemplate(w, "index", nil)
 	if err != nil {
-		fmt.Fprintf(w, "Error displaying index.html and errortime.html: %v", err)
+		fmt.Fprintf(w, "Ошибка отображения страницы ожидания: %v", err)
 		return
 	}
 }
 
 func InfoPage(w http.ResponseWriter, r *http.Request) {
-	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/info.html")
+	tmplt, err := template.ParseFiles(
+		config.RootPath("web", "templates", "index.html"),
+		config.RootPath("web", "templates", "info.html"),
+		config.RootPath("web", "templates", "auth-menu.html"),
+	)
 	if err != nil {
-		fmt.Fprintf(w, "Error parsing info.html: %v", err)
+		fmt.Fprintf(w, "Ошибка загрузки страницы инструкции: %v", err)
 		return
 	}
 	err = tmplt.ExecuteTemplate(w, "index", nil)
 	if err != nil {
-		fmt.Fprintf(w, "Error displaying index.html and info.html: %v", err)
+		fmt.Fprintf(w, "Ошибка отображения страницы инструкции: %v", err)
 		return
 	}
 }
-
-// Profile page handler
 func ProfilePage(w http.ResponseWriter, r *http.Request) {
 	if !database.IsAvailable() {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -251,22 +293,30 @@ func ProfilePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmplt, err := template.ParseFiles("../web/templates/index.html", "../web/templates/profile.html")
+	isFirstVisit := false
+	if cookie, cookieErr := r.Cookie("profile_welcome"); cookieErr == nil && cookie.Value == "1" {
+		isFirstVisit = true
+	}
+
+	tmplt, err := template.ParseFiles(
+		config.RootPath("web", "templates", "index.html"),
+		config.RootPath("web", "templates", "profile.html"),
+	)
 	if err != nil {
-		fmt.Fprintf(w, "Error parsing profile.html: %v", err)
+		fmt.Fprintf(w, "Ошибка загрузки страницы профиля: %v", err)
 		return
 	}
-	err = tmplt.ExecuteTemplate(w, "index", nil)
+	err = tmplt.ExecuteTemplate(w, "index", map[string]bool{
+		"IsFirstVisit": isFirstVisit,
+	})
 	if err != nil {
-		fmt.Fprintf(w, "Error displaying index.html and profile.html: %v", err)
+		fmt.Fprintf(w, "Ошибка отображения страницы профиля: %v", err)
 		return
 	}
 }
-
-// API: Register handler
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -281,7 +331,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Invalid request",
+			"message": "Некорректный запрос",
 		})
 		return
 	}
@@ -294,15 +344,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ip := ClientIP(r)
-	validation, err := Validate(r.Context(), req.TurnstileToken, ip)
+	validation, err := Validate(r.Context(), req.TurnstileToken, ip, "register")
 	if err != nil || validation == nil || !validation.Success {
+		log.Printf("Ошибка проверки капчи при регистрации: %v", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Captcha verification failed",
+			"message": "Проверка капчи не пройдена",
 		})
 		return
 	}
-	log.Println("Turnstile success:", validation.Hostname, validation.Action)
 
 	user, err := database.CreateUser(req.Login, req.Password)
 	if err != nil {
@@ -319,20 +369,26 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   86400 * 7, // 7 days
+		MaxAge:   86400 * 7,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "profile_welcome",
+		Value:    "1",
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   86400 * 7,
 	})
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"message": "Registration successful",
+		"message": "Регистрация выполнена успешно",
 		"user_id": user.ID,
 	})
 }
-
-// API: Login handler
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -347,21 +403,21 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Invalid request",
+			"message": "Некорректный запрос",
 		})
 		return
 	}
 
 	ip := ClientIP(r)
-	validation, err := Validate(r.Context(), req.TurnstileToken, ip)
+	validation, err := Validate(r.Context(), req.TurnstileToken, ip, "login")
 	if err != nil || validation == nil || !validation.Success {
+		log.Printf("Ошибка проверки капчи при входе: %v", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Captcha verification failed",
+			"message": "Проверка капчи не пройдена",
 		})
 		return
 	}
-	log.Println("Turnstile success:", validation.Hostname, validation.Action)
 
 	userID, err := database.VerifyPassword(req.Login, req.Password)
 	if err != nil {
@@ -378,20 +434,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   86400 * 7, // 7 days
+		MaxAge:   86400 * 7,
 	})
+	clearProfileWelcomeCookie(w)
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"message": "Login successful",
+		"message": "Вход выполнен успешно",
 		"user_id": userID,
 	})
 }
-
-// API: Logout handler
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -413,6 +468,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Unix(0, 0),
 		SameSite: http.SameSiteLaxMode,
 	})
+	clearProfileWelcomeCookie(w)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{
@@ -420,7 +476,17 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// API: Get user profile with templates
+func clearProfileWelcomeCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "profile_welcome",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
 func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
@@ -445,7 +511,7 @@ func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "User not found",
+			"message": "Пользователь не найден",
 		})
 		return
 	}
@@ -454,8 +520,6 @@ func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		templates = []domain.FormattingTemplate{}
 	}
-
-	// Get selected template ID from cookie
 	selectedCookie, _ := r.Cookie("selected_template")
 	selectedID := int64(0)
 	if selectedCookie != nil {
@@ -470,11 +534,9 @@ func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 		"selected_template_id": selectedID,
 	})
 }
-
-// API: Create template
 func CreateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -498,7 +560,15 @@ func CreateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Invalid request",
+			"message": "Некорректный запрос",
+		})
+		return
+	}
+
+	if err = validateTemplateName(&template); err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
 		})
 		return
 	}
@@ -519,8 +589,6 @@ func CreateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		"template": createdTemplate,
 	})
 }
-
-// API: Get template
 func GetTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if !database.IsAvailable() {
@@ -545,7 +613,7 @@ func GetTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil || template.ProfileID != userID {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Template not found",
+			"message": "Шаблон не найден",
 		})
 		return
 	}
@@ -555,11 +623,9 @@ func GetTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		"template": template,
 	})
 }
-
-// API: Update template
 func UpdateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -583,7 +649,15 @@ func UpdateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Invalid request",
+			"message": "Некорректный запрос",
+		})
+		return
+	}
+
+	if err = validateTemplateName(&template); err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
 		})
 		return
 	}
@@ -605,10 +679,19 @@ func UpdateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// API: Delete template
+func validateTemplateName(template *domain.FormattingTemplate) error {
+	template.Name = strings.TrimSpace(template.Name)
+	if template.Name == "" {
+		return fmt.Errorf("Название шаблона не может быть пустым")
+	}
+	if utf8.RuneCountInString(template.Name) > maxTemplateNameLength {
+		return fmt.Errorf("Название шаблона не должно превышать %d символов", maxTemplateNameLength)
+	}
+	return nil
+}
 func DeleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -644,11 +727,9 @@ func DeleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 	})
 }
-
-// API: Select template
 func SelectTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -670,38 +751,32 @@ func SelectTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	templateIDStr := r.URL.Query().Get("id")
 	var templateID int64
 	fmt.Sscanf(templateIDStr, "%d", &templateID)
-
-	// Verify template belongs to user
 	template, err := database.GetTemplateByID(templateID)
 	if err != nil || template.ProfileID != userID {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Template not found",
+			"message": "Шаблон не найден",
 		})
 		return
 	}
-
-	// Set cookie with selected template
 	http.SetCookie(w, &http.Cookie{
 		Name:     "selected_template",
 		Value:    fmt.Sprintf("%d", templateID),
 		Path:     "/",
 		HttpOnly: false,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   86400 * 30, // 30 days
+		MaxAge:   86400 * 30,
 	})
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success":  true,
 		"template": template,
-		"message":  "Template selected",
+		"message":  "Шаблон выбран",
 	})
 }
-
-// API: Reset template selection
 func ResetTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 

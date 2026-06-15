@@ -3,8 +3,9 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"formatting-documents/internal/config"
 	"formatting-documents/internal/domain"
-	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 )
@@ -17,14 +18,14 @@ func ReadFileJSON(filename string) (domain.Data, error) {
 	mu.RLock()
 	defer mu.RUnlock()
 
-	file, err := ioutil.ReadFile(filename)
+	file, err := os.ReadFile(filename)
 	if err != nil {
-		return data, fmt.Errorf("error reading JSON file: %v", err)
+		return data, fmt.Errorf("не удалось прочитать JSON-файл: %v", err)
 	}
 
 	err = json.Unmarshal(file, &data)
 	if err != nil {
-		return data, fmt.Errorf("error decoding JSON file: %v", err)
+		return data, fmt.Errorf("не удалось декодировать JSON-файл: %v", err)
 	}
 
 	return data, nil
@@ -33,15 +34,15 @@ func ReadFileJSON(filename string) (domain.Data, error) {
 func WriteFileJSON(data domain.Data, filename string) error {
 	updatedFile, err := json.MarshalIndent(data, "", "    ")
 	if err != nil {
-		return fmt.Errorf("error coding JSON: %v", err)
+		return fmt.Errorf("не удалось сформировать JSON: %v", err)
 	}
 
 	mu.Lock()
 	defer mu.Unlock()
 
-	err = ioutil.WriteFile(filename, updatedFile, 0644)
+	err = os.WriteFile(filename, updatedFile, 0644)
 	if err != nil {
-		return fmt.Errorf("error writing in json file: %v", err)
+		return fmt.Errorf("не удалось записать JSON-файл: %v", err)
 	}
 
 	return nil
@@ -49,7 +50,7 @@ func WriteFileJSON(data domain.Data, filename string) error {
 
 func CheckDataJSON() error {
 	var (
-		filename string = "../data.json"
+		filename string = config.DataFile()
 		data     domain.Data
 	)
 
@@ -57,7 +58,7 @@ func CheckDataJSON() error {
 
 	data, err := ReadFileJSON(filename)
 	if err != nil {
-		return fmt.Errorf("error getting information from JSON file for CHECK: %v", err)
+		return fmt.Errorf("не удалось получить данные статистики: %v", err)
 	}
 
 	if data.Date != currentDate {
@@ -67,7 +68,7 @@ func CheckDataJSON() error {
 
 		err = WriteFileJSON(data, filename)
 		if err != nil {
-			return fmt.Errorf("error writing information in JSON file for CHECK: %v", err)
+			return fmt.Errorf("не удалось сбросить ежедневную статистику: %v", err)
 		}
 	}
 	return nil
@@ -75,13 +76,13 @@ func CheckDataJSON() error {
 
 func UpdateDataJSON(params domain.Parameters) error {
 	var (
-		filename string = "../data.json"
+		filename string = config.DataFile()
 		data     domain.Data
 	)
 
 	data, err := ReadFileJSON(filename)
 	if err != nil {
-		return fmt.Errorf("error getting information from JSON file for UPDATE: %v", err)
+		return fmt.Errorf("не удалось получить статистику для обновления: %v", err)
 	}
 
 	data.Count++
@@ -94,7 +95,7 @@ func UpdateDataJSON(params domain.Parameters) error {
 
 	err = WriteFileJSON(data, filename)
 	if err != nil {
-		return fmt.Errorf("error writing information in JSON file for UPDATE: %v", err)
+		return fmt.Errorf("не удалось сохранить статистику: %v", err)
 	}
 
 	return nil

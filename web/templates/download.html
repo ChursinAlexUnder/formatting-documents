@@ -13,34 +13,12 @@
         <script defer src="../static/js/auth.js"></script>
         <script defer src="../static/js/notification.js"></script>
         <script defer src="../static/js/button-download.js"></script>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     {{ end }}
     <title>{{ define "title" }}Скачивание отформатированного документа{{ end }}</title>
 </head>
 <body>
     {{ define "content" }}
-        <header class="sticky-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <button type="button" class="reset-template-btn" id="headerResetTemplateBtn" title="Сбросить текущий шаблон" onclick="resetTemplate()">Сбросить шаблон</button>
-                    <div class="template-selector" id="templateSelector" style="display: none;">
-                        <span class="template-label">Текущий шаблон:</span>
-                        <span class="template-name" id="templateName"></span>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="profile-login-label" id="headerProfileLogin" style="display: none;" title=""></div>
-                    <div class="auth-buttons" id="authButtons">
-                        <button type="button" class="auth-btn register-btn" onclick="openRegisterModal()">Зарегистрироваться</button>
-                        <button type="button" class="auth-btn login-btn" onclick="openLoginModal()">Войти</button>
-                    </div>
-                    <div class="profile-buttons" id="profileButtons" style="display: none;">
-                        <button type="button" class="auth-btn profile-btn" onclick="goToProfile()">В профиль</button>
-                        <button type="button" class="auth-btn logout-btn" onclick="logout()">Выйти</button>
-                    </div>
-                </div>
-            </div>
-        </header>
-
         <div id="registerModal" class="auth-modal-overlay" onclick="closeRegisterModal(event)">
             <div class="auth-modal-content" onclick="event.stopPropagation()">
                 <button type="button" class="modal-close-btn" onclick="closeRegisterModal()">&times;</button>
@@ -54,6 +32,7 @@
                         <label for="registerPassword">Пароль:</label>
                         <input type="password" id="registerPassword" name="password" required maxlength="100" placeholder="Введите пароль">
                     </div>
+                    <div id="registerTurnstile"></div>
                     <button type="submit" class="modal-submit-btn">Зарегистрироваться</button>
                 </form>
             </div>
@@ -72,6 +51,7 @@
                         <label for="loginPassword">Пароль:</label>
                         <input type="password" id="loginPassword" name="password" required placeholder="Введите пароль">
                     </div>
+                    <div id="loginTurnstile"></div>
                     <button type="submit" class="modal-submit-btn">Войти</button>
                 </form>
             </div>
@@ -80,6 +60,28 @@
         <div id="notificationContainer" class="notification-container"></div>
 
         <div class="download-header">
+            <header class="sticky-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <button type="button" class="reset-template-btn" id="headerResetTemplateBtn" title="Сбросить текущий шаблон" onclick="resetTemplate()">Сбросить шаблон</button>
+                        <div class="template-selector" id="templateSelector" style="display: none;">
+                            <span class="template-label">Текущий шаблон:</span>
+                            <span class="template-name" id="templateName"></span>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <div class="profile-login-label" id="headerProfileLogin" style="display: none;" title=""></div>
+                        <div class="auth-buttons" id="authButtons">
+                            <button type="button" class="auth-btn register-btn" onclick="openRegisterModal()">Зарегистрироваться</button>
+                            <button type="button" class="auth-btn login-btn" onclick="openLoginModal()">Войти</button>
+                        </div>
+                        <div class="profile-buttons" id="profileButtons" style="display: none;">
+                            <button type="button" class="auth-btn profile-btn" onclick="goToProfile()">В профиль</button>
+                            <button type="button" class="auth-btn logout-btn" onclick="logout()">Выйти</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
             <h1 class="title">
                 <span class="word">Готово</span>
             </h1>
@@ -97,7 +99,7 @@
                 <a href="/" class="edit-button-link">Вернуться на главную</a>
             </div>
         </div>
-        <div class="main-window"> 
+        <div class="main-window">
             <h2 class="download-title">Информация о тексте документа</h2>
             {{ if .Data.Information.Annotation }}
             <div class="annotation-box">
@@ -111,7 +113,7 @@
                 {{ if $drawFlag }}
                     <div class="download-text">✅ В Вашем документе на все рисунки есть ссылки в тексте</div>
                 {{ else }}
-                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера рисунков: 
+                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера рисунков:
                         {{ range $index, $element := $drawInfo }}
                             {{ if not $element }}
                                 {{ add $index 1 }}
@@ -128,7 +130,7 @@
                 {{ if $tableFlag }}
                     <div class="download-text">✅ В Вашем документе на все таблицы есть ссылки в тексте</div>
                 {{ else }}
-                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера таблиц: 
+                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера таблиц:
                         {{ range $index, $element := $tableInfo }}
                             {{ if not $element }}
                                 {{ add $index 1 }}
@@ -145,7 +147,7 @@
                 {{ if $sourceFlag }}
                     <div class="download-text">✅ В Вашем документе на все источники есть ссылки в тексте</div>
                 {{ else }}
-                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера источников: 
+                    <div class="download-text">‼️ В Вашем документе нет ссылок в тексте на следующие номера источников:
                         {{ range $index, $element := $sourceInfo }}
                             {{ if not $element }}
                                 {{ add $index 1 }}
@@ -154,7 +156,7 @@
                     </div>
                 {{ end }}
             {{ else }}
-                <div class="download-text">❕ В Вашем документе нет списка используемых источников</div>
+                <div class="download-text">❕ Проверка ссылок на источники не выполнена: список используемых источников отсутствует</div>
             {{ end }}
         </div>
     {{ end }}

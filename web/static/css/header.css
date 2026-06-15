@@ -1,16 +1,17 @@
-.main-header, .download-header, .error-header, .info-header {
+.main-header, .download-header, .error-header, .info-header, .profile-header {
     display: flex;
     width: 100%;
     text-align: left;
     align-items: center;
     margin-bottom: 8%;
+    position: relative;
 }
 .main-header {
     min-height: 85vh;
     background: linear-gradient(to bottom, #87CEFA, #ffffff);
 }
 
-.download-header, .info-header {
+.download-header, .info-header, .profile-header {
     min-height: 50vh;
     background: linear-gradient(to bottom, #87CEFA, #ffffff);
 }
@@ -24,6 +25,7 @@
     font-family: "Arial";
     font-size: 6vw;
     margin-left: 5%;
+    margin-top: clamp(72px, 10vh, 110px);
 }
 
 .word {
@@ -40,15 +42,15 @@
 }
 
 .word:nth-child(1) {
-    animation-delay: 0.5s; /* Первое слово */
+    animation-delay: 0.5s;
 }
 
 .word:nth-child(3) {
-    animation-delay: 1s; /* Второе слово*/
+    animation-delay: 1s;
 }
 
 .word:nth-child(5) {
-    animation-delay: 1.5s; /* Третье слово*/
+    animation-delay: 1.5s;
 }
 
 @keyframes wordDown {
@@ -69,7 +71,7 @@
     .main-header {
         min-height: 60vh;
     }
-    .download-header, .info-header {
+    .download-header, .info-header, .profile-header {
         min-height: 30vh;
     }
 }
@@ -83,9 +85,9 @@
         min-height: 35vh;
         text-align: center;
     }
-    .download-header, .info-header {
+    .download-header, .info-header, .profile-header {
         min-height: 18vh;
         text-align: center;
     }
-    
+
 }

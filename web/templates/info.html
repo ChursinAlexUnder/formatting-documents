@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{ define "links" }}
         <link rel="stylesheet" href="../static/css/header.css">
+        <link rel="stylesheet" href="../static/css/auth.css">
+        <link rel="stylesheet" href="../static/css/notification.css">
         <link rel="stylesheet" href="../static/css/form.css">
         <link rel="stylesheet" href="../static/css/info.css">
+        <script defer src="../static/js/auth.js"></script>
+        <script defer src="../static/js/notification.js"></script>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     {{ end }}
     <title>{{ define "title" }}Работа сайта{{ end }}</title>
 </head>
 <body>
     {{ define "content" }}
+        {{ template "auth-modals" . }}
         <div class="info-header">
+            {{ template "auth-menu" . }}
             <h1 class="title">
                 <span class="word">Работа сайта</span>
             </h1>
@@ -20,9 +27,9 @@
         <div class="main-window">
             <h2 class="info-title">Обработка заголовков</h2>
             <div class="info-text">
-                Для того, чтобы программа обнаружила и оформила заголовок необходимо 
-                <strong>выделить его полужирным начертанием</strong> и 
-                <strong>в начале его названия обозначить номер главы</strong>, которому будет соответствовать 
+                Для того, чтобы программа обнаружила и оформила заголовок необходимо
+                <strong>выделить его полужирным начертанием</strong> и
+                <strong>в начале его названия обозначить номер главы</strong>, которому будет соответствовать
                 уровень заголовка.
             </div>
             <div class="info-text">
@@ -41,7 +48,7 @@
         <div class="main-window">
             <h2 class="info-title">Обработка кода в тексте</h2>
             <div class="info-text">
-                Для того, чтобы программа обнаружила и оформила код в тексте необходимо 
+                Для того, чтобы программа обнаружила и оформила код в тексте необходимо
                 <strong>задать ему стиль Consolas</strong> и тогда программа не будет редактировать
                 его шрифт и размер шрифта поставит равный 11.
             </div>

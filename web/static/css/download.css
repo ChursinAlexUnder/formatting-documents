@@ -27,7 +27,7 @@
 
 .annotation-text {
     font-family: "Arial";
-    font-size: 20px;
+    font-size: 24px;
     line-height: 1.6;
     margin: 0;
     text-align: justify;
@@ -36,7 +36,7 @@
 .download-title {
     font-family: "Arial";
     text-align: center;
-    font-size: 40px;
+    font-size: 36px;
     margin: 0;
     padding: 0 6%;
 }
@@ -57,10 +57,10 @@
         font-size: 24px;
     }
     .annotation-text {
-        font-size: 18px;
+        font-size: 21px;
     }
     .download-title {
-        font-size: 30px;
+        font-size: 27px;
     }
     .download-text {
         font-size: 21px;
@@ -78,10 +78,10 @@
         font-size: 20px;
     }
     .annotation-text {
-        font-size: 16px;
+        font-size: 17px;
     }
     .download-title {
-        font-size: 21px;
+        font-size: 19px;
     }
     .download-text {
         font-size: 17px;

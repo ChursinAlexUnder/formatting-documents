@@ -1,7 +1,7 @@
 .info-title {
     font-family: "Arial";
     text-align: center;
-    font-size: 40px;
+    font-size: 36px;
     margin: 0;
     padding: 0 6%;
 }
@@ -16,7 +16,7 @@
 
 @media screen and (max-width: 768px) {
     .info-title {
-        font-size: 30px;
+        font-size: 27px;
     }
     .info-text {
         font-size: 2.4vw;
@@ -26,7 +26,7 @@
 
 @media screen and (max-width: 480px) {
     .info-title {
-        font-size: 21px;
+        font-size: 19px;
     }
     .info-text {
         font-size: 3.5vw;

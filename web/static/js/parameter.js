@@ -1,42 +1,34 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const buttons = document.querySelectorAll('.window-one .window-one-button'); // указываем и класс первого окна, чтобы сюда не попали кнопки из второго окна
-    const windowTwo = document.querySelector('.window-two'); // Получение второго окна
-    const parametersContainer = document.querySelector('.parameters-container'); // Контейнер параметров
-
-    // Глобальная переменная для текущего AbortController
+    const buttons = document.querySelectorAll('.window-one .window-one-button');
+    const windowTwo = document.querySelector('.window-two');
+    const parametersContainer = document.querySelector('.parameters-container');
     let currentController = null;
-    
+
     buttons.forEach(button => {
         button.addEventListener('click', function (event) {
-            event.preventDefault(); // Отмена стандартного действия кнопки (перехода по ссылке)
-
-            // Отменяем предыдущий запрос, если он ещё выполняется
+            event.preventDefault();
             if (currentController) {
                 currentController.abort();
             }
-            // Создаем новый AbortController для нового запроса
             currentController = new AbortController();
             const signal = currentController.signal;
-            
-            // Получаем значение параметра из ссылки
             const url = new URL(this.href);
             const parameterName = url.searchParams.get('parameter');
 
-            windowTwo.innerHTML = '<img id="window-preloader" class="window-preloader" src="../static/pictures/gear-darkblue.svg">'; // Очистка второго окна
-            // Показываем прелоадер
+            windowTwo.innerHTML = '<img id="window-preloader" class="window-preloader" src="../static/pictures/gear-darkblue.svg">';
             document.getElementById('window-preloader').style.display = 'block';
-            
-            fetch(this.href, { signal }) // Отправка AJAX-запроса на сервер
-                .then(response => response.json()) // Преобразование ответа сервера в JSON
+
+            fetch(this.href, { signal })
+                .then(response => response.json())
                 .then(data => {
                     document.getElementById('window-preloader').style.display = 'none';
                     if (data.options && data.options.length > 0) {
                         data.options.forEach(option => {
                             const button = document.createElement('a');
                             button.className = 'window-two-button';
-                            button.href = '/'; // Оставляем пустым
+                            button.href = '/';
                             button.textContent = option;
-                            button.setAttribute('data-target', parameterName); // Добавляем параметр из ссылки
+                            button.setAttribute('data-target', parameterName);
                             windowTwo.appendChild(button);
                         });
                     } else {
@@ -51,32 +43,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
         });
     });
-    // Обработчик нажатия кнопок во втором окне
     windowTwo.addEventListener('click', function (event) {
         if (event.target.classList.contains('window-two-button')) {
             event.preventDefault();
-            const targetInput = event.target.getAttribute('data-target'); // Получаем целевой input
-            const inputElement = parametersContainer.querySelector(`.parameter-input[name="${targetInput}"]`); // Ищем input по name
+            const targetInput = event.target.getAttribute('data-target');
+            const inputElement = parametersContainer.querySelector(`.parameter-input[name="${targetInput}"]`);
             if (inputElement) {
-                inputElement.value = event.target.textContent; // Меняем value на текст кнопки
+                inputElement.value = event.target.textContent;
             }
-            //
-            // Анимация
-            //
             const elementsToAnimate = [
-                document.querySelector('.window-one'), // Первое окно
-                document.querySelector('.window-two'), // Второе окно
-                document.querySelector('.parameters'), // Контейнер параметров
+                document.querySelector('.window-one'),
+                document.querySelector('.window-two'),
+                document.querySelector('.parameters'),
             ];
 
             elementsToAnimate.forEach(element => {
-                // Добавляем класс анимации
                 element.classList.add('animate-shadow');
-
-                // Удаляем класс после завершения анимации
                 element.addEventListener('animationend', function handleAnimationEnd() {
                     element.classList.remove('animate-shadow');
-                    element.removeEventListener('animationend', handleAnimationEnd); // Удаляем обработчик
+                    element.removeEventListener('animationend', handleAnimationEnd);
                 });
             });
         }

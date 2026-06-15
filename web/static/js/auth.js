@@ -1,4 +1,3 @@
-// Auth Modal Functions
 
 let registerTurnstileWidgetId = null;
 let loginTurnstileWidgetId = null;
@@ -6,13 +5,88 @@ let loginTurnstileWidgetId = null;
 let registerTurnstileToken = '';
 let loginTurnstileToken = '';
 
-const TURNSTILE_SITE_KEY = '0x4AAAAAADKanRmVT3YLtQZ9';
+let turnstileConfigPromise = null;
+const MODAL_CLOSE_DURATION = 260;
 
-function renderRegisterTurnstile() {
+function openAnimatedModal(modal) {
+    if (!modal) return;
+    if (modal._closeTimer) {
+        clearTimeout(modal._closeTimer);
+        modal._closeTimer = null;
+    }
+    modal.classList.remove('closing');
+    modal.classList.add('active');
+}
+
+function closeAnimatedModal(modal, afterClose) {
+    if (!modal || !modal.classList.contains('active') || modal.classList.contains('closing')) {
+        return;
+    }
+
+    modal.classList.add('closing');
+    modal._closeTimer = setTimeout(() => {
+        modal.classList.remove('active', 'closing');
+        modal._closeTimer = null;
+        if (afterClose) afterClose();
+    }, MODAL_CLOSE_DURATION);
+}
+
+function loadTurnstileConfig() {
+    if (!turnstileConfigPromise) {
+        turnstileConfigPromise = fetch('/api/config/turnstile', {
+            credentials: 'same-origin',
+            cache: 'no-store'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Настройка капчи недоступна');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success || !data.site_key) {
+                    throw new Error('Не найден публичный ключ капчи');
+                }
+                return data;
+            })
+            .catch(error => {
+                turnstileConfigPromise = null;
+                throw error;
+            });
+    }
+    return turnstileConfigPromise;
+}
+
+function waitForTurnstile(timeoutMs = 10000) {
+    return new Promise((resolve, reject) => {
+        const startedAt = Date.now();
+        const check = () => {
+            if (window.turnstile) {
+                resolve(window.turnstile);
+                return;
+            }
+            if (Date.now() - startedAt >= timeoutMs) {
+                reject(new Error('Скрипт капчи не загрузился'));
+                return;
+            }
+            setTimeout(check, 50);
+        };
+        check();
+    });
+}
+
+async function renderRegisterTurnstile() {
     if (registerTurnstileWidgetId !== null) return;
 
-    registerTurnstileWidgetId = turnstile.render('#registerTurnstile', {
-        sitekey: TURNSTILE_SITE_KEY,
+    const [config, turnstileApi] = await Promise.all([
+        loadTurnstileConfig(),
+        waitForTurnstile()
+    ]);
+
+    if (registerTurnstileWidgetId !== null) return;
+    registerTurnstileWidgetId = turnstileApi.render('#registerTurnstile', {
+        sitekey: config.site_key,
+        action: 'register',
         callback: function(token) {
             registerTurnstileToken = token;
         },
@@ -25,11 +99,18 @@ function renderRegisterTurnstile() {
     });
 }
 
-function renderLoginTurnstile() {
+async function renderLoginTurnstile() {
     if (loginTurnstileWidgetId !== null) return;
 
-    loginTurnstileWidgetId = turnstile.render('#loginTurnstile', {
-        sitekey: TURNSTILE_SITE_KEY,
+    const [config, turnstileApi] = await Promise.all([
+        loadTurnstileConfig(),
+        waitForTurnstile()
+    ]);
+
+    if (loginTurnstileWidgetId !== null) return;
+    loginTurnstileWidgetId = turnstileApi.render('#loginTurnstile', {
+        sitekey: config.site_key,
+        action: 'login',
         callback: function(token) {
             loginTurnstileToken = token;
         },
@@ -44,41 +125,47 @@ function renderLoginTurnstile() {
 
 function openRegisterModal() {
     const modal = document.getElementById('registerModal');
-    modal.classList.add('active');
-    renderRegisterTurnstile();
+    openAnimatedModal(modal);
+    renderRegisterTurnstile().catch(error => {
+        console.error('Ошибка Turnstile:', error);
+        showNotification('Не удалось загрузить капчу', 'error');
+    });
 }
 
 function closeRegisterModal(event) {
     if (event && event.target.id !== 'registerModal') return;
     const modal = document.getElementById('registerModal');
-    modal.classList.remove('active');
 
     registerTurnstileToken = '';
-    if (registerTurnstileWidgetId !== null) {
-        turnstile.reset(registerTurnstileWidgetId);
+    if (registerTurnstileWidgetId !== null && window.turnstile) {
+        window.turnstile.reset(registerTurnstileWidgetId);
     }
+    closeAnimatedModal(modal);
 }
 
 function openLoginModal() {
     const modal = document.getElementById('loginModal');
-    modal.classList.add('active');
-    renderLoginTurnstile();
+    openAnimatedModal(modal);
+    renderLoginTurnstile().catch(error => {
+        console.error('Ошибка Turnstile:', error);
+        showNotification('Не удалось загрузить капчу', 'error');
+    });
 }
 
 function closeLoginModal(event) {
     if (event && event.target.id !== 'loginModal') return;
     const modal = document.getElementById('loginModal');
-    modal.classList.remove('active');
 
     loginTurnstileToken = '';
-    if (loginTurnstileWidgetId !== null) {
-        turnstile.reset(loginTurnstileWidgetId);
+    if (loginTurnstileWidgetId !== null && window.turnstile) {
+        window.turnstile.reset(loginTurnstileWidgetId);
     }
+    closeAnimatedModal(modal);
 }
 
 function handleRegister(event) {
     event.preventDefault();
-    
+
     const login = document.getElementById('registerLogin').value;
     const password = document.getElementById('registerPassword').value;
 
@@ -107,8 +194,8 @@ function handleRegister(event) {
             document.getElementById('registerForm').reset();
             registerTurnstileToken = '';
 
-            if (registerTurnstileWidgetId !== null) {
-                turnstile.reset(registerTurnstileWidgetId);
+            if (registerTurnstileWidgetId !== null && window.turnstile) {
+                window.turnstile.reset(registerTurnstileWidgetId);
             }
 
             updateAuthUI();
@@ -120,25 +207,25 @@ function handleRegister(event) {
             showNotification(data.message || 'Ошибка регистрации', 'error');
 
             registerTurnstileToken = '';
-            if (registerTurnstileWidgetId !== null) {
-                turnstile.reset(registerTurnstileWidgetId);
+            if (registerTurnstileWidgetId !== null && window.turnstile) {
+                window.turnstile.reset(registerTurnstileWidgetId);
             }
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         showNotification('Ошибка при регистрации', 'error');
 
         registerTurnstileToken = '';
-        if (registerTurnstileWidgetId !== null) {
-            turnstile.reset(registerTurnstileWidgetId);
+        if (registerTurnstileWidgetId !== null && window.turnstile) {
+            window.turnstile.reset(registerTurnstileWidgetId);
         }
     });
 }
 
 function handleLogin(event) {
     event.preventDefault();
-    
+
     const login = document.getElementById('loginLogin').value;
     const password = document.getElementById('loginPassword').value;
 
@@ -167,8 +254,8 @@ function handleLogin(event) {
             document.getElementById('loginForm').reset();
             loginTurnstileToken = '';
 
-            if (loginTurnstileWidgetId !== null) {
-                turnstile.reset(loginTurnstileWidgetId);
+            if (loginTurnstileWidgetId !== null && window.turnstile) {
+                window.turnstile.reset(loginTurnstileWidgetId);
             }
 
             updateAuthUI();
@@ -180,18 +267,18 @@ function handleLogin(event) {
             showNotification(data.message || 'Ошибка входа', 'error');
 
             loginTurnstileToken = '';
-            if (loginTurnstileWidgetId !== null) {
-                turnstile.reset(loginTurnstileWidgetId);
+            if (loginTurnstileWidgetId !== null && window.turnstile) {
+                window.turnstile.reset(loginTurnstileWidgetId);
             }
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         showNotification('Ошибка при входе', 'error');
 
         loginTurnstileToken = '';
-        if (loginTurnstileWidgetId !== null) {
-            turnstile.reset(loginTurnstileWidgetId);
+        if (loginTurnstileWidgetId !== null && window.turnstile) {
+            window.turnstile.reset(loginTurnstileWidgetId);
         }
     });
 }
@@ -213,7 +300,7 @@ function logout() {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         showNotification('Ошибка при выходе', 'error');
     });
 }
@@ -233,7 +320,7 @@ function updateAuthUI() {
             const profileButtons = document.getElementById('profileButtons');
             const resetBtn = document.getElementById('headerResetTemplateBtn');
             const loginLabel = document.getElementById('headerProfileLogin');
-            
+
             if (Boolean(data.success) === true) {
                 if (authButtons) authButtons.style.display = 'none';
                 if (profileButtons) profileButtons.style.display = 'flex';
@@ -243,8 +330,6 @@ function updateAuthUI() {
                     loginLabel.title = fullLogin;
                     loginLabel.style.display = 'inline-flex';
                 }
-                
-                // Load selected template
                 if (data.selected_template_id) {
                     if (resetBtn) resetBtn.style.display = 'inline-flex';
                     loadTemplateInfo(data.selected_template_id);
@@ -262,14 +347,12 @@ function updateAuthUI() {
                     loginLabel.textContent = '';
                     loginLabel.title = '';
                 }
-                
-                // Hide template selector
                 const selector = document.getElementById('templateSelector');
                 if (selector) selector.style.display = 'none';
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Ошибка:', error);
             const authButtons = document.getElementById('authButtons');
             const profileButtons = document.getElementById('profileButtons');
             const resetBtn = document.getElementById('headerResetTemplateBtn');
@@ -285,7 +368,7 @@ function loadSelectedTemplate() {
     const selectedCookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('selected_template='));
-    
+
     if (selectedCookie) {
         const templateId = selectedCookie.split('=')[1];
         loadTemplateInfo(parseInt(templateId));
@@ -302,17 +385,15 @@ function loadTemplateInfo(templateId) {
             if (data.success && data.template) {
                 const selector = document.getElementById('templateSelector');
                 const templateName = document.getElementById('templateName');
-                
+
                 if (selector && templateName) {
                     selector.style.display = 'flex';
                     templateName.textContent = data.template.name;
-                    
-                    // Apply template parameters to form
                     applyTemplateToForm(data.template);
                 }
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Ошибка:', error));
 }
 
 function applyTemplateToForm(template) {
@@ -371,13 +452,11 @@ function resetTemplate() {
             const resetBtn = document.getElementById('headerResetTemplateBtn');
             if (selector) selector.style.display = 'none';
             if (resetBtn) resetBtn.style.display = 'none';
-            
-            // Reset form to default values
             resetFormToDefaults();
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         showNotification('Ошибка при сбросе шаблона', 'error');
     });
 }
@@ -394,14 +473,12 @@ function resetFormToDefaults() {
         'firstindentation': '1.25',
         'listtabulation': '2.0'
     };
-    
+
     for (const [name, value] of Object.entries(defaults)) {
         const input = document.querySelector(`input[name="${name}"]`);
         if (input) input.value = value;
     }
 }
-
-// Initialize auth UI on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateAuthUI();
 });

@@ -11,11 +11,11 @@
     margin: 0 0 4% 0;
     padding: 1vw;
     overflow-y: auto;
-    overflow-x: hidden; 
+    overflow-x: hidden;
     display: flex;
-    flex-direction: column; 
-    background-size: cover; 
-    background-position: center; 
+    flex-direction: column;
+    background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
     align-items: center;
 }
@@ -55,21 +55,21 @@
 }
 
 .window-one-button.active {
-    transform: translateX(10%); /* Сдвиг вправо */
+    transform: translateX(10%);
     background-color: rgb(36, 167, 255)
   }
 
-/*  */
-/* анимация при нажатии кнопки во втором окне */
-/*  */
 
-/* Анимация тени */
+
+
+
+
 .animate-shadow {
-    box-shadow: 0 0 0 rgb(0, 113, 187); /* Начальная тень */
+    box-shadow: 0 0 0 rgb(0, 113, 187);
     animation: shadow-pulse 0.5s ease-in-out;
 }
 
-/* Ключевые кадры для анимации */
+
 @keyframes shadow-pulse {
     0% {
         box-shadow: 0 0 0 rgb(0, 113, 187);
@@ -112,6 +112,6 @@
         border-radius: 6px;
     }
     .window-one-button.active {
-        transform: translateX(8%); /* Сдвиг вправо */
+        transform: translateX(8%);
       }
 }

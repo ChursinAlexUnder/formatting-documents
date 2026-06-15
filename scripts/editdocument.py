@@ -1,423 +1,55 @@
-import sys
-import os
 import json
-import re
-import requests
-import time
-from docx import Document
-from docx.shared import Pt, Cm, RGBColor
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.oxml.ns import qn
-from docx.oxml import OxmlElement
+import os
+import sys
 
-from modules.tabs import removeTabs, addTab
-from modules.headings import headingLevel, isHeading, addPageBreak, addEmptyParagraphBefore, addEmptyParagraphAfter, ensureHeadingStyle, changeNormalStyle
-from modules.usednumbers import findAndFormatTables, findBibliographyList, hasReference
-from modules.title import paragraphHasPageBreak
+from modules.annotation import build_annotation_source
+from modules.document_formatter import format_document
 
+formatDocument = format_document
 
-def updateParagraphDefaultFont(paragraph, font):
-    """Изменяет шрифт в первом <w:rFonts> внутри <w:pPr>, если он существует."""
-    
-    # Ищем <w:pPr> внутри параграфа
-    pPr = paragraph._element.find(qn("w:pPr"))
-    if pPr is not None:
-        # Ищем <w:rPr> внутри <w:pPr>
-        rPr = pPr.find(qn("w:rPr"))
-        if rPr is not None:
-            # Ищем <w:rFonts> внутри <w:rPr>
-            rFonts = rPr.find(qn("w:rFonts"))
-            if rFonts is not None:
-                # Меняем шрифт только если <w:rFonts> уже есть
-                rFonts.set(qn("w:ascii"), font)
-                rFonts.set(qn("w:hAnsi"), font)
-
-def generate_annotation(document_path, api_key):
-    """Генерирует аннотацию документа с использованием OpenRouter API."""
-    doc = Document(document_path)
-    text_content = []
-
-    for paragraph in doc.paragraphs:
-        text = paragraph.text.strip()
-        if text:
-            text_content.append(text)
-
-    content_preview = " ".join(text_content)[:5000]
-
-    if not content_preview.strip():
-        return "Не удалось извлечь содержимое документа для генерации аннотации."
-
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://formatting-documents.app",
-        "X-Title": "Document Formatting Service"
-    }
-
-    prompt = (
-        "Составь краткую аннотацию на русском языке по следующему тексту. "
-        "Не акцентируй внимание на конкретных вещах, не используй перечисления через запятую. "
-        "Аннотация должна быть одним абзацем, без заголовков, "
-        "без пояснений и без списков. Длина — строго до 600 символов.\n\n"
-        f"{content_preview}"
+def main():
+    documentName = sys.argv[1]
+    bufferPath = os.getenv('APP_BUFFER_DIR', '../buffer')
+    documentPath = os.path.join(bufferPath, documentName)
+    font = sys.argv[2]
+    fontsize = sys.argv[3]
+    alignment = sys.argv[4]
+    spacing = sys.argv[5]
+    beforespacing = sys.argv[6]
+    afterspacing = sys.argv[7]
+    firstindentation = sys.argv[8]
+    listtabulation = sys.argv[9]
+    havetitle = sys.argv[10]
+    openrouter_api_key = (
+        sys.argv[11]
+        if len(sys.argv) > 11
+        else os.getenv('OPENROUTER_API_KEY')
     )
 
-    data = {
-        "model": "openrouter/owl-alpha",
-        "messages": [
-            {
-                "role": "system",
-                "content": "Ты пишешь краткие и точные аннотации к научным и учебным текстам на русском языке."
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "temperature": 0.2,
-        "max_tokens": 300
-    }
+    if not os.path.exists(documentPath):
+        print(f"Документ не найден: {documentPath}", file=sys.stderr)
+        sys.exit(1)
 
-    response = None
-    for attempt in range(10):
-        try:
-            response = requests.post(url, headers=headers, json=data, timeout=30)
-            if response.status_code == 429:
-                if attempt == 9:
-                    break
-                time.sleep(3)
-                continue
-            response.raise_for_status()
-            break
-        except requests.exceptions.RequestException:
-            return "Не удалось подключиться к нейросети для создания аннотации. Попробуйте ещё раз."
-
-    if response is None or response.status_code == 429:
-        return "Не удалось подключиться к нейросети для создания аннотации. Попробуйте ещё раз."
-
-    result = response.json()
-    choices = result.get("choices", [])
-    if not choices:
-        return "Не удалось сгенерировать аннотацию документа."
-
-    content = choices[0].get("message", {}).get("content", "")
-    annotation = content.strip()
-
-    if not annotation:
-        return "Модель вернула пустой ответ."
-
-    if annotation.startswith("Аннотация"):
-        annotation = annotation.split("\n", 1)[-1].strip()
-
-    if len(annotation) > 600:
-        truncated = annotation[:600]
-        last_period = max(
-            truncated.rfind('.'),
-            truncated.rfind('!'),
-            truncated.rfind('?')
+    try:
+        formattedDocumentPath, result = format_document(
+            bufferPath,
+            documentName,
+            font,
+            fontsize,
+            alignment,
+            spacing,
+            beforespacing,
+            afterspacing,
+            firstindentation,
+            listtabulation,
+            havetitle,
+            openrouter_api_key,
         )
-        annotation = truncated[:last_period + 1]
+        print(json.dumps(result))
+    except Exception as e:
+        print(f"Ошибка форматирования документа: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    return annotation
-    
-def cleanParagraphText(paragraph):
-    """Удаляет пробелы в начале и в конце текста параграфа, 
-    сохраняя изображения, гиперссылки и другие элементы."""
 
-    if not paragraph.runs:  # Если нет run'ов, ничего не делаем
-        return
-
-    # --- Удаляем пробелы в начале ---
-    found_non_space = False  # Флаг, нашли ли непустой текст
-    for run in paragraph.runs:
-        if not found_non_space:
-            if run.text.strip():  # Нашли первый run с текстом
-                run.text = run.text.lstrip()  # Убираем пробелы слева
-                found_non_space = True  # Дальше пробелы не трогаем
-            elif run.text.isspace():  
-                run.text = ""  # Полностью пробельные run'ы в начале удаляем
-
-    # --- Удаляем пробелы в конце ---
-    found_non_space = False
-    for run in reversed(paragraph.runs):
-        if not found_non_space:
-            if run.text.strip():  # Нашли последний run с текстом
-                run.text = run.text.rstrip()  # Убираем пробелы справа
-                found_non_space = True  # Дальше пробелы не трогаем
-            elif run.text.isspace():  
-                run.text = ""  # Полностью пробельные run'ы в конце удаляем
-
-def modifyList(doc, font, fontsize):
-    """
-    Изменяет стиль номеров или маркеров списка в документе.
-    """
-    numbering_part = doc.part.numbering_part
-    numbering_xml = numbering_part.element
-
-    for abstract_num in numbering_xml.findall(qn("w:abstractNum")):
-        for lvl in abstract_num.findall(qn("w:lvl")):
-            num_fmt = lvl.find(qn("w:numFmt"))
-            if num_fmt is None:
-                continue
-
-            num_fmt_val = num_fmt.get(qn("w:val"))
-
-            # Настройки шрифта
-            rPr = lvl.find(qn("w:rPr"))
-            if rPr is None:
-                rPr = OxmlElement("w:rPr")
-                lvl.append(rPr)
-
-            if num_fmt_val != "bullet": #нумерованный список
-                rFonts = rPr.find(qn("w:rFonts"))
-                if rFonts is None:
-                    rFonts = OxmlElement("w:rFonts")
-                    rPr.append(rFonts)
-                rFonts.set(qn("w:ascii"), font)
-                rFonts.set(qn("w:hAnsi"), font)
-
-            sz = rPr.find(qn("w:sz"))
-            if sz is None:
-                sz = OxmlElement("w:sz")
-                rPr.append(sz)
-            sz.set(qn("w:val"), str(fontsize * 2))
-
-def formatDocument(bufferPath, documentName, font, fontsize, alignment,
-                   spacing, beforespacing, afterspacing,
-                   firstindentation, listtabulation, havetitle, openrouter_api_key=None):
-    doc = Document(f"{bufferPath}/{documentName}")
-
-    haveList = False
-    isDrawTitle = False
-
-    answer = []
-    drawList = []
-    drawCount = 0
-    drawPattern = re.compile(
-        r"(?:\(\s*)?рисун\w*\s+((?:\d+(?:\s*[-,–—]\s*)?)+)(?:\s*\))?",
-        re.IGNORECASE
-    )
-    excluded_indices = set()
-
-    bibliographyList, bibliographyStartIdx = findBibliographyList(doc)
-    bibliographyPattern = re.compile(r"\[\s*([\d,\-–—\s]+?)\s*\]")
-
-    # Поля
-    for section in doc.sections:
-        section.left_margin = Cm(3)
-        section.right_margin = Cm(1.5)
-        section.top_margin = Cm(2)
-        section.bottom_margin = Cm(2)
-
-    if havetitle == "Нет":
-        changeNormalStyle(doc, font, fontsize, alignment,
-                          spacing, beforespacing,
-                          afterspacing, firstindentation)
-
-    isFirstPageBreak = False
-    isBibliographyList = False
-
-    for abs_index, paragraph in enumerate(doc.paragraphs):
-        if havetitle == "Есть" and not isFirstPageBreak:
-            isFirstPageBreak = paragraphHasPageBreak(paragraph)
-            if isFirstPageBreak:
-                havetitle = "Нет"
-            excluded_indices.add(abs_index)
-            continue
-
-        isHead = False
-        isDraw = False
-
-        cleanParagraphText(paragraph)
-        level = headingLevel(paragraph.text)
-
-        # Исключаем абзацы внутри таблиц
-        if paragraph._element.getparent() is not None and paragraph._element.getparent().tag == qn('w:tc'):
-            excluded_indices.add(abs_index)
-
-        # Поиск рисунков
-        for run in paragraph.runs:
-            elem = run._element
-            if (elem.find(qn("w:drawing")) is not None or
-                elem.find(qn("w:pict")) is not None or
-                paragraph._element.xpath(".//wp:inline") or
-                paragraph._element.xpath(".//wp:anchor")):
-                isDraw = True
-                excluded_indices.add(abs_index)
-                isDrawTitle = True
-                drawCount += 1
-                hasRef = hasReference(doc, abs_index, drawCount, drawPattern)
-                drawList.append(hasRef)
-                break
-
-        # Списки – форматируем, но не исключаем
-        if paragraph._element.xpath(".//w:numPr"):
-            removeTabs(paragraph)
-            addTab(paragraph, listtabulation)
-            if not haveList:
-                haveList = True
-                modifyList(doc, font, int(fontsize))
-
-        # Заголовки
-        elif not isDraw and not isDrawTitle and isHeading(paragraph):
-            if level:
-                # Нумерованный заголовок с уровнем
-                style_name = ensureHeadingStyle(doc, level, font, fontsize)
-                paragraph.style = style_name
-                isHead = True
-                excluded_indices.add(abs_index)
-
-                if level == 1:
-                    addPageBreak(paragraph)
-                    addEmptyParagraphAfter(paragraph)
-                else:
-                    if abs_index > 0:
-                        addEmptyParagraphBefore(paragraph)
-                    addEmptyParagraphAfter(paragraph)
-            else:
-                # Ненумерованный заголовок (например, "Список используемых источников", "ПРИЛОЖЕНИЕ" и т.п.)
-                excluded_indices.add(abs_index)
-
-        for spacing_elem in paragraph._element.xpath('.//w:spacing'):
-            spacing_elem.getparent().remove(spacing_elem)
-
-        text_lower = paragraph.text.strip().lower()
-        if text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower):
-            isBibliographyList = True
-
-        if not isBibliographyList:
-            for match in bibliographyPattern.findall(paragraph.text):
-                for token in re.split(r",", match):
-                    token = token.strip()
-                    if any(d in token for d in ["-", "–", "—"]):
-                        try:
-                            start, end = map(int, re.split(r"\s*[-–—]\s*", token))
-                            for i in range(start, end+1):
-                                if 1 <= i <= len(bibliographyList):
-                                    bibliographyList[i-1] = True
-                        except ValueError:
-                            pass
-                    else:
-                        try:
-                            num = int(token)
-                            if 1 <= num <= len(bibliographyList):
-                                bibliographyList[num-1] = True
-                        except ValueError:
-                            pass
-
-        # Выравнивание и пометка специальных абзацев
-        if (isDraw or (isDrawTitle and text_lower.startswith("рисун"))
-            or text_lower in ("содержание", "введение", "заключение", "реферат")
-            or text_lower.startswith("приложение")
-            or text_lower.startswith("таблиц")
-            or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower))):
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            excluded_indices.add(abs_index)
-        elif isHead:
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
-        elif alignment == "По левому краю":
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-        elif alignment == "По центру":
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        elif alignment == "По правому краю":
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
-        else:
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
-
-        paragraph.paragraph_format.line_spacing = float(spacing)
-        paragraph.paragraph_format.space_before = Pt(float(fontsize) * float(beforespacing))
-        paragraph.paragraph_format.space_after = Pt(float(fontsize) * float(afterspacing))
-        paragraph.paragraph_format.left_indent = 0
-        paragraph.paragraph_format.right_indent = 0
-        paragraph.paragraph_format.first_line_indent = Cm(0) if isDraw or isDrawTitle or text_lower in ("содержание", "введение", "заключение", "реферат") or text_lower.startswith("приложение") or text_lower.startswith("таблиц") or (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower)) else Cm(float(firstindentation))
-
-        updateParagraphDefaultFont(paragraph, font)
-        paragraph.style.font.size = Pt(float(fontsize))
-        paragraph.style.font.name = font
-
-        for run in paragraph.runs:
-            if run.font.name != "Consolas":
-                run.font.name = font
-                run.font.size = Pt(float(fontsize))
-            else:
-                run.font.size = Pt(11)
-                excluded_indices.add(abs_index)   # код исключаем
-            run.font.color.rgb = RGBColor(0, 0, 0)
-
-        if isDrawTitle and not isDraw:
-            isDrawTitle = False
-
-    # Размер шрифта гиперссылок
-    target_half_points = int(float(fontsize) * 2)
-    for hyperlink in doc.element.body.iter(qn('w:hyperlink')):
-        for r in hyperlink.iter(qn('w:r')):
-            rPr = r.find(qn('w:rPr'))
-            if rPr is None:
-                rPr = OxmlElement('w:rPr')
-                r.insert(0, rPr)
-            sz = rPr.find(qn('w:sz'))
-            if sz is None:
-                sz = OxmlElement('w:sz')
-                rPr.append(sz)
-            sz.set(qn('w:val'), str(target_half_points))
-
-    # Подсчет абзацев текста
-    paragraph_count = 0
-    for i, para in enumerate(doc.paragraphs):
-        if i in excluded_indices:
-            continue
-        text = para.text.strip()
-        text_lower = text.lower()
-
-        # Явно исключаем подписи к рисункам, таблицам, приложения и заголовок литературы
-        if (text_lower.startswith("рисун") or
-            text_lower.startswith("таблиц") or
-            text_lower.startswith("приложение") or
-            (text_lower.startswith("список") and ("источников" in text_lower or "литературы" in text_lower))):
-            continue
-
-        # Считаем абзац, только если он содержит хотя бы одну букву или цифру
-        if re.search(r'[a-zA-Zа-яА-ЯёЁ0-9]', text):
-            paragraph_count += 1
-
-    answer.append(drawList)
-    answer.append(findAndFormatTables(doc))
-    answer.append(bibliographyList)
-    answer.append(paragraph_count)
-
-    # Генерация аннотации
-    annotation = ""
-    if openrouter_api_key:
-        annotation = generate_annotation(f"{bufferPath}/{documentName}", openrouter_api_key)
-    answer.append(annotation)
-
-    formattedName = f"formatted_{documentName}"
-    formattedPath = f"{bufferPath}/{formattedName}"
-    doc.save(formattedPath)
-    return formattedPath, answer
-
-documentName = sys.argv[1]
-bufferPath = '../buffer'
-documentPath = bufferPath + '/' + documentName
-font = sys.argv[2]
-fontsize = sys.argv[3]
-alignment = sys.argv[4]
-spacing = sys.argv[5]
-beforespacing = sys.argv[6]
-afterspacing = sys.argv[7]
-firstindentation = sys.argv[8]
-listtabulation = sys.argv[9]
-havetitle = sys.argv[10]
-openrouter_api_key = sys.argv[11] if len(sys.argv) > 11 else os.getenv('OPENROUTER_API_KEY')
-
-if not os.path.exists(documentPath):
-    print(f"Document not found: {documentPath}")
-    sys.exit(1)
-
-try:
-    formattedDocumentPath, result = formatDocument(bufferPath, documentName, font, fontsize, alignment, spacing, beforespacing, afterspacing, firstindentation, listtabulation, havetitle, openrouter_api_key)
-    print(json.dumps(result))
-except Exception as e:
-    print(f"Error formatting document: {e}")
-    sys.exit(1)
+if __name__ == "__main__":
+    main()

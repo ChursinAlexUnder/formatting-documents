@@ -21,12 +21,29 @@ body {
     padding-top: 70px;
 }
 
+.instruction-title,
+.form-title,
+.statistic-title,
+.download-title,
+.info-title,
+.profile-title {
+    font-size: 36px;
+}
+
 @media screen and (max-width: 768px) {
     body {
         background-image: url('../pictures/instruction.png');
     }
     .main-window, .main-window-secondary {
         padding-top: 55px;
+    }
+    .instruction-title,
+    .form-title,
+    .statistic-title,
+    .download-title,
+    .info-title,
+    .profile-title {
+        font-size: 27px;
     }
 }
 
@@ -36,5 +53,13 @@ body {
     }
     .main-window-secondary {
         margin-bottom: 24vh;
+    }
+    .instruction-title,
+    .form-title,
+    .statistic-title,
+    .download-title,
+    .info-title,
+    .profile-title {
+        font-size: 19px;
     }
 }

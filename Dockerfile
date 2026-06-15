@@ -1,34 +1,37 @@
-# Используем базовый образ Debian и добавим сюда Go и Python
-FROM debian:bullseye-slim
+FROM golang:1.23-bookworm AS builder
 
-# Установить необходимые пакеты
-RUN apt-get update && apt-get install -y \
-    golang \
-    python3 \
-    python3-pip && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get clean
+WORKDIR /src
 
-# Установить библиотеку python-docx через pip
-RUN pip install python-docx requests
-
-# Установить рабочую директорию
-WORKDIR /
-
-# Копировать go.mod для загрузки зависимостей
-COPY go.mod go.sum /
-
-# Загрузить зависимости
+COPY go.mod go.sum ./
 RUN go mod download
 
-# Скопировать все файлы в рабочую директорию
-COPY . /
+COPY cmd ./cmd
+COPY database ./database
+COPY internal ./internal
+COPY pkg ./pkg
 
-# Скомпилировать Go приложение
-RUN go build -o main ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/formatting-documents ./cmd/main.go
 
-# Expose port 8080 to the outside world
+FROM python:3.12-slim-bookworm AS runtime
+
+ENV APP_ROOT=/app \
+    APP_BUFFER_DIR=/app/buffer \
+    APP_DATA_FILE=/app/data.json \
+    PYTHON_BIN=python3 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir python-docx requests
+
+COPY --from=builder /out/formatting-documents /app/formatting-documents
+COPY scripts /app/scripts
+COPY web /app/web
+COPY data.json /app/data.json
+
+RUN mkdir -p /app/buffer
+
 EXPOSE 8080
 
-# Команда для запуска вашего Go сервера
-CMD ["./main"]
+CMD ["/app/formatting-documents"]
